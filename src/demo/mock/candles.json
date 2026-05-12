@@ -1,77 +1,5 @@
 [
 	{
-		"close": 4699.75,
-		"high": 4700.04,
-		"isClosed": true,
-		"low": 4698.92,
-		"open": 4700.01,
-		"time": 1778583540,
-		"volume": 175
-	},
-	{
-		"close": 4702.64,
-		"high": 4703.12,
-		"isClosed": true,
-		"low": 4699.71,
-		"open": 4699.71,
-		"time": 1778583600,
-		"volume": 230
-	},
-	{
-		"close": 4705.23,
-		"high": 4705.34,
-		"isClosed": true,
-		"low": 4702.16,
-		"open": 4702.61,
-		"time": 1778583660,
-		"volume": 233
-	},
-	{
-		"close": 4706.32,
-		"high": 4706.63,
-		"isClosed": true,
-		"low": 4704.42,
-		"open": 4705.17,
-		"time": 1778583720,
-		"volume": 219
-	},
-	{
-		"close": 4705.08,
-		"high": 4706.35,
-		"isClosed": true,
-		"low": 4704.08,
-		"open": 4706.35,
-		"time": 1778583780,
-		"volume": 226
-	},
-	{
-		"close": 4704.61,
-		"high": 4706.04,
-		"isClosed": true,
-		"low": 4704.58,
-		"open": 4705.12,
-		"time": 1778583840,
-		"volume": 204
-	},
-	{
-		"close": 4704.95,
-		"high": 4705.76,
-		"isClosed": true,
-		"low": 4704.6,
-		"open": 4704.6,
-		"time": 1778583900,
-		"volume": 148
-	},
-	{
-		"close": 4704.43,
-		"high": 4705.04,
-		"isClosed": true,
-		"low": 4703.82,
-		"open": 4705.03,
-		"time": 1778583960,
-		"volume": 190
-	},
-	{
 		"close": 4701.78,
 		"high": 4704.54,
 		"isClosed": true,
@@ -4491,12 +4419,84 @@
 		"volume": 222
 	},
 	{
-		"close": 4673.4,
-		"high": 4673.59,
-		"isClosed": false,
-		"low": 4673.16,
+		"close": 4671.65,
+		"high": 4673.94,
+		"isClosed": true,
+		"low": 4671.61,
 		"open": 4673.34,
 		"time": 1778613480,
-		"volume": 36
+		"volume": 197
+	},
+	{
+		"close": 4671.65,
+		"high": 4672.79,
+		"isClosed": true,
+		"low": 4670.88,
+		"open": 4671.63,
+		"time": 1778613540,
+		"volume": 202
+	},
+	{
+		"close": 4672.51,
+		"high": 4672.91,
+		"isClosed": true,
+		"low": 4671.2,
+		"open": 4671.64,
+		"time": 1778613600,
+		"volume": 196
+	},
+	{
+		"close": 4670.39,
+		"high": 4672.91,
+		"isClosed": true,
+		"low": 4670.29,
+		"open": 4672.5,
+		"time": 1778613660,
+		"volume": 204
+	},
+	{
+		"close": 4670.29,
+		"high": 4671.34,
+		"isClosed": true,
+		"low": 4669.79,
+		"open": 4670.37,
+		"time": 1778613720,
+		"volume": 248
+	},
+	{
+		"close": 4668.02,
+		"high": 4670.47,
+		"isClosed": true,
+		"low": 4667.84,
+		"open": 4670.24,
+		"time": 1778613780,
+		"volume": 226
+	},
+	{
+		"close": 4667.41,
+		"high": 4668.87,
+		"isClosed": true,
+		"low": 4666.76,
+		"open": 4667.98,
+		"time": 1778613840,
+		"volume": 248
+	},
+	{
+		"close": 4667.88,
+		"high": 4669.12,
+		"isClosed": true,
+		"low": 4667.26,
+		"open": 4667.43,
+		"time": 1778613900,
+		"volume": 229
+	},
+	{
+		"close": 4668.12,
+		"high": 4668.13,
+		"isClosed": false,
+		"low": 4667.5,
+		"open": 4667.87,
+		"time": 1778613960,
+		"volume": 26
 	}
 ]

@@ -2,7 +2,8 @@ import { ExistingCandlesLayer } from "./canvas/layers/ExistingCandlesLayer";
 
 import { CrosshairLayer } from "./canvas/layers/CrosshairLayer";
 
-import candles from "./demo/mock/candles.json";
+import type { Candle } from "./models/Candle";
+
 import "./main.css";
 
 const candleCanvas = document.querySelector<HTMLCanvasElement>("#chart");
@@ -39,15 +40,7 @@ resizeCanvases();
  * Layers
  * =========================
  */
-const candleLayer = new ExistingCandlesLayer({
-	canvas: candleCanvas,
-
-	candles,
-
-	baseCandleWidth: 8,
-
-	baseCandleGap: 4,
-});
+let candleLayer: ExistingCandlesLayer | null = null;
 
 const crosshairLayer = new CrosshairLayer({
 	canvas: overlayCanvas,
@@ -55,12 +48,91 @@ const crosshairLayer = new CrosshairLayer({
 
 /**
  * =========================
- * Initial Render
+ * Load Historical Candles
  * =========================
  */
-candleLayer.render();
+const loadCandles = async () => {
+	try {
+		const response = await fetch(
+			"http://localhost:5000/candles?symbol=XAUUSD&tf=1m&limit=500",
+		);
 
-crosshairLayer.render();
+		if (!response.ok) {
+			throw new Error(`Failed to fetch candles: ${response.status}`);
+		}
+
+		const data = await response.json();
+		const candles: Candle[] = data.candles ?? [];
+
+		candleLayer = new ExistingCandlesLayer({
+			canvas: candleCanvas,
+
+			candles,
+
+			baseCandleWidth: 8,
+
+			baseCandleGap: 4,
+		});
+
+		/**
+		 * Initial render
+		 */
+		candleLayer.render();
+
+		crosshairLayer.render();
+
+		/**
+		 * Start websocket feed
+		 */
+		initializeLiveFeed();
+	} catch (error) {
+		console.error("Failed to load candles", error);
+	}
+};
+
+/**
+ * =========================
+ * Demo Live Candle Feed
+ * =========================
+ *
+ * NOTE:
+ * This is ONLY for local demo/testing.
+ *
+ * Actual websocket/fetch logic
+ * should live inside React app,
+ * not inside chart library.
+ */
+const initializeLiveFeed = () => {
+	const socket = new WebSocket(
+		"ws://localhost:5000/ws/candles?symbol=XAUUSD&tf=1m",
+	);
+
+	socket.addEventListener("message", (event) => {
+		if (!candleLayer) {
+			return;
+		}
+
+		try {
+			const data = JSON.parse(event.data);
+
+			if (!data.candle) {
+				return;
+			}
+
+			candleLayer.updateLiveCandle(data.candle);
+
+			candleLayer.render();
+		} catch (error) {
+			console.error("Failed to parse websocket candle", error);
+		}
+	});
+
+	socket.addEventListener("error", (error) => {
+		console.error("WebSocket error", error);
+	});
+};
+
+loadCandles();
 
 /**
  * =========================
@@ -70,6 +142,10 @@ crosshairLayer.render();
 overlayCanvas.addEventListener(
 	"wheel",
 	(event) => {
+		if (!candleLayer) {
+			return;
+		}
+
 		event.preventDefault();
 
 		const zoomDelta = event.deltaY < 0 ? 1 : -1;
@@ -133,7 +209,7 @@ window.addEventListener("mousemove", (event) => {
 	/**
 	 * Panning
 	 */
-	if (!isDragging) {
+	if (!isDragging || !candleLayer) {
 		return;
 	}
 
@@ -170,8 +246,6 @@ overlayCanvas.addEventListener("mouseleave", () => {
  */
 window.addEventListener("resize", () => {
 	resizeCanvases();
-
-	candleLayer.render();
-
+	candleLayer?.render();
 	crosshairLayer.render();
 });

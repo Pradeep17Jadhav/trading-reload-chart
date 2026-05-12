@@ -160,6 +160,31 @@ export class ExistingCandlesLayer {
 		this.priceRange = rawPriceRange + verticalPadding;
 	}
 
+	updateLiveCandle(candle: Candle) {
+		const lastCandle = this.candles.at(-1);
+
+		/**
+		 * Replace current live candle
+		 */
+		if (lastCandle && lastCandle.time === candle.time) {
+			this.candles[this.candles.length - 1] = candle;
+
+			return;
+		}
+
+		/**
+		 * Previous candle becomes closed
+		 */
+		if (lastCandle) {
+			lastCandle.isClosed = true;
+		}
+
+		/**
+		 * Append new live candle
+		 */
+		this.candles.push(candle);
+	}
+
 	get candleWidth() {
 		return this.baseCandleWidth * this.zoomX;
 	}
@@ -274,18 +299,13 @@ export class ExistingCandlesLayer {
 			return;
 		}
 
-		/**
-		 * Ignore live candle for now
-		 */
-		const allCandles = this.candles.slice(0, -1);
-
 		const {
 			startIndex,
 
 			endIndex,
 		} = this.getVisibleRange(chartWidth);
 
-		const visibleCandles = allCandles.slice(
+		const visibleCandles = this.candles.slice(
 			startIndex,
 
 			endIndex + 1,

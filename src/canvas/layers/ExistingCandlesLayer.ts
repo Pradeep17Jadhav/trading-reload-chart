@@ -43,6 +43,11 @@ type ExistingCandlesLayerOptions = {
 	 * from right edge
 	 */
 	autoFollowThresholdCandles?: number;
+
+	/**
+	 * Empty candle space on right side
+	 */
+	rightOffsetCandles?: number;
 };
 
 export class ExistingCandlesLayer {
@@ -90,13 +95,19 @@ export class ExistingCandlesLayer {
 	/**
 	 * Runtime follow state
 	 */
-	isFollowingLatest = true;
+	isFollowingLatest = false;
 
 	/**
 	 * Threshold from right edge
 	 * where auto-follow activates
 	 */
 	autoFollowThresholdCandles: number;
+
+	/**
+	 * Empty candle spacing
+	 * on right side
+	 */
+	rightOffsetCandles: number;
 
 	constructor(options: ExistingCandlesLayerOptions) {
 		this.#canvas = options.canvas;
@@ -134,9 +145,21 @@ export class ExistingCandlesLayer {
 			options.autoFollowThresholdCandles ??
 			CHART_CONFIG.candles.autoFollowThresholdCandles;
 
+		this.rightOffsetCandles =
+			options.rightOffsetCandles ?? CHART_CONFIG.candles.rightOffsetCandles;
+
 		const totalChartWidth = this.candles.length * this.candleSpacing;
 
-		this.offsetX = options.offsetX ?? this.#canvas.width - totalChartWidth;
+		const rightOffsetPixels = this.rightOffsetCandles * this.candleSpacing;
+
+		this.offsetX =
+			options.offsetX ??
+			this.#canvas.width - totalChartWidth - rightOffsetPixels;
+
+		/**
+		 * Initial follow state
+		 */
+		this.isFollowingLatest = this.isWithinAutoFollowThreshold();
 
 		/**
 		 * Initial viewport
@@ -206,7 +229,10 @@ export class ExistingCandlesLayer {
 	isWithinAutoFollowThreshold() {
 		const totalChartWidth = this.candles.length * this.candleSpacing;
 
-		const rightGap = this.#canvas.width - (totalChartWidth + this.offsetX);
+		const rightOffsetPixels = this.rightOffsetCandles * this.candleSpacing;
+
+		const rightGap =
+			this.#canvas.width - (totalChartWidth + this.offsetX) - rightOffsetPixels;
 
 		const thresholdPixels =
 			this.autoFollowThresholdCandles * this.candleSpacing;
@@ -237,6 +263,12 @@ export class ExistingCandlesLayer {
 		 * Append new live candle
 		 */
 		this.candles.push(candle);
+
+		/**
+		 * Recalculate follow state
+		 * after new candle append
+		 */
+		this.isFollowingLatest = this.isWithinAutoFollowThreshold();
 
 		/**
 		 * Auto-follow latest candle
@@ -321,7 +353,11 @@ export class ExistingCandlesLayer {
 		/**
 		 * Clamp zoom
 		 */
-		this.zoomX = Math.max(min, Math.min(this.zoomX, max));
+		this.zoomX = Math.max(
+			min,
+
+			Math.min(this.zoomX, max),
+		);
 
 		/**
 		 * Keep viewport right edge fixed
@@ -503,23 +539,29 @@ export class ExistingCandlesLayer {
 
 		ctx.fillStyle = candleColor;
 
-		/**
-		 * Wick
-		 */
 		const candleCenterX = candleX + this.candleWidth / 2;
 
 		ctx.beginPath();
 
-		ctx.moveTo(candleCenterX, highY);
+		ctx.moveTo(
+			candleCenterX,
 
-		ctx.lineTo(candleCenterX, lowY);
+			highY,
+		);
+
+		ctx.lineTo(
+			candleCenterX,
+
+			lowY,
+		);
 
 		ctx.stroke();
 
-		/**
-		 * Body
-		 */
-		const candleBodyY = Math.min(openY, closeY);
+		const candleBodyY = Math.min(
+			openY,
+
+			closeY,
+		);
 
 		const candleBodyHeight = Math.max(
 			Math.abs(closeY - openY),
@@ -557,6 +599,10 @@ export class ExistingCandlesLayer {
 			return;
 		}
 
+		if (!CHART_CONFIG.candles.livePriceLine.visible) {
+			return;
+		}
+
 		const latestPrice = latestCandle.close;
 
 		const lineY = this.priceToY(
@@ -567,25 +613,28 @@ export class ExistingCandlesLayer {
 
 		const lineColor =
 			latestCandle.close >= latestCandle.open
-				? this.bullishColor
-				: this.bearishColor;
+				? CHART_CONFIG.candles.livePriceLine.bullishColor
+				: CHART_CONFIG.candles.livePriceLine.bearishColor;
 
 		ctx.save();
+
 		ctx.globalAlpha = CHART_CONFIG.candles.livePriceLine.opacity;
+
 		ctx.strokeStyle = lineColor;
 
-		ctx.lineWidth = 1;
+		ctx.lineWidth = CHART_CONFIG.candles.livePriceLine.width;
 
-		/**
-		 * TradingView-like dashed line
-		 */
-		ctx.setLineDash([4, 4]);
+		ctx.setLineDash([...CHART_CONFIG.candles.livePriceLine.dash]);
 
 		ctx.beginPath();
 
 		ctx.moveTo(0, lineY);
 
-		ctx.lineTo(chartWidth, lineY);
+		ctx.lineTo(
+			chartWidth,
+
+			lineY,
+		);
 
 		ctx.stroke();
 

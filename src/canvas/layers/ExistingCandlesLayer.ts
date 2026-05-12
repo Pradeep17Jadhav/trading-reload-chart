@@ -33,6 +33,12 @@ export class ExistingCandlesLayer {
 
 	backgroundColor: string;
 
+	/**
+	 * Horizontal chart offset.
+	 * Negative value means older candles are hidden on left.
+	 */
+	offsetX: number;
+
 	constructor(options: ExistingCandlesLayerOptions) {
 		this.#canvas = options.canvas;
 
@@ -45,6 +51,7 @@ export class ExistingCandlesLayer {
 		this.#ctx = ctx;
 
 		this.candles = options.candles;
+
 		this.candleWidth = options.candleWidth ?? 8;
 
 		this.candleGap = options.candleGap ?? 2;
@@ -54,6 +61,15 @@ export class ExistingCandlesLayer {
 		this.bearishColor = options.bearishColor ?? "#ef4444";
 
 		this.backgroundColor = options.backgroundColor ?? "#0f172a";
+
+		/**
+		 * Start chart from right side.
+		 * Latest candles should remain visible.
+		 */
+		const totalCandlesWidth =
+			this.candles.length * (this.candleWidth + this.candleGap);
+
+		this.offsetX = this.#canvas.width - totalCandlesWidth;
 	}
 
 	render() {
@@ -97,60 +113,155 @@ export class ExistingCandlesLayer {
 			}
 		}
 
-		const priceRange = maxPrice - minPrice;
+		const priceRange = maxPrice - minPrice || 1;
+		this.drawCandles({
+			ctx,
+			candles,
+			canvasWidth,
+			canvasHeight,
+			minPrice,
+			priceRange,
+		});
+	}
 
-		/**
-		 * Draw candles
-		 */
-		for (let i = 0; i < candles.length; i++) {
-			const candle = candles[i];
+	drawCandles({
+		ctx,
 
-			const x = i * (this.candleWidth + this.candleGap);
+		candles,
+
+		canvasWidth,
+
+		canvasHeight,
+
+		minPrice,
+
+		priceRange,
+	}: {
+		ctx: CanvasRenderingContext2D;
+
+		candles: Candle[];
+
+		canvasWidth: number;
+
+		canvasHeight: number;
+
+		minPrice: number;
+
+		priceRange: number;
+	}) {
+		candles.forEach((candle, candleIndex) => {
+			const candleX =
+				candleIndex * (this.candleWidth + this.candleGap) + this.offsetX;
 
 			/**
-			 * Stop drawing outside viewport
+			 * Skip invisible candles on left side
 			 */
-			if (x > canvasWidth) {
-				break;
+			if (candleX + this.candleWidth < 0) {
+				return;
 			}
 
-			const openY = canvasHeight - ((candle.open - minPrice) / priceRange) * canvasHeight;
-
-			const closeY = canvasHeight - ((candle.close - minPrice) / priceRange) * canvasHeight;
-
-			const highY = canvasHeight - ((candle.high - minPrice) / priceRange) * canvasHeight;
-
-			const lowY = canvasHeight - ((candle.low - minPrice) / priceRange) * canvasHeight;
-
-			const bullish = candle.close >= candle.open;
-
-			const color = bullish ? this.bullishColor : this.bearishColor;
-
-			ctx.strokeStyle = color;
-
-			ctx.fillStyle = color;
-
 			/**
-			 * Wick
+			 * Stop rendering outside right side
 			 */
-			const centerX = x + this.candleWidth / 2;
+			if (candleX > canvasWidth) {
+				return;
+			}
 
-			ctx.beginPath();
+			const openY =
+				canvasHeight - ((candle.open - minPrice) / priceRange) * canvasHeight;
 
-			ctx.moveTo(centerX, highY);
+			const closeY =
+				canvasHeight - ((candle.close - minPrice) / priceRange) * canvasHeight;
 
-			ctx.lineTo(centerX, lowY);
+			const highY =
+				canvasHeight - ((candle.high - minPrice) / priceRange) * canvasHeight;
 
-			ctx.stroke();
+			const lowY =
+				canvasHeight - ((candle.low - minPrice) / priceRange) * canvasHeight;
 
-			/**
-			 * Body
-			 */
-			const bodyY = Math.min(openY, closeY);
+			const isBullish = candle.close >= candle.open;
 
-			const bodyHeight = Math.max(Math.abs(closeY - openY), 1);
+			const candleColor = isBullish ? this.bullishColor : this.bearishColor;
 
-			ctx.fillRect(x, bodyY, this.candleWidth, bodyHeight);
-		}
+			this.drawSingleCandle({
+				ctx,
+
+				candleX,
+
+				openY,
+
+				closeY,
+
+				highY,
+
+				lowY,
+
+				candleColor,
+			});
+		});
+	}
+
+	drawSingleCandle({
+		ctx,
+
+		candleX,
+
+		openY,
+
+		closeY,
+
+		highY,
+
+		lowY,
+
+		candleColor,
+	}: {
+		ctx: CanvasRenderingContext2D;
+
+		candleX: number;
+
+		openY: number;
+
+		closeY: number;
+
+		highY: number;
+
+		lowY: number;
+
+		candleColor: string;
+	}) {
+		ctx.strokeStyle = candleColor;
+
+		ctx.fillStyle = candleColor;
+
+		/**
+		 * Wick
+		 */
+		const candleCenterX = candleX + this.candleWidth / 2;
+
+		ctx.beginPath();
+
+		ctx.moveTo(candleCenterX, highY);
+
+		ctx.lineTo(candleCenterX, lowY);
+
+		ctx.stroke();
+
+		/**
+		 * Body
+		 */
+		const candleBodyY = Math.min(openY, closeY);
+
+		const candleBodyHeight = Math.max(Math.abs(closeY - openY), 1);
+
+		ctx.fillRect(
+			candleX,
+
+			candleBodyY,
+
+			this.candleWidth,
+
+			candleBodyHeight,
+		);
 	}
 }

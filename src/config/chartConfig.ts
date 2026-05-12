@@ -1,7 +1,7 @@
 export const CHART_CONFIG = {
 	zoom: {
 		x: {
-			speed: 0.1,
+			speed: 0.05,
 
 			min: 0.03,
 
@@ -11,9 +11,9 @@ export const CHART_CONFIG = {
 		y: {
 			speed: 0.1,
 
-			min: 0.2,
+			min: 1,
 
-			max: 10,
+			max: 5000,
 		},
 	},
 

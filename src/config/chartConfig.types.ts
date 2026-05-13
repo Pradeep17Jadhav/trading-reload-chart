@@ -319,6 +319,328 @@ export type CrosshairConfig = {
 };
 
 /**
+ * Trade handle placement configuration.
+ *
+ * Controls where the handle rectangle
+ * is positioned horizontally inside chart.
+ *
+ * @example
+ * {
+ *   placement: "right",
+ *   margin: 40
+ * }
+ */
+export type TradeHandlePositionConfig = {
+	/**
+	 * Horizontal placement of handle.
+	 *
+	 * left   = aligned to left edge
+	 * center = aligned to chart center
+	 * right  = aligned to right edge
+	 *
+	 * @example "right"
+	 */
+	placement: "left" | "center" | "right";
+
+	/**
+	 * Horizontal spacing from edge.
+	 *
+	 * Used only when:
+	 * - placement = "left"
+	 * - placement = "right"
+	 *
+	 * Ignored for center placement.
+	 *
+	 * @example 40
+	 */
+	margin?: number;
+};
+
+/**
+ * Trade handle line configuration.
+ *
+ * Controls visual appearance
+ * of horizontal trade/order lines.
+ *
+ * @example
+ * {
+ *   width: 1,
+ *   color: "#ef4444",
+ *   opacity: 0.9,
+ *   style: "dashed",
+ *   dash: [4, 4]
+ * }
+ */
+export type TradeHandleLineConfig = {
+	/**
+	 * Horizontal line thickness in pixels.
+	 *
+	 * @example 1
+	 */
+	width: number;
+
+	/**
+	 * Horizontal line color.
+	 *
+	 * Supports any valid CSS color.
+	 *
+	 * @example "#ef4444"
+	 */
+	color: string;
+
+	/**
+	 * Horizontal line opacity.
+	 *
+	 * 0 = invisible
+	 * 1 = fully visible
+	 *
+	 * @example 0.9
+	 */
+	opacity: number;
+
+	/**
+	 * Horizontal line rendering style.
+	 *
+	 * solid  = continuous line
+	 * dashed = segmented line
+	 * dotted = dotted line
+	 *
+	 * @example "solid"
+	 */
+	style: "solid" | "dashed" | "dotted";
+
+	/**
+	 * Canvas dash pattern.
+	 *
+	 * Only applied when
+	 * style = "dashed".
+	 *
+	 * @example [4, 4]
+	 */
+	dash?: number[];
+};
+
+/**
+ * Trade handle rectangle configuration.
+ *
+ * Controls sizing, colors, borders,
+ * spacing, section widths,
+ * positioning, and visibility
+ * of trade handle containers.
+ *
+ * @example
+ * {
+ *   height: 28,
+ *   widthVolume: 80,
+ *   widthPNL: 90,
+ *   widthClose: 32
+ * }
+ */
+export type TradeHandleRectConfig = {
+	/**
+	 * Total handle height in pixels.
+	 *
+	 * @example 28
+	 */
+	height: number;
+
+	/**
+	 * Width of volume section.
+	 *
+	 * @example 80
+	 */
+	widthVolume: number;
+
+	/**
+	 * Width of pnl section.
+	 *
+	 * @example 90
+	 */
+	widthPNL: number;
+
+	/**
+	 * Width of close section.
+	 *
+	 * @example 32
+	 */
+	widthClose: number;
+
+	/**
+	 * Handle horizontal placement settings.
+	 */
+	position: TradeHandlePositionConfig;
+
+	/**
+	 * Border thickness in pixels.
+	 *
+	 * @example 1
+	 */
+	borderWidth: number;
+
+	/**
+	 * Border color.
+	 *
+	 * Supports any valid CSS color.
+	 *
+	 * @example "#ffffff"
+	 */
+	borderColor: string;
+
+	/**
+	 * Border opacity.
+	 *
+	 * @example 0.25
+	 */
+	borderOpacity: number;
+
+	/**
+	 * Background fill color.
+	 *
+	 * @example "#111827"
+	 */
+	backgroundColor: string;
+
+	/**
+	 * Background fill opacity.
+	 *
+	 * @example 0.95
+	 */
+	backgroundOpacity: number;
+
+	/**
+	 * Divider color between sections.
+	 *
+	 * @example "rgba(255,255,255,0.12)"
+	 */
+	sectionDividerColor: string;
+
+	/**
+	 * Internal horizontal padding.
+	 *
+	 * @example 10
+	 */
+	paddingX: number;
+
+	/**
+	 * Close button text/icon color.
+	 *
+	 * @example "#ef4444"
+	 */
+	closeButtonColor: string;
+
+	/**
+	 * Controls visibility of
+	 * volume section.
+	 *
+	 * @example true
+	 */
+	showVolumeSection: boolean;
+
+	/**
+	 * Controls visibility of
+	 * pnl section.
+	 *
+	 * @example true
+	 */
+	showPnlSection: boolean;
+
+	/**
+	 * Controls visibility of
+	 * close button section.
+	 *
+	 * @example true
+	 */
+	showCloseSection: boolean;
+};
+
+/**
+ * Reusable trade handle style configuration.
+ *
+ * Combines:
+ * - rectangle visuals
+ * - horizontal line visuals
+ *
+ * Used for:
+ * - SL handles
+ * - TP handles
+ * - Start price handles
+ * - Future pending order handles
+ *
+ * @example
+ * {
+ *   handle: { ... },
+ *   handleLine: { ... }
+ * }
+ */
+export type TradeHandleStyleConfig = {
+	/**
+	 * Rectangle handle visuals.
+	 */
+	handle: TradeHandleRectConfig;
+
+	/**
+	 * Horizontal line visuals.
+	 */
+	handleLine: TradeHandleLineConfig;
+};
+
+/**
+ * Global trade handle configuration.
+ *
+ * Contains shared typography settings
+ * and individual styling for each
+ * trade handle type.
+ *
+ * @example
+ * {
+ *   font: "12px Inter",
+ *   textColor: "#ffffff",
+ *   textOpacity: 0.8,
+ *   slHandle: { ... },
+ *   tpHandle: { ... },
+ *   startPriceHandle: { ... }
+ * }
+ */
+export type TradeHandlesConfig = {
+	/**
+	 * Canvas font declaration.
+	 *
+	 * @example "12px Inter"
+	 */
+	font: string;
+
+	/**
+	 * Shared text color used across
+	 * all trade handles.
+	 *
+	 * @example "#ffffff"
+	 */
+	textColor: string;
+
+	/**
+	 * Shared text opacity.
+	 *
+	 * @example 0.8
+	 */
+	textOpacity: number;
+
+	/**
+	 * Stop-loss handle styling.
+	 */
+	slHandle: TradeHandleStyleConfig;
+
+	/**
+	 * Take-profit handle styling.
+	 */
+	tpHandle: TradeHandleStyleConfig;
+
+	/**
+	 * Entry/start price handle styling.
+	 */
+	startPriceHandle: TradeHandleStyleConfig;
+};
+
+/**
  * Global chart color palette.
  *
  * Defines default colors used across chart rendering.
@@ -360,13 +682,15 @@ export type ColorsConfig = {
  *
  * Contains all configurable behavior and styling
  * options for chart rendering, interaction,
- * zooming, candles, crosshair, and colors.
+ * zooming, candles, crosshair, trade handles,
+ * and colors.
  *
  * @example
  * {
  *   zoom: { ... },
  *   candles: { ... },
  *   crosshair: { ... },
+ *   tradeHandles: { ... },
  *   colors: { ... }
  * }
  */
@@ -385,6 +709,11 @@ export type ChartConfig = {
 	 * Crosshair appearance settings.
 	 */
 	crosshair: CrosshairConfig;
+
+	/**
+	 * Trade handle rendering settings.
+	 */
+	tradeHandles: TradeHandlesConfig;
 
 	/**
 	 * Global chart color settings.

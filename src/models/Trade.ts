@@ -1,4 +1,5 @@
-type TradeDirection = "buy" | "sell";
+//models/Trade.ts
+type TradeType = "buy" | "sell";
 type TradeStatus = "open" | "closed";
 
 export type BaseTrade = {
@@ -7,7 +8,7 @@ export type BaseTrade = {
 	volume: number;
 	sl: number | null;
 	tp: number | null;
-	direction: TradeDirection;
+	type: TradeType;
 	openTime: number;
 	openPrice: number;
 	commission: number;

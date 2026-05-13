@@ -1,5 +1,6 @@
 import { CHART_CONFIG } from "../../config/chartConfig";
 import type { Candle } from "../../models/Candle";
+import { priceToY } from "./helpers/LayerHelpers";
 
 type ExistingCandlesLayerOptions = {
 	canvas: HTMLCanvasElement;
@@ -206,6 +207,16 @@ export class ExistingCandlesLayer {
 		return this.priceCenter + this.priceRange / 2;
 	}
 
+	get viewport() {
+		return {
+			minPrice: this.minPrice,
+			maxPrice: this.maxPrice,
+			priceRange: this.priceRange,
+			offsetX: this.offsetX,
+			zoomX: this.zoomX,
+		};
+	}
+
 	getVisibleRange(chartWidth: number) {
 		const startIndex = Math.max(0, Math.floor(-this.offsetX / this.candleSpacing));
 		const endIndex = Math.min(this.candles.length - 1, Math.ceil((chartWidth - this.offsetX) / this.candleSpacing));
@@ -294,10 +305,25 @@ export class ExistingCandlesLayer {
 		candles.forEach((candle, localIndex) => {
 			const candleIndex = startIndex + localIndex;
 			const candleX = candleIndex * this.candleSpacing + this.offsetX;
-			const openY = this.priceToY(candle.open, chartHeight);
-			const closeY = this.priceToY(candle.close, chartHeight);
-			const highY = this.priceToY(candle.high, chartHeight);
-			const lowY = this.priceToY(candle.low, chartHeight);
+			const openY = priceToY({
+				price: candle.open,
+				minPrice: this.minPrice,
+				priceRange: this.priceRange,
+				chartHeight,
+			});
+			const closeY = priceToY({
+				price: candle.close,
+				minPrice: this.minPrice,
+				priceRange: this.priceRange,
+				chartHeight,
+			});
+			const highY = priceToY({
+				price: candle.high,
+				minPrice: this.minPrice,
+				priceRange: this.priceRange,
+				chartHeight,
+			});
+			const lowY = priceToY({ price: candle.low, minPrice: this.minPrice, priceRange: this.priceRange, chartHeight });
 			const candleColor = candle.close >= candle.open ? this.bullishColor : this.bearishColor;
 			this.drawSingleCandle({
 				ctx,
@@ -358,7 +384,7 @@ export class ExistingCandlesLayer {
 		}
 
 		const latestPrice = latestCandle.close;
-		const lineY = this.priceToY(latestPrice, chartHeight);
+		const lineY = priceToY({ price: latestPrice, minPrice: this.minPrice, priceRange: this.priceRange, chartHeight });
 		const lineColor =
 			latestCandle.close >= latestCandle.open
 				? CHART_CONFIG.candles.livePriceLine.bullishColor
@@ -373,10 +399,5 @@ export class ExistingCandlesLayer {
 		ctx.lineTo(chartWidth, lineY);
 		ctx.stroke();
 		ctx.restore();
-	}
-
-	priceToY(price: number, chartHeight: number) {
-		const normalizedPrice = (price - this.minPrice) / this.priceRange;
-		return chartHeight - normalizedPrice * chartHeight;
 	}
 }

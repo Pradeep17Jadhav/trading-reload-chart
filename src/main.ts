@@ -1,12 +1,15 @@
 import { CrosshairLayer } from "./canvas/layers/CrosshairLayer";
 import { ExistingCandlesLayer } from "./canvas/layers/ExistingCandlesLayer";
+import { TradeLayer } from "./canvas/layers/TradeLayer/TradeLayer";
 import type { Candle } from "./models/Candle";
+import type { OpenTrade } from "./models/Trade";
 import "./main.css";
 
 const candleCanvas = document.querySelector<HTMLCanvasElement>("#chart");
 const overlayCanvas = document.querySelector<HTMLCanvasElement>("#overlay");
+const tradesCanvas = document.querySelector<HTMLCanvasElement>("#trades");
 
-if (!candleCanvas || !overlayCanvas) {
+if (!candleCanvas || !overlayCanvas || !tradesCanvas) {
 	throw new Error("Canvas not found");
 }
 
@@ -22,6 +25,8 @@ const resizeCanvases = () => {
 	candleCanvas.height = height;
 	overlayCanvas.width = width;
 	overlayCanvas.height = height;
+	tradesCanvas.width = width;
+	tradesCanvas.height = height;
 };
 resizeCanvases();
 
@@ -31,6 +36,8 @@ resizeCanvases();
  * =========================
  */
 let candleLayer: ExistingCandlesLayer | null = null;
+let tradeLayer: TradeLayer | null = null;
+
 const crosshairLayer = new CrosshairLayer({
 	canvas: overlayCanvas,
 });
@@ -42,7 +49,7 @@ const crosshairLayer = new CrosshairLayer({
  */
 const loadCandles = async () => {
 	try {
-		const response = await fetch("http://localhost:5000/candles?symbol=XAUUSD&tf=1m&limit=500");
+		const response = await fetch("http://localhost:5000/candles?symbol=AUDJPY&tf=15m&limit=500");
 		if (!response.ok) {
 			throw new Error(`Failed to fetch candles: ${response.status}`);
 		}
@@ -55,17 +62,44 @@ const loadCandles = async () => {
 			baseCandleGap: 4,
 		});
 
+		tradeLayer = new TradeLayer({ canvas: tradesCanvas });
+
 		/**
 		 * Initial render
 		 */
 		candleLayer.render();
 		crosshairLayer.render();
+		await loadOpenTrades();
+
 		/**
 		 * Start websocket feed
 		 */
 		initializeLiveFeed();
 	} catch (error) {
 		console.error("Failed to load candles", error);
+	}
+};
+
+/**
+ * =========================
+ * Load Open Trades
+ * =========================
+ */
+const loadOpenTrades = async () => {
+	if (!tradeLayer) {
+		return;
+	}
+	try {
+		const response = await fetch("http://localhost:5000/positions");
+		if (!response.ok) {
+			throw new Error(`Failed to fetch positions: ${response.status}`);
+		}
+		const data = await response.json();
+		const trades: OpenTrade[] = data.positions ?? [];
+		tradeLayer.setTrades(trades);
+		tradeLayer.render();
+	} catch (error) {
+		console.error("Failed to load open trades", error);
 	}
 };
 
@@ -82,7 +116,7 @@ const loadCandles = async () => {
  * not inside chart library.
  */
 const initializeLiveFeed = () => {
-	const socket = new WebSocket("ws://localhost:5000/ws/candles?symbol=XAUUSD&tf=1m");
+	const socket = new WebSocket("ws://localhost:5000/ws/candles?symbol=AUDJPY&tf=15m");
 	socket.addEventListener("message", (event) => {
 		if (!candleLayer) {
 			return;
@@ -94,6 +128,8 @@ const initializeLiveFeed = () => {
 			}
 			candleLayer.updateLiveCandle(data.candle);
 			candleLayer.render();
+			tradeLayer.setViewport(candleLayer.viewport);
+			tradeLayer?.render();
 		} catch (error) {
 			console.error("Failed to parse websocket candle", error);
 		}
@@ -117,11 +153,11 @@ overlayCanvas.addEventListener(
 		}
 		event.preventDefault();
 		const zoomDelta = event.deltaY < 0 ? 1 : -1;
-		/**
-		 * Ctrl/Cmd + Wheel
-		 * Vertical zoom
-		 */
 		if (event.ctrlKey || event.metaKey) {
+			/**
+			 * Ctrl/Cmd + Wheel
+			 * Vertical zoom
+			 */
 			candleLayer.zoomVertically(zoomDelta);
 		} else {
 			/**
@@ -131,6 +167,8 @@ overlayCanvas.addEventListener(
 			candleLayer.zoomHorizontally(zoomDelta);
 		}
 		candleLayer.render();
+		tradeLayer.setViewport(candleLayer.viewport);
+		tradeLayer?.render();
 	},
 	{
 		passive: false,
@@ -161,10 +199,10 @@ window.addEventListener("mousemove", (event) => {
 	 */
 	crosshairLayer.updateMousePosition(event.clientX, event.clientY);
 	crosshairLayer.render();
-	/**
-	 * Panning
-	 */
 	if (!isDragging || !candleLayer) {
+		/**
+		 * Panning
+		 */
 		return;
 	}
 	const deltaX = event.clientX - lastMouseX;
@@ -174,6 +212,8 @@ window.addEventListener("mousemove", (event) => {
 	candleLayer.panHorizontally(deltaX);
 	candleLayer.panVertically(deltaY);
 	candleLayer.render();
+	tradeLayer.setViewport(candleLayer.viewport);
+	tradeLayer?.render();
 });
 
 /**
@@ -194,5 +234,7 @@ overlayCanvas.addEventListener("mouseleave", () => {
 window.addEventListener("resize", () => {
 	resizeCanvases();
 	candleLayer?.render();
+	tradeLayer.setViewport(candleLayer.viewport);
+	tradeLayer?.render();
 	crosshairLayer.render();
 });

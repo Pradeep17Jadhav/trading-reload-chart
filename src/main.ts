@@ -69,7 +69,7 @@ const loadCandles = async () => {
 		 */
 		candleLayer.render();
 		crosshairLayer.render();
-		await loadOpenTrades();
+		await loadOpenTradesLiveFeed();
 
 		/**
 		 * Start websocket feed
@@ -85,22 +85,24 @@ const loadCandles = async () => {
  * Load Open Trades
  * =========================
  */
-const loadOpenTrades = async () => {
-	if (!tradeLayer) {
-		return;
-	}
-	try {
-		const response = await fetch("http://localhost:5000/positions");
-		if (!response.ok) {
-			throw new Error(`Failed to fetch positions: ${response.status}`);
+const loadOpenTradesLiveFeed = async () => {
+	const socket = new WebSocket("ws://localhost:5000/ws/positions");
+	socket.addEventListener("message", (event) => {
+		if (!tradeLayer) {
+			return;
 		}
-		const data = await response.json();
-		const trades: OpenTrade[] = data.positions ?? [];
-		tradeLayer.setTrades(trades);
-		tradeLayer.render();
-	} catch (error) {
-		console.error("Failed to load open trades", error);
-	}
+		try {
+			const data = JSON.parse(event.data);
+			if (!data.positions) {
+				return;
+			}
+			const positions: OpenTrade[] = data.positions ?? [];
+			tradeLayer.setTrades(positions);
+			tradeLayer.render();
+		} catch (error) {
+			console.error("Failed to load open trades", error);
+		}
+	});
 };
 
 /**

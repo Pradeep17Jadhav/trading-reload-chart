@@ -73,6 +73,7 @@ export const CHART_CONFIG: ChartConfig = {
 				borderOpacity: 0.4,
 				backgroundColor: "#2a1111",
 				closeButtonColor: "#ef4444",
+				showVolumeSection: false,
 			},
 
 			handleLine: {
@@ -91,6 +92,7 @@ export const CHART_CONFIG: ChartConfig = {
 				borderOpacity: 0.4,
 				backgroundColor: "#0d2418",
 				closeButtonColor: "#22c55e",
+				showVolumeSection: false,
 			},
 
 			handleLine: {

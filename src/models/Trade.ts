@@ -1,5 +1,5 @@
 //models/Trade.ts
-type TradeType = "buy" | "sell";
+export type TradeType = "buy" | "sell";
 type TradeStatus = "open" | "closed";
 
 export type BaseTrade = {

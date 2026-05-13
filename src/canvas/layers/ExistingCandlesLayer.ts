@@ -207,6 +207,10 @@ export class ExistingCandlesLayer {
 		return this.priceCenter + this.priceRange / 2;
 	}
 
+	get liveCandle() {
+		return this.candles[this.candles.length - 1];
+	}
+
 	get viewport() {
 		return {
 			minPrice: this.minPrice,

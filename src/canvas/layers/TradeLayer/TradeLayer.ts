@@ -6,9 +6,11 @@ import type {
 	TradeHandleRectConfig,
 	TradeHandleStyleConfig,
 } from "../../../config/chartConfig.types";
+import type { Candle } from "../../../models/Candle";
 import type { ChartViewport } from "../../../models/ChartViewport";
 import type { OpenTrade } from "../../../models/Trade";
 import { priceToY } from "../helpers/LayerHelpers";
+import { calculatePotentialPnlUsd } from "./TradeLayer.helpers";
 
 type TradeLayerOptions = {
 	canvas: HTMLCanvasElement;
@@ -34,8 +36,8 @@ export class TradeLayer {
 	readonly #ctx: CanvasRenderingContext2D;
 
 	trades: OpenTrade[] = [];
-
 	viewport: ChartViewport | null = null;
+	liveCandle: Candle | null = null;
 
 	constructor(options: TradeLayerOptions) {
 		this.#canvas = options.canvas;
@@ -55,6 +57,10 @@ export class TradeLayer {
 
 	setViewport(viewport: ChartViewport) {
 		this.viewport = viewport;
+	}
+
+	setLiveCandle(candle: Candle) {
+		this.liveCandle = candle;
 	}
 
 	render() {
@@ -169,6 +175,7 @@ export class TradeLayer {
 		 * =========================
 		 */
 		this.drawHandleSections({
+			handleType: type,
 			handleX,
 			handleY,
 			handleWidth,
@@ -230,6 +237,7 @@ export class TradeLayer {
 	}
 
 	drawHandleSections({
+		handleType,
 		handleX,
 		handleY,
 		handleWidth,
@@ -238,6 +246,7 @@ export class TradeLayer {
 		trade,
 		y,
 	}: {
+		handleType: TradeHandleType;
 		handleX: number;
 		handleY: number;
 		handleWidth: number;
@@ -249,6 +258,11 @@ export class TradeLayer {
 		const ctx = this.#ctx;
 
 		const sharedConfig = CHART_CONFIG.tradeHandles;
+
+		const pnlLabel = this.getHandlePnLLabel({
+			handleType,
+			trade,
+		});
 
 		const sections: {
 			label: string;
@@ -262,7 +276,7 @@ export class TradeLayer {
 				visible: handleConfig.showVolumeSection,
 			},
 			{
-				label: `${trade.pnl >= 0 ? "+" : ""}${trade.pnl.toFixed(2)}`,
+				label: pnlLabel,
 				width: handleConfig.widthPNL,
 				visible: handleConfig.showPnlSection,
 			},
@@ -310,6 +324,15 @@ export class TradeLayer {
 		}
 
 		ctx.restore();
+	}
+
+	getHandlePnLLabel({ handleType, trade }: { handleType: TradeHandleType; trade: OpenTrade }) {
+		if (handleType === "startPrice") {
+			return `${trade.pnl >= 0 ? "+" : ""}${trade.pnl.toFixed(2)}`;
+		}
+		const targetPrice = handleType === "stopLoss" ? trade.sl : trade.tp;
+		const projectedPnL = calculatePotentialPnlUsd(trade.type, trade.openPrice, targetPrice, trade.volume, trade.symbol);
+		return `${projectedPnL >= 0 ? "+" : ""}${projectedPnL.toFixed(2)}`;
 	}
 
 	getHandleWidth(config: TradeHandleRectConfig) {

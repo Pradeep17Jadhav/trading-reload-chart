@@ -131,6 +131,7 @@ const initializeLiveFeed = () => {
 			candleLayer.updateLiveCandle(data.candle);
 			candleLayer.render();
 			tradeLayer.setViewport(candleLayer.viewport);
+			tradeLayer.setLiveCandle(candleLayer.liveCandle);
 			tradeLayer?.render();
 		} catch (error) {
 			console.error("Failed to parse websocket candle", error);

@@ -11,12 +11,7 @@ import type { ChartViewport } from "../../../models/ChartViewport";
 import type { OpenTrade } from "../../../models/Trade";
 import { priceToY } from "../helpers/LayerHelpers";
 import { calculatePotentialPnlUsd } from "./TradeLayer.helpers";
-
-type TradeLayerOptions = {
-	canvas: HTMLCanvasElement;
-};
-
-type TradeHandleType = "startPrice" | "stopLoss" | "takeProfit";
+import type { TradeHandleHitbox, TradeHandleType, TradeLayerOptions } from "./TradeLayer.types";
 
 /**
  * TradeHandle
@@ -38,6 +33,7 @@ export class TradeLayer {
 	trades: OpenTrade[] = [];
 	viewport: ChartViewport | null = null;
 	liveCandle: Candle | null = null;
+	handleHitboxes: TradeHandleHitbox[] = [];
 
 	constructor(options: TradeLayerOptions) {
 		this.#canvas = options.canvas;
@@ -67,6 +63,8 @@ export class TradeLayer {
 		const ctx = this.#ctx;
 
 		ctx.clearRect(0, 0, this.#canvas.width, this.#canvas.height);
+
+		this.handleHitboxes = [];
 
 		for (const trade of this.trades) {
 			this.drawTrade({
@@ -124,6 +122,15 @@ export class TradeLayer {
 		});
 
 		const handleY = y - handleHeight / 2;
+
+		this.handleHitboxes.push({
+			x: handleX,
+			y: handleY,
+			width: handleWidth,
+			height: handleHeight,
+			trade,
+			type,
+		});
 
 		/**
 		 * =========================

@@ -80,6 +80,6 @@ export class CrosshairLayer {
 		}
 		this.applyCrosshairStyle();
 		this.drawVerticalCrosshairLine(ctx, height);
-		this.drawVerticalCrosshairLine(ctx, width);
+		this.drawHorizontalCrosshairLine(ctx, width);
 	}
 }

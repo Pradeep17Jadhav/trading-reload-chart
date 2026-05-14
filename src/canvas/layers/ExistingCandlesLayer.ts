@@ -63,6 +63,11 @@ export class ExistingCandlesLayer {
 	 */
 	priceCenter: number;
 	/**
+	 * Baseline range used to calculate
+	 * percentage-based vertical zoom limits.
+	 */
+	initialPriceRange: number;
+	/**
 	 * Auto-follow feature enabled
 	 */
 	autoFollowLatestCandle: boolean;
@@ -111,6 +116,7 @@ export class ExistingCandlesLayer {
 		 */
 		this.priceCenter = 0;
 		this.priceRange = 1;
+		this.initialPriceRange = 1;
 		this.initializeViewport();
 		/**
 		 * Manual overrides
@@ -120,6 +126,7 @@ export class ExistingCandlesLayer {
 		}
 		if (options.priceRange !== undefined) {
 			this.priceRange = options.priceRange;
+			this.initialPriceRange = options.priceRange;
 		}
 	}
 
@@ -127,6 +134,7 @@ export class ExistingCandlesLayer {
 		if (this.candles.length === 0) {
 			this.priceCenter = 100;
 			this.priceRange = 20;
+			this.initialPriceRange = this.priceRange;
 			return;
 		}
 		const visibleCandleCount = Math.ceil(this.#canvas.width / this.candleSpacing);
@@ -143,9 +151,12 @@ export class ExistingCandlesLayer {
 			}
 		}
 		const rawPriceRange = normalizePrice(maxPrice - minPrice);
-		const verticalPadding = rawPriceRange * 0.2;
+		const fallbackRange = Math.max(Math.abs((minPrice + maxPrice) / 2) * 0.01, 0.00001);
+		const effectivePriceRange = Math.max(rawPriceRange, fallbackRange);
+		const verticalPadding = effectivePriceRange * 0.2;
 		this.priceCenter = (minPrice + maxPrice) / 2;
-		this.priceRange = rawPriceRange + verticalPadding;
+		this.priceRange = effectivePriceRange + verticalPadding;
+		this.initialPriceRange = this.priceRange;
 	}
 
 	isWithinAutoFollowThreshold() {
@@ -267,8 +278,10 @@ export class ExistingCandlesLayer {
 	zoomVertically(delta: number) {
 		const { speed, min, max } = CHART_CONFIG.zoom.y;
 		const zoomFactor = 1 - delta * speed;
-		this.priceRange *= zoomFactor;
-		this.priceRange = Math.max(min, Math.min(this.priceRange, max));
+		const nextPriceRange = this.priceRange * zoomFactor;
+		const minPriceRange = this.initialPriceRange * (min / 100);
+		const maxPriceRange = this.initialPriceRange * (max / 100);
+		this.priceRange = Math.max(minPriceRange, Math.min(nextPriceRange, maxPriceRange));
 	}
 
 	render() {

@@ -5,14 +5,15 @@ import { TradeLayerEvents } from "./canvas/layers/TradeLayer/TradeLayerEvents";
 import type { Candle } from "./models/Candle";
 import type { OpenTrade } from "./models/Trade";
 import "./main.css";
-import { CHART_CONFIG } from "./config/chartConfig";
 import { AxisLayerY } from "./canvas/layers/AxisLayerY/AxisLayerY";
+import { CHART_CONFIG } from "./config/chartConfig";
+import type { TradeHandleType } from "./canvas/layers/TradeLayer/TradeLayer.types";
 
 const candleCanvas = document.querySelector<HTMLCanvasElement>("#chart");
 const overlayCanvas = document.querySelector<HTMLCanvasElement>("#overlay");
 const tradesCanvas = document.querySelector<HTMLCanvasElement>("#trades");
 const axisYCanvas = document.querySelector<HTMLCanvasElement>("#axis-y");
-const activeSymbol = "GBPUSD";
+const activeSymbol = "EURUSD";
 
 if (!candleCanvas || !overlayCanvas || !tradesCanvas || !axisYCanvas) {
 	throw new Error("Canvas not found");
@@ -68,8 +69,8 @@ const crosshairLayer = new CrosshairLayer({
 	canvas: overlayCanvas,
 });
 
-const handleTradeModified = async ({ ticket, sl, tp }) => {
-	tradeLayer.setIsDragging(false);
+const handleTradeModified = async ({ ticket, sl, tp }: { ticket: number; sl?: number | null; tp?: number | null }) => {
+	tradeLayer?.setIsDragging(false);
 	const body = {
 		ticket,
 		...(tp !== undefined ? { tp } : {}),
@@ -94,9 +95,8 @@ const handleTradeModified = async ({ ticket, sl, tp }) => {
 	}
 };
 
-const handleTPSLChange = ({ trade, type, price }) => {
+const handleTPSLChange = ({ trade, type, price }: { trade: OpenTrade; type: TradeHandleType; price: number }) => {
 	if (!tradeLayer) {
-		tradeLayer.setIsDragging(false);
 		return;
 	}
 
@@ -190,7 +190,7 @@ const loadCandles = async () => {
 const loadOpenTradesLiveFeed = async () => {
 	const socket = new WebSocket("ws://localhost:5000/ws/positions");
 
-	socket.addEventListener("message", (event) => {
+	socket.addEventListener("message", (event: MessageEvent) => {
 		if (!tradeLayer) {
 			return;
 		}
@@ -227,7 +227,7 @@ const loadOpenTradesLiveFeed = async () => {
 const initializeLiveFeed = () => {
 	const socket = new WebSocket(`ws://localhost:5000/ws/candles?symbol=${activeSymbol}&tf=15m`);
 
-	socket.addEventListener("message", (event) => {
+	socket.addEventListener("message", (event: MessageEvent) => {
 		if (!candleLayer || !tradeLayer) {
 			return;
 		}
@@ -254,7 +254,7 @@ const initializeLiveFeed = () => {
 
 loadCandles();
 
-const handleWheelEvent = (event) => {
+const handleWheelEvent = (event: WheelEvent) => {
 	if (!candleLayer || !tradeLayer) {
 		return;
 	}
@@ -269,7 +269,7 @@ const handleWheelEvent = (event) => {
 	renderAllLayers();
 };
 
-const handlePointerDownEvent = (event) => {
+const handlePointerDownEvent = (event: PointerEvent) => {
 	if (tradeLayerEvents?.handlePointerEvent(event)) {
 		return;
 	}
@@ -279,7 +279,7 @@ const handlePointerDownEvent = (event) => {
 	lastMouseY = event.clientY;
 };
 
-const handlePointerMoveEvent = (event) => {
+const handlePointerMoveEvent = (event: PointerEvent) => {
 	tradeLayerEvents?.handlePointerEvent(event);
 
 	/**
@@ -307,12 +307,12 @@ const handlePointerMoveEvent = (event) => {
 	renderAllLayers();
 };
 
-const handlePointerUpEvent = (event) => {
+const handlePointerUpEvent = (event: PointerEvent) => {
 	isDragging = false;
 	tradeLayerEvents?.handlePointerEvent(event);
 };
 
-const handlePointerEnterEvent = (event) => {
+const handlePointerEnterEvent = (event: PointerEvent) => {
 	tradeLayerEvents?.handlePointerEvent(event);
 };
 

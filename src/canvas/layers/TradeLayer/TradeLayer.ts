@@ -39,6 +39,7 @@ export class TradeLayer {
 
 	constructor(options: TradeLayerOptions) {
 		this.#canvas = options.canvas;
+		this.isDragging = false;
 
 		const ctx = this.#canvas.getContext("2d");
 
@@ -93,6 +94,7 @@ export class TradeLayer {
 		y,
 		width,
 		height,
+		viewport,
 	}: {
 		price: number;
 		trade: OpenTrade;
@@ -101,6 +103,7 @@ export class TradeLayer {
 		y: number;
 		width: number;
 		height: number;
+		viewport: ChartViewport;
 	}) => {
 		const { showCloseSection, widthClose } = this.getHandleStyleConfig(type).handle;
 		const closeButtonWidth = showCloseSection ? widthClose : 0;
@@ -114,7 +117,7 @@ export class TradeLayer {
 			y,
 			width,
 			height,
-			viewport: this.viewport,
+			viewport,
 			labelArea: { x, y, width: labelAreaWidth, height },
 			closeButtonArea: { x: closeButtonAreaX, y, width: closeButtonWidth, height },
 		};
@@ -150,11 +153,11 @@ export class TradeLayer {
 		if (!this.viewport) {
 			return;
 		}
-
+		const viewport = this.viewport;
 		const y = priceToY({
 			price,
-			minPrice: this.viewport.minPrice,
-			priceRange: this.viewport.priceRange,
+			minPrice: viewport.minPrice,
+			priceRange: viewport.priceRange,
 			chartHeight,
 		});
 
@@ -174,7 +177,16 @@ export class TradeLayer {
 		const handleY = y - handleHeight / 2;
 
 		this.handleHitboxes.push(
-			this.createHitBox({ price, trade, type, x: handleX, y: handleY, width: handleWidth, height: handleHeight }),
+			this.createHitBox({
+				price,
+				trade,
+				type,
+				x: handleX,
+				y: handleY,
+				width: handleWidth,
+				height: handleHeight,
+				viewport,
+			}),
 		);
 
 		/**
@@ -382,7 +394,11 @@ export class TradeLayer {
 		if (handleType === "startPrice") {
 			return `${trade.pnl >= 0 ? "+" : ""}${trade.pnl.toFixed(2)}`;
 		}
+
 		const targetPrice = handleType === "stopLoss" ? trade.sl : trade.tp;
+		if (!targetPrice) {
+			return "N/A";
+		}
 		const projectedPnL = calculatePotentialPnlUsd(trade.type, trade.openPrice, targetPrice, trade.volume, trade.symbol);
 		return `${projectedPnL >= 0 ? "+" : ""}${projectedPnL.toFixed(2)}`;
 	}

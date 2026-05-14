@@ -32,7 +32,7 @@ export type TradeLayerEventsOptions = {
 	canvas: HTMLCanvasElement;
 	getHandleHitboxes: () => TradeHandleHitbox[];
 	onDrag?: (payload: { trade: OpenTrade; type: TradeHandleType; price: number }) => void;
-	onTradeModified?: (payload: { ticket: number; tp?: number; sl?: number }) => void;
+	onTradeModified?: (payload: { ticket: number; tp?: number | null; sl?: number | null }) => void;
 	onTradeCloseClicked?: (payload: { ticket: number; volume?: number }) => void;
 };
 

@@ -33,8 +33,8 @@ export const CHART_CONFIG: ChartConfig = {
 		},
 		y: {
 			speed: 0.1,
-			min: 1,
-			max: 5000,
+			min: 10,
+			max: 500,
 		},
 	},
 

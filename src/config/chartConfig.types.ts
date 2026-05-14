@@ -54,8 +54,8 @@ export type HorizontalZoomConfig = {
  * @example
  * {
  *   speed: 0.1,
- *   min: 1,
- *   max: 5000
+ *   min: 10,
+ *   max: 500
  * }
  */
 export type VerticalZoomConfig = {
@@ -71,22 +71,34 @@ export type VerticalZoomConfig = {
 	speed: number;
 
 	/**
-	 * Minimum allowed visible vertical price range.
+	 * Minimum allowed visible vertical price range
+	 * as a percentage of the symbol's initial viewport range.
+	 *
+	 * Example:
+	 * 100 = same as initial zoom
+	 * 50  = allow zooming in to half of initial range
+	 * 10  = allow zooming in to one tenth of initial range
 	 *
 	 * Prevents excessive zoom-in where candles become
 	 * stretched vertically beyond practical readability.
 	 *
-	 * @example 1
+	 * @example 10
 	 */
 	min: number;
 
 	/**
-	 * Maximum allowed visible vertical price range.
+	 * Maximum allowed visible vertical price range
+	 * as a percentage of the symbol's initial viewport range.
+	 *
+	 * Example:
+	 * 100 = same as initial zoom
+	 * 200 = allow zooming out to double the initial range
+	 * 500 = allow zooming out to five times the initial range
 	 *
 	 * Prevents excessive zoom-out where price movement
 	 * becomes visually flattened.
 	 *
-	 * @example 5000
+	 * @example 500
 	 */
 	max: number;
 };
@@ -103,8 +115,8 @@ export type VerticalZoomConfig = {
  *   },
  *   y: {
  *     speed: 0.1,
- *     min: 1,
- *     max: 5000
+ *     min: 10,
+ *     max: 500
  *   }
  * }
  */

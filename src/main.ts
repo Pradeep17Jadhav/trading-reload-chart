@@ -6,14 +6,14 @@ import type { Candle } from "./models/Candle";
 import type { OpenTrade } from "./models/Trade";
 import "./main.css";
 import { AxisLayerY } from "./canvas/layers/AxisLayerY/AxisLayerY";
-import { CHART_CONFIG } from "./config/chartConfig";
 import type { TradeHandleType } from "./canvas/layers/TradeLayer/TradeLayer.types";
+import { CHART_CONFIG } from "./config/chartConfig";
 
 const candleCanvas = document.querySelector<HTMLCanvasElement>("#chart");
 const overlayCanvas = document.querySelector<HTMLCanvasElement>("#overlay");
 const tradesCanvas = document.querySelector<HTMLCanvasElement>("#trades");
 const axisYCanvas = document.querySelector<HTMLCanvasElement>("#axis-y");
-const activeSymbol = "EURUSD";
+const activeSymbol = "AUDJPY";
 
 if (!candleCanvas || !overlayCanvas || !tradesCanvas || !axisYCanvas) {
 	throw new Error("Canvas not found");

@@ -13,6 +13,11 @@ type UpdateMousePositionOptions = {
 	snapX?: number;
 };
 
+type CanvasPoint = {
+	x: number;
+	y: number;
+};
+
 export class CrosshairLayer {
 	readonly #canvas: HTMLCanvasElement;
 	readonly #ctx: CanvasRenderingContext2D;
@@ -40,17 +45,11 @@ export class CrosshairLayer {
 	}
 
 	updateMousePosition(x: number, y: number, options: UpdateMousePositionOptions = {}) {
-		const rect = this.#canvas.getBoundingClientRect();
-		const scaleX = this.#canvas.width / rect.width;
-		const scaleY = this.#canvas.height / rect.height;
+		const localPoint = this.getLocalCanvasPoint(x, y);
+		const resolvedX = options.snapX ?? localPoint.x;
 
-		const localX = (x - rect.left) * scaleX;
-		const localY = (y - rect.top) * scaleY;
-
-		const resolvedX = options.snapX ?? localX;
-
-		this.mouseX = Math.max(0, Math.min(this.#canvas.width, resolvedX));
-		this.mouseY = Math.max(0, Math.min(this.#canvas.height, localY));
+		this.mouseX = this.clampX(resolvedX);
+		this.mouseY = this.clampY(localPoint.y);
 		this.visible = true;
 	}
 
@@ -63,34 +62,27 @@ export class CrosshairLayer {
 
 		ctx.strokeStyle = this.crosshairColor;
 		ctx.lineWidth = this.crosshairThickness;
-
-		switch (this.crosshairStyle) {
-			case "solid":
-				ctx.setLineDash([]);
-				break;
-
-			case "dashed":
-				ctx.setLineDash([8, 6]);
-				break;
-
-			case "dotted":
-				ctx.setLineDash([2, 6]);
-				break;
-		}
+		ctx.setLineDash(this.getLineDash());
 	}
 
 	drawVerticalCrosshairLine(ctx: CanvasRenderingContext2D, height: number) {
-		ctx.beginPath();
-		ctx.moveTo(this.mouseX, 0);
-		ctx.lineTo(this.mouseX, height);
-		ctx.stroke();
+		this.drawLine({
+			ctx,
+			fromX: this.mouseX,
+			fromY: 0,
+			toX: this.mouseX,
+			toY: height,
+		});
 	}
 
 	drawHorizontalCrosshairLine(ctx: CanvasRenderingContext2D, width: number) {
-		ctx.beginPath();
-		ctx.moveTo(0, this.mouseY);
-		ctx.lineTo(width, this.mouseY);
-		ctx.stroke();
+		this.drawLine({
+			ctx,
+			fromX: 0,
+			fromY: this.mouseY,
+			toX: width,
+			toY: this.mouseY,
+		});
 	}
 
 	render() {
@@ -109,5 +101,60 @@ export class CrosshairLayer {
 		this.drawVerticalCrosshairLine(ctx, height);
 		this.drawHorizontalCrosshairLine(ctx, width);
 		ctx.restore();
+	}
+
+	private getLocalCanvasPoint(clientX: number, clientY: number): CanvasPoint {
+		const rect = this.#canvas.getBoundingClientRect();
+		const scaleX = this.#canvas.width / rect.width;
+		const scaleY = this.#canvas.height / rect.height;
+
+		return {
+			x: (clientX - rect.left) * scaleX,
+			y: (clientY - rect.top) * scaleY,
+		};
+	}
+
+	private clampX(x: number) {
+		return this.clamp(x, 0, this.#canvas.width);
+	}
+
+	private clampY(y: number) {
+		return this.clamp(y, 0, this.#canvas.height);
+	}
+
+	private clamp(value: number, min: number, max: number) {
+		return Math.max(min, Math.min(max, value));
+	}
+
+	private getLineDash() {
+		switch (this.crosshairStyle) {
+			case "solid":
+				return [];
+
+			case "dashed":
+				return [8, 6];
+
+			case "dotted":
+				return [2, 6];
+		}
+	}
+
+	private drawLine({
+		ctx,
+		fromX,
+		fromY,
+		toX,
+		toY,
+	}: {
+		ctx: CanvasRenderingContext2D;
+		fromX: number;
+		fromY: number;
+		toX: number;
+		toY: number;
+	}) {
+		ctx.beginPath();
+		ctx.moveTo(fromX, fromY);
+		ctx.lineTo(toX, toY);
+		ctx.stroke();
 	}
 }

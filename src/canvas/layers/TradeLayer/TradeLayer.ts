@@ -1,4 +1,4 @@
-//TradeLayer.ts
+// TradeLayer.ts
 
 import { CHART_CONFIG } from "../../../config/chartConfig";
 import type {
@@ -27,6 +27,70 @@ import type { TradeHandleHitbox, TradeHandleType, TradeLayerOptions } from "./Tr
  * - Horizontal line
  * - Information rectangle
  */
+type TradeHandleRenderState = {
+	price: number;
+	type: TradeHandleType;
+	trade: OpenTrade;
+	viewport: ChartViewport;
+	y: number;
+	handleStyleConfig: TradeHandleStyleConfig;
+	handleConfig: TradeHandleRectConfig;
+	lineConfig: TradeHandleLineConfig;
+	handleX: number;
+	handleY: number;
+	handleWidth: number;
+	handleHeight: number;
+};
+
+type DrawTradeHandleOptions = {
+	price: number;
+	type: TradeHandleType;
+	trade: OpenTrade;
+};
+
+type CreateHitBoxOptions = {
+	price: number;
+	trade: OpenTrade;
+	type: TradeHandleType;
+	x: number;
+	y: number;
+	width: number;
+	height: number;
+	viewport: ChartViewport;
+};
+
+type DrawHandleLineOptions = {
+	x1: number;
+	x2: number;
+	y: number;
+	config: TradeHandleLineConfig;
+};
+
+type DrawHandleRectOptions = {
+	x: number;
+	y: number;
+	width: number;
+	config: TradeHandleRectConfig;
+};
+
+type DrawHandleSectionsOptions = {
+	handleType: TradeHandleType;
+	handleX: number;
+	handleY: number;
+	handleWidth: number;
+	handleHeight: number;
+	handleConfig: TradeHandleRectConfig;
+	trade: OpenTrade;
+	y: number;
+};
+
+type HandleSection = {
+	label: string;
+	width: number;
+	visible: boolean;
+	color?: string;
+};
+
 export class TradeLayer {
 	readonly #canvas: HTMLCanvasElement;
 	readonly #ctx: CanvasRenderingContext2D;
@@ -73,11 +137,8 @@ export class TradeLayer {
 	}
 
 	render() {
-		const ctx = this.#ctx;
-
-		ctx.clearRect(0, 0, this.#canvas.width, this.#canvas.height);
-
-		this.handleHitboxes = [];
+		this.clearCanvas();
+		this.resetHitboxes();
 
 		for (const trade of this.trades) {
 			this.drawTrade({
@@ -86,29 +147,12 @@ export class TradeLayer {
 		}
 	}
 
-	createHitBox = ({
-		price,
-		trade,
-		type,
-		x,
-		y,
-		width,
-		height,
-		viewport,
-	}: {
-		price: number;
-		trade: OpenTrade;
-		type: TradeHandleType;
-		x: number;
-		y: number;
-		width: number;
-		height: number;
-		viewport: ChartViewport;
-	}) => {
+	createHitBox = ({ price, trade, type, x, y, width, height, viewport }: CreateHitBoxOptions) => {
 		const { showCloseSection, widthClose } = this.getHandleStyleConfig(type).handle;
 		const closeButtonWidth = showCloseSection ? widthClose : 0;
 		const labelAreaWidth = width - closeButtonWidth;
 		const closeButtonAreaX = x + width - closeButtonWidth;
+
 		return {
 			price: normalizePrice(price),
 			trade,
@@ -147,110 +191,40 @@ export class TradeLayer {
 		}
 	}
 
-	drawTradeHandle({ price, type, trade }: { price: number; type: TradeHandleType; trade: OpenTrade }) {
-		const chartHeight = this.#canvas.height;
+	drawTradeHandle({ price, type, trade }: DrawTradeHandleOptions) {
+		const renderState = this.getTradeHandleRenderState({
+			price,
+			type,
+			trade,
+		});
 
-		if (!this.viewport) {
+		if (!renderState) {
 			return;
 		}
-		const viewport = this.viewport;
-		const y = priceToY({
-			price,
-			minPrice: viewport.minPrice,
-			priceRange: viewport.priceRange,
-			chartHeight,
-		});
 
-		const handleStyleConfig = this.getHandleStyleConfig(type);
-		const handleConfig = handleStyleConfig.handle;
-		const lineConfig = handleStyleConfig.handleLine;
+		this.addHandleHitbox(renderState);
+		this.drawHandleHorizontalLines(renderState);
 
-		const handleWidth = this.getHandleWidth(handleConfig);
-
-		const handleHeight = handleConfig.height;
-
-		const handleX = this.getHandleX({
-			handleWidth,
-			config: handleConfig,
-		});
-
-		const handleY = y - handleHeight / 2;
-
-		this.handleHitboxes.push(
-			this.createHitBox({
-				price,
-				trade,
-				type,
-				x: handleX,
-				y: handleY,
-				width: handleWidth,
-				height: handleHeight,
-				viewport,
-			}),
-		);
-
-		/**
-		 * =========================
-		 * Horizontal Line
-		 * =========================
-		 */
-
-		/**
-		 * Left side line
-		 */
-		if (handleX > 0) {
-			this.drawHandleLine({
-				x1: 0,
-				x2: handleX,
-				y,
-				config: lineConfig,
-			});
-		}
-
-		/**
-		 * Right side line
-		 */
-		const rightLineStartX = handleX + handleWidth;
-
-		if (rightLineStartX < this.#canvas.width) {
-			this.drawHandleLine({
-				x1: rightLineStartX,
-				x2: this.#canvas.width,
-				y,
-				config: lineConfig,
-			});
-		}
-
-		/**
-		 * =========================
-		 * Main Handle Container
-		 * =========================
-		 */
 		this.drawHandleRect({
-			x: handleX,
-			y: handleY,
-			width: handleWidth,
-			config: handleConfig,
+			x: renderState.handleX,
+			y: renderState.handleY,
+			width: renderState.handleWidth,
+			config: renderState.handleConfig,
 		});
 
-		/**
-		 * =========================
-		 * Sections
-		 * =========================
-		 */
 		this.drawHandleSections({
-			handleType: type,
-			handleX,
-			handleY,
-			handleWidth,
-			handleHeight,
-			handleConfig,
-			trade,
-			y,
+			handleType: renderState.type,
+			handleX: renderState.handleX,
+			handleY: renderState.handleY,
+			handleWidth: renderState.handleWidth,
+			handleHeight: renderState.handleHeight,
+			handleConfig: renderState.handleConfig,
+			trade: renderState.trade,
+			y: renderState.y,
 		});
 	}
 
-	drawHandleLine({ x1, x2, y, config }: { x1: number; x2: number; y: number; config: TradeHandleLineConfig }) {
+	drawHandleLine({ x1, x2, y, config }: DrawHandleLineOptions) {
 		const ctx = this.#ctx;
 
 		ctx.save();
@@ -258,20 +232,7 @@ export class TradeLayer {
 		ctx.globalAlpha = config.opacity;
 		ctx.strokeStyle = config.color;
 		ctx.lineWidth = config.width;
-
-		switch (config.style) {
-			case "dashed":
-				ctx.setLineDash(config.dash ?? [4, 4]);
-				break;
-
-			case "dotted":
-				ctx.setLineDash([2, 4]);
-				break;
-
-			default:
-				ctx.setLineDash([]);
-				break;
-		}
+		ctx.setLineDash(this.getHandleLineDash(config));
 
 		ctx.beginPath();
 		ctx.moveTo(x1, y);
@@ -281,20 +242,18 @@ export class TradeLayer {
 		ctx.restore();
 	}
 
-	drawHandleRect({ x, y, width, config }: { x: number; y: number; width: number; config: TradeHandleRectConfig }) {
+	drawHandleRect({ x, y, width, config }: DrawHandleRectOptions) {
 		const ctx = this.#ctx;
 
 		ctx.save();
 
 		ctx.globalAlpha = config.backgroundOpacity;
 		ctx.fillStyle = config.backgroundColor;
-
 		ctx.fillRect(x, y, width, config.height);
 
 		ctx.globalAlpha = config.borderOpacity;
 		ctx.strokeStyle = config.borderColor;
 		ctx.lineWidth = config.borderWidth;
-
 		ctx.strokeRect(x, y, width, config.height);
 
 		ctx.restore();
@@ -309,48 +268,14 @@ export class TradeLayer {
 		handleConfig,
 		trade,
 		y,
-	}: {
-		handleType: TradeHandleType;
-		handleX: number;
-		handleY: number;
-		handleWidth: number;
-		handleHeight: number;
-		handleConfig: TradeHandleRectConfig;
-		trade: OpenTrade;
-		y: number;
-	}) {
+	}: DrawHandleSectionsOptions) {
 		const ctx = this.#ctx;
-
 		const sharedConfig = CHART_CONFIG.tradeHandles;
-
-		const pnlLabel = this.getHandlePnLLabel({
+		const sections = this.getHandleSections({
 			handleType,
+			handleConfig,
 			trade,
 		});
-
-		const sections: {
-			label: string;
-			width: number;
-			visible: boolean;
-			color?: string;
-		}[] = [
-			{
-				label: `${trade.volume.toFixed(2)}L`,
-				width: handleConfig.widthVolume,
-				visible: handleConfig.showVolumeSection,
-			},
-			{
-				label: pnlLabel,
-				width: handleConfig.widthPNL,
-				visible: handleConfig.showPnlSection,
-			},
-			{
-				label: "×",
-				width: handleConfig.widthClose,
-				visible: handleConfig.showCloseSection,
-				color: handleConfig.closeButtonColor,
-			},
-		];
 
 		let currentX = handleX;
 
@@ -365,11 +290,11 @@ export class TradeLayer {
 				continue;
 			}
 
-			const sectionCenterX = currentX + section.width / 2;
-
-			ctx.fillStyle = section.color ?? sharedConfig.textColor;
-
-			ctx.fillText(section.label, sectionCenterX - ctx.measureText(section.label).width / 2, y);
+			this.drawHandleSectionLabel({
+				section,
+				currentX,
+				y,
+			});
 
 			currentX += section.width;
 
@@ -377,13 +302,12 @@ export class TradeLayer {
 			 * Divider
 			 */
 			if (currentX < handleX + handleWidth) {
-				ctx.strokeStyle = handleConfig.sectionDividerColor;
-				ctx.lineWidth = 1;
-
-				ctx.beginPath();
-				ctx.moveTo(currentX, handleY + 4);
-				ctx.lineTo(currentX, handleY + handleHeight - 4);
-				ctx.stroke();
+				this.drawHandleSectionDivider({
+					x: currentX,
+					y1: handleY + 4,
+					y2: handleY + handleHeight - 4,
+					config: handleConfig,
+				});
 			}
 		}
 
@@ -392,15 +316,18 @@ export class TradeLayer {
 
 	getHandlePnLLabel({ handleType, trade }: { handleType: TradeHandleType; trade: OpenTrade }) {
 		if (handleType === "startPrice") {
-			return `${trade.pnl >= 0 ? "+" : ""}${trade.pnl.toFixed(2)}`;
+			return this.formatPnlLabel(trade.pnl);
 		}
 
 		const targetPrice = handleType === "stopLoss" ? trade.sl : trade.tp;
+
 		if (!targetPrice) {
 			return "N/A";
 		}
+
 		const projectedPnL = calculatePotentialPnlUsd(trade.type, trade.openPrice, targetPrice, trade.volume, trade.symbol);
-		return `${projectedPnL >= 0 ? "+" : ""}${projectedPnL.toFixed(2)}`;
+
+		return this.formatPnlLabel(projectedPnL);
 	}
 
 	getHandleWidth(config: TradeHandleRectConfig) {
@@ -447,5 +374,186 @@ export class TradeLayer {
 			case "takeProfit":
 				return CHART_CONFIG.tradeHandles.tpHandle;
 		}
+	}
+
+	private clearCanvas() {
+		this.#ctx.clearRect(0, 0, this.#canvas.width, this.#canvas.height);
+	}
+
+	private resetHitboxes() {
+		this.handleHitboxes = [];
+	}
+
+	private getTradeHandleRenderState({ price, type, trade }: DrawTradeHandleOptions): TradeHandleRenderState | null {
+		if (!this.viewport) {
+			return null;
+		}
+
+		const viewport = this.viewport;
+		const y = this.getPriceY(price, viewport);
+		const handleStyleConfig = this.getHandleStyleConfig(type);
+		const handleConfig = handleStyleConfig.handle;
+		const lineConfig = handleStyleConfig.handleLine;
+		const handleWidth = this.getHandleWidth(handleConfig);
+		const handleHeight = handleConfig.height;
+		const handleX = this.getHandleX({
+			handleWidth,
+			config: handleConfig,
+		});
+		const handleY = y - handleHeight / 2;
+
+		return {
+			price,
+			type,
+			trade,
+			viewport,
+			y,
+			handleStyleConfig,
+			handleConfig,
+			lineConfig,
+			handleX,
+			handleY,
+			handleWidth,
+			handleHeight,
+		};
+	}
+
+	private getPriceY(price: number, viewport: ChartViewport) {
+		return priceToY({
+			price,
+			minPrice: viewport.minPrice,
+			priceRange: viewport.priceRange,
+			chartHeight: this.#canvas.height,
+		});
+	}
+
+	private addHandleHitbox(renderState: TradeHandleRenderState) {
+		this.handleHitboxes.push(
+			this.createHitBox({
+				price: renderState.price,
+				trade: renderState.trade,
+				type: renderState.type,
+				x: renderState.handleX,
+				y: renderState.handleY,
+				width: renderState.handleWidth,
+				height: renderState.handleHeight,
+				viewport: renderState.viewport,
+			}),
+		);
+	}
+
+	private drawHandleHorizontalLines({
+		handleX,
+		handleWidth,
+		y,
+		lineConfig,
+	}: Pick<TradeHandleRenderState, "handleX" | "handleWidth" | "y" | "lineConfig">) {
+		/**
+		 * Left side line
+		 */
+		if (handleX > 0) {
+			this.drawHandleLine({
+				x1: 0,
+				x2: handleX,
+				y,
+				config: lineConfig,
+			});
+		}
+
+		/**
+		 * Right side line
+		 */
+		const rightLineStartX = handleX + handleWidth;
+
+		if (rightLineStartX < this.#canvas.width) {
+			this.drawHandleLine({
+				x1: rightLineStartX,
+				x2: this.#canvas.width,
+				y,
+				config: lineConfig,
+			});
+		}
+	}
+
+	private getHandleLineDash(config: TradeHandleLineConfig) {
+		switch (config.style) {
+			case "dashed":
+				return config.dash ?? [4, 4];
+
+			case "dotted":
+				return [2, 4];
+
+			default:
+				return [];
+		}
+	}
+
+	private getHandleSections({
+		handleType,
+		handleConfig,
+		trade,
+	}: {
+		handleType: TradeHandleType;
+		handleConfig: TradeHandleRectConfig;
+		trade: OpenTrade;
+	}): HandleSection[] {
+		const pnlLabel = this.getHandlePnLLabel({
+			handleType,
+			trade,
+		});
+
+		return [
+			{
+				label: `${trade.volume.toFixed(2)}L`,
+				width: handleConfig.widthVolume,
+				visible: handleConfig.showVolumeSection,
+			},
+			{
+				label: pnlLabel,
+				width: handleConfig.widthPNL,
+				visible: handleConfig.showPnlSection,
+			},
+			{
+				label: "×",
+				width: handleConfig.widthClose,
+				visible: handleConfig.showCloseSection,
+				color: handleConfig.closeButtonColor,
+			},
+		];
+	}
+
+	private drawHandleSectionLabel({ section, currentX, y }: { section: HandleSection; currentX: number; y: number }) {
+		const ctx = this.#ctx;
+		const sharedConfig = CHART_CONFIG.tradeHandles;
+		const sectionCenterX = currentX + section.width / 2;
+
+		ctx.fillStyle = section.color ?? sharedConfig.textColor;
+		ctx.fillText(section.label, sectionCenterX - ctx.measureText(section.label).width / 2, y);
+	}
+
+	private drawHandleSectionDivider({
+		x,
+		y1,
+		y2,
+		config,
+	}: {
+		x: number;
+		y1: number;
+		y2: number;
+		config: TradeHandleRectConfig;
+	}) {
+		const ctx = this.#ctx;
+
+		ctx.strokeStyle = config.sectionDividerColor;
+		ctx.lineWidth = 1;
+
+		ctx.beginPath();
+		ctx.moveTo(x, y1);
+		ctx.lineTo(x, y2);
+		ctx.stroke();
+	}
+
+	private formatPnlLabel(pnl: number) {
+		return `${pnl >= 0 ? "+" : ""}${pnl.toFixed(2)}`;
 	}
 }

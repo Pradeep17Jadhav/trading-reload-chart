@@ -38,6 +38,37 @@ type ExistingCandlesLayerOptions = {
 	rightOffsetCandles?: number;
 };
 
+type VisibleRange = {
+	startIndex: number;
+	endIndex: number;
+};
+
+type CandleYCoordinates = {
+	openY: number;
+	closeY: number;
+	highY: number;
+	lowY: number;
+};
+
+type DrawCandlesOptions = {
+	ctx: CanvasRenderingContext2D;
+	candles: Candle[];
+	startIndex: number;
+	chartHeight: number;
+};
+
+type DrawSingleCandleOptions = CandleYCoordinates & {
+	ctx: CanvasRenderingContext2D;
+	candleX: number;
+	candleColor: string;
+};
+
+type DrawLivePriceLineOptions = {
+	ctx: CanvasRenderingContext2D;
+	chartWidth: number;
+	chartHeight: number;
+};
+
 export class ExistingCandlesLayer {
 	readonly #canvas: HTMLCanvasElement;
 	readonly #ctx: CanvasRenderingContext2D;
@@ -110,10 +141,7 @@ export class ExistingCandlesLayer {
 			options.autoFollowThresholdCandles ?? CHART_CONFIG.candles.autoFollowThresholdCandles;
 		this.rightOffsetCandles = options.rightOffsetCandles ?? CHART_CONFIG.candles.rightOffsetCandles;
 
-		const totalChartWidth = this.candles.length * this.candleSpacing;
-		const rightOffsetPixels = this.rightOffsetCandles * this.candleSpacing;
-
-		this.offsetX = options.offsetX ?? this.#canvas.width - totalChartWidth - rightOffsetPixels;
+		this.offsetX = options.offsetX ?? this.getDefaultOffsetX();
 		/**
 		 * Initial follow state
 		 */
@@ -126,57 +154,26 @@ export class ExistingCandlesLayer {
 		this.initialPriceRange = 1;
 
 		this.initializeViewport();
-		/**
-		 * Manual overrides
-		 */
-		if (options.priceCenter !== undefined) {
-			this.priceCenter = options.priceCenter;
-		}
-
-		if (options.priceRange !== undefined) {
-			this.priceRange = options.priceRange;
-			this.initialPriceRange = options.priceRange;
-		}
+		this.applyManualViewportOverrides(options);
 	}
 
 	initializeViewport() {
 		if (this.candles.length === 0) {
-			this.priceCenter = 100;
-			this.priceRange = 20;
-			this.initialPriceRange = this.priceRange;
+			this.setFallbackViewport();
 			return;
 		}
 
-		const visibleCandleCount = Math.ceil(this.#canvas.width / this.candleSpacing);
-		const visibleCandles = this.candles.slice(Math.max(0, this.candles.length - visibleCandleCount));
-
-		let minPrice = Number.POSITIVE_INFINITY;
-		let maxPrice = Number.NEGATIVE_INFINITY;
-
-		for (const candle of visibleCandles) {
-			if (candle.low < minPrice) {
-				minPrice = candle.low;
-			}
-
-			if (candle.high > maxPrice) {
-				maxPrice = candle.high;
-			}
-		}
-
-		const rawPriceRange = normalizePrice(maxPrice - minPrice);
-		const fallbackRange = Math.max(Math.abs((minPrice + maxPrice) / 2) * 0.01, 0.00001);
-		const effectivePriceRange = Math.max(rawPriceRange, fallbackRange);
-		const verticalPadding = effectivePriceRange * 0.2;
+		const visibleCandles = this.getInitialVisibleCandles();
+		const { minPrice, maxPrice } = this.getCandlesPriceBounds(visibleCandles);
+		const priceRange = this.getInitialPriceRange(minPrice, maxPrice);
 
 		this.priceCenter = (minPrice + maxPrice) / 2;
-		this.priceRange = effectivePriceRange + verticalPadding;
-		this.initialPriceRange = this.priceRange;
+		this.priceRange = priceRange;
+		this.initialPriceRange = priceRange;
 	}
 
 	isWithinAutoFollowThreshold() {
-		const totalChartWidth = this.candles.length * this.candleSpacing;
-		const rightOffsetPixels = this.rightOffsetCandles * this.candleSpacing;
-		const rightGap = this.#canvas.width - (totalChartWidth + this.offsetX) - rightOffsetPixels;
+		const rightGap = this.getRightGap();
 		const thresholdPixels = this.autoFollowThresholdCandles * this.candleSpacing;
 
 		return rightGap <= thresholdPixels + 5;
@@ -193,27 +190,9 @@ export class ExistingCandlesLayer {
 			return;
 		}
 
-		/**
-		 * Previous candle becomes closed
-		 */
-		if (lastCandle) {
-			lastCandle.isClosed = true;
-		}
-		/**
-		 * Append new live candle
-		 */
-		this.candles.push(candle);
-		/**
-		 * Recalculate follow state
-		 * after new candle append
-		 */
-		this.isFollowingLatest = this.isWithinAutoFollowThreshold();
-		/**
-		 * Auto-follow latest candle
-		 */
-		if (this.autoFollowLatestCandle && this.isFollowingLatest) {
-			this.offsetX -= this.candleSpacing;
-		}
+		this.closeLastCandle(lastCandle);
+		this.appendLiveCandle(candle);
+		this.updateAutoFollowAfterAppend();
 	}
 
 	get candleWidth() {
@@ -253,7 +232,7 @@ export class ExistingCandlesLayer {
 		};
 	}
 
-	getVisibleRange(chartWidth: number) {
+	getVisibleRange(chartWidth: number): VisibleRange {
 		const startIndex = Math.max(0, Math.floor(-this.offsetX / this.candleSpacing));
 		const endIndex = Math.min(this.candles.length - 1, Math.ceil((chartWidth - this.offsetX) / this.candleSpacing));
 
@@ -277,9 +256,8 @@ export class ExistingCandlesLayer {
 		}
 
 		const rawIndex = Math.round((x - this.offsetX - this.candleWidth / 2) / this.candleSpacing);
-		const clampedIndex = Math.max(0, Math.min(this.candles.length - 1, rawIndex));
 
-		return clampedIndex;
+		return this.clampCandleIndex(rawIndex);
 	}
 
 	getPriceAtY(y: number) {
@@ -306,18 +284,9 @@ export class ExistingCandlesLayer {
 	}
 
 	zoomHorizontally(delta: number) {
-		const { speed, min, max } = CHART_CONFIG.zoom.x;
-		/**
-		 * Current candle index
-		 * at viewport right edge
-		 */
-		const rightEdgeIndex = (this.#canvas.width - this.offsetX) / this.candleSpacing;
+		const rightEdgeIndex = this.getRightEdgeCandleIndex();
 
-		this.zoomX += delta * speed;
-		/**
-		 * Clamp zoom
-		 */
-		this.zoomX = Math.max(min, Math.min(this.zoomX, max));
+		this.zoomX = this.getNextHorizontalZoom(delta);
 		/**
 		 * Keep viewport right edge fixed
 		 */
@@ -329,13 +298,7 @@ export class ExistingCandlesLayer {
 	}
 
 	zoomVertically(delta: number) {
-		const { speed, min, max } = CHART_CONFIG.zoom.y;
-		const zoomFactor = 1 - delta * speed;
-		const nextPriceRange = this.priceRange * zoomFactor;
-		const minPriceRange = this.initialPriceRange * (min / 100);
-		const maxPriceRange = this.initialPriceRange * (max / 100);
-
-		this.priceRange = Math.max(minPriceRange, Math.min(nextPriceRange, maxPriceRange));
+		this.priceRange = this.getNextVerticalPriceRange(delta);
 	}
 
 	render() {
@@ -343,8 +306,7 @@ export class ExistingCandlesLayer {
 		const chartWidth = this.#canvas.width;
 		const chartHeight = this.#canvas.height;
 
-		ctx.fillStyle = this.backgroundColor;
-		ctx.fillRect(0, 0, chartWidth, chartHeight);
+		this.drawBackground(ctx, chartWidth, chartHeight);
 
 		if (this.candles.length === 0) {
 			return;
@@ -367,80 +329,23 @@ export class ExistingCandlesLayer {
 		});
 	}
 
-	drawCandles({
-		ctx,
-		candles,
-		startIndex,
-		chartHeight,
-	}: {
-		ctx: CanvasRenderingContext2D;
-		candles: Candle[];
-		startIndex: number;
-		chartHeight: number;
-	}) {
+	drawCandles({ ctx, candles, startIndex, chartHeight }: DrawCandlesOptions) {
 		candles.forEach((candle, localIndex) => {
 			const candleIndex = startIndex + localIndex;
 			const candleX = this.getCandleX(candleIndex);
-
-			const openY = priceToY({
-				price: candle.open,
-				minPrice: this.minPrice,
-				priceRange: this.priceRange,
-				chartHeight,
-			});
-
-			const closeY = priceToY({
-				price: candle.close,
-				minPrice: this.minPrice,
-				priceRange: this.priceRange,
-				chartHeight,
-			});
-
-			const highY = priceToY({
-				price: candle.high,
-				minPrice: this.minPrice,
-				priceRange: this.priceRange,
-				chartHeight,
-			});
-
-			const lowY = priceToY({
-				price: candle.low,
-				minPrice: this.minPrice,
-				priceRange: this.priceRange,
-				chartHeight,
-			});
-
-			const candleColor = candle.close >= candle.open ? this.bullishColor : this.bearishColor;
+			const candleColor = this.getCandleColor(candle);
+			const candleYCoordinates = this.getCandleYCoordinates(candle, chartHeight);
 
 			this.drawSingleCandle({
 				ctx,
 				candleX,
-				openY,
-				closeY,
-				highY,
-				lowY,
 				candleColor,
+				...candleYCoordinates,
 			});
 		});
 	}
 
-	drawSingleCandle({
-		ctx,
-		candleX,
-		openY,
-		closeY,
-		highY,
-		lowY,
-		candleColor,
-	}: {
-		ctx: CanvasRenderingContext2D;
-		candleX: number;
-		openY: number;
-		closeY: number;
-		highY: number;
-		lowY: number;
-		candleColor: string;
-	}) {
+	drawSingleCandle({ ctx, candleX, openY, closeY, highY, lowY, candleColor }: DrawSingleCandleOptions) {
 		ctx.strokeStyle = candleColor;
 		ctx.fillStyle = candleColor;
 
@@ -457,38 +362,16 @@ export class ExistingCandlesLayer {
 		ctx.fillRect(candleX, candleBodyY, this.candleWidth, candleBodyHeight);
 	}
 
-	drawLivePriceLine({
-		ctx,
-		chartWidth,
-		chartHeight,
-	}: {
-		ctx: CanvasRenderingContext2D;
-		chartWidth: number;
-		chartHeight: number;
-	}) {
+	drawLivePriceLine({ ctx, chartWidth, chartHeight }: DrawLivePriceLineOptions) {
 		const latestCandle = this.candles.at(-1);
 
-		if (!latestCandle) {
-			return;
-		}
-
-		if (!CHART_CONFIG.candles.livePriceLine.visible) {
+		if (!latestCandle || !CHART_CONFIG.candles.livePriceLine.visible) {
 			return;
 		}
 
 		const latestPrice = normalizePrice(latestCandle.close);
-
-		const lineY = priceToY({
-			price: latestPrice,
-			minPrice: this.minPrice,
-			priceRange: this.priceRange,
-			chartHeight,
-		});
-
-		const lineColor =
-			latestCandle.close >= latestCandle.open
-				? CHART_CONFIG.candles.livePriceLine.bullishColor
-				: CHART_CONFIG.candles.livePriceLine.bearishColor;
+		const lineY = this.getPriceY(latestPrice, chartHeight);
+		const lineColor = this.getLivePriceLineColor(latestCandle);
 
 		ctx.save();
 		ctx.globalAlpha = CHART_CONFIG.candles.livePriceLine.opacity;
@@ -502,5 +385,176 @@ export class ExistingCandlesLayer {
 		ctx.stroke();
 
 		ctx.restore();
+	}
+
+	private getDefaultOffsetX() {
+		const totalChartWidth = this.getTotalChartWidth();
+		const rightOffsetPixels = this.getRightOffsetPixels();
+
+		return this.#canvas.width - totalChartWidth - rightOffsetPixels;
+	}
+
+	private getTotalChartWidth() {
+		return this.candles.length * this.candleSpacing;
+	}
+
+	private getRightOffsetPixels() {
+		return this.rightOffsetCandles * this.candleSpacing;
+	}
+
+	private getRightGap() {
+		return this.#canvas.width - (this.getTotalChartWidth() + this.offsetX) - this.getRightOffsetPixels();
+	}
+
+	private setFallbackViewport() {
+		this.priceCenter = 100;
+		this.priceRange = 20;
+		this.initialPriceRange = this.priceRange;
+	}
+
+	private getInitialVisibleCandles() {
+		const visibleCandleCount = Math.ceil(this.#canvas.width / this.candleSpacing);
+		const startIndex = Math.max(0, this.candles.length - visibleCandleCount);
+
+		return this.candles.slice(startIndex);
+	}
+
+	private getCandlesPriceBounds(candles: Candle[]) {
+		let minPrice = Number.POSITIVE_INFINITY;
+		let maxPrice = Number.NEGATIVE_INFINITY;
+
+		for (const candle of candles) {
+			if (candle.low < minPrice) {
+				minPrice = candle.low;
+			}
+
+			if (candle.high > maxPrice) {
+				maxPrice = candle.high;
+			}
+		}
+
+		return {
+			minPrice,
+			maxPrice,
+		};
+	}
+
+	private getInitialPriceRange(minPrice: number, maxPrice: number) {
+		const rawPriceRange = normalizePrice(maxPrice - minPrice);
+		const fallbackRange = Math.max(Math.abs((minPrice + maxPrice) / 2) * 0.01, 0.00001);
+		const effectivePriceRange = Math.max(rawPriceRange, fallbackRange);
+		const verticalPadding = effectivePriceRange * 0.2;
+
+		return effectivePriceRange + verticalPadding;
+	}
+
+	private applyManualViewportOverrides(options: ExistingCandlesLayerOptions) {
+		/**
+		 * Manual overrides
+		 */
+		if (options.priceCenter !== undefined) {
+			this.priceCenter = options.priceCenter;
+		}
+
+		if (options.priceRange !== undefined) {
+			this.priceRange = options.priceRange;
+			this.initialPriceRange = options.priceRange;
+		}
+	}
+
+	private closeLastCandle(lastCandle: Candle | undefined) {
+		/**
+		 * Previous candle becomes closed
+		 */
+		if (lastCandle) {
+			lastCandle.isClosed = true;
+		}
+	}
+
+	private appendLiveCandle(candle: Candle) {
+		/**
+		 * Append new live candle
+		 */
+		this.candles.push(candle);
+	}
+
+	private updateAutoFollowAfterAppend() {
+		/**
+		 * Recalculate follow state
+		 * after new candle append
+		 */
+		this.isFollowingLatest = this.isWithinAutoFollowThreshold();
+
+		/**
+		 * Auto-follow latest candle
+		 */
+		if (this.autoFollowLatestCandle && this.isFollowingLatest) {
+			this.offsetX -= this.candleSpacing;
+		}
+	}
+
+	private clampCandleIndex(candleIndex: number) {
+		return Math.max(0, Math.min(this.candles.length - 1, candleIndex));
+	}
+
+	private getRightEdgeCandleIndex() {
+		/**
+		 * Current candle index
+		 * at viewport right edge
+		 */
+		return (this.#canvas.width - this.offsetX) / this.candleSpacing;
+	}
+
+	private getNextHorizontalZoom(delta: number) {
+		const { speed, min, max } = CHART_CONFIG.zoom.x;
+		const nextZoom = this.zoomX + delta * speed;
+
+		/**
+		 * Clamp zoom
+		 */
+		return Math.max(min, Math.min(nextZoom, max));
+	}
+
+	private getNextVerticalPriceRange(delta: number) {
+		const { speed, min, max } = CHART_CONFIG.zoom.y;
+		const zoomFactor = 1 - delta * speed;
+		const nextPriceRange = this.priceRange * zoomFactor;
+		const minPriceRange = this.initialPriceRange * (min / 100);
+		const maxPriceRange = this.initialPriceRange * (max / 100);
+
+		return Math.max(minPriceRange, Math.min(nextPriceRange, maxPriceRange));
+	}
+
+	private drawBackground(ctx: CanvasRenderingContext2D, chartWidth: number, chartHeight: number) {
+		ctx.fillStyle = this.backgroundColor;
+		ctx.fillRect(0, 0, chartWidth, chartHeight);
+	}
+
+	private getCandleColor(candle: Candle) {
+		return candle.close >= candle.open ? this.bullishColor : this.bearishColor;
+	}
+
+	private getCandleYCoordinates(candle: Candle, chartHeight: number): CandleYCoordinates {
+		return {
+			openY: this.getPriceY(candle.open, chartHeight),
+			closeY: this.getPriceY(candle.close, chartHeight),
+			highY: this.getPriceY(candle.high, chartHeight),
+			lowY: this.getPriceY(candle.low, chartHeight),
+		};
+	}
+
+	private getPriceY(price: number, chartHeight: number) {
+		return priceToY({
+			price,
+			minPrice: this.minPrice,
+			priceRange: this.priceRange,
+			chartHeight,
+		});
+	}
+
+	private getLivePriceLineColor(candle: Candle) {
+		return candle.close >= candle.open
+			? CHART_CONFIG.candles.livePriceLine.bullishColor
+			: CHART_CONFIG.candles.livePriceLine.bearishColor;
 	}
 }

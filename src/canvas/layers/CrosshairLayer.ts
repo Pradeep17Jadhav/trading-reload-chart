@@ -30,8 +30,11 @@ export class CrosshairLayer {
 	}
 
 	updateMousePosition(x: number, y: number) {
-		this.mouseX = x;
-		this.mouseY = y;
+		const rect = this.#canvas.getBoundingClientRect();
+		const scaleX = this.#canvas.width / rect.width;
+		const scaleY = this.#canvas.height / rect.height;
+		this.mouseX = (x - rect.left) * scaleX;
+		this.mouseY = (y - rect.top) * scaleY;
 		this.visible = true;
 	}
 

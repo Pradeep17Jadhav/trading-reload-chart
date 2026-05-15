@@ -13,7 +13,7 @@ const candleCanvas = document.querySelector<HTMLCanvasElement>("#chart");
 const overlayCanvas = document.querySelector<HTMLCanvasElement>("#overlay");
 const tradesCanvas = document.querySelector<HTMLCanvasElement>("#trades");
 const axisYCanvas = document.querySelector<HTMLCanvasElement>("#axis-y");
-const activeSymbol = "AUDJPY";
+const activeSymbol = "GBPJPY";
 
 if (!candleCanvas || !overlayCanvas || !tradesCanvas || !axisYCanvas) {
 	throw new Error("Canvas not found");

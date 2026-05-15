@@ -1,6 +1,47 @@
-//chartConfig.ts
+// chartConfig.ts
 
-import type { ChartConfig, TradeHandleRectConfig } from "./chartConfig.types";
+import type {
+	ChartConfig,
+	MissingTradeProtectionHandleRectConfig,
+	TemporaryTradeProtectionHandleRectConfig,
+	TradeHandleLineConfig,
+	TradeHandleRectConfig,
+} from "./chartConfig.types";
+
+const COLORS = {
+	blue: "#2962ff",
+	green: "#22c55e",
+	red: "#ef4444",
+	background: "#11131a",
+	handleBackground: "#111827",
+	slBackground: "#2a1111",
+	tpBackground: "#0d2418",
+	axisBorder: "rgb(89, 89, 89)",
+	axisText: "rgba(255, 255, 255, 0.60)",
+	axisTick: "rgba(255,255,255,0.12)",
+	axisYTick: "rgba(255,255,255,0.06)",
+	divider: "rgba(255,255,255,0.12)",
+	white: "#ffffff",
+	crosshairLabelBackground: "#494949",
+} as const;
+
+const FONT = {
+	default: "12px Arial",
+} as const;
+
+const commonDashedLine: Pick<TradeHandleLineConfig, "width" | "opacity" | "style" | "dash"> = {
+	width: 1,
+	opacity: 0.9,
+	style: "dashed",
+	dash: [4, 4],
+};
+
+const commonDottedLine: Pick<TradeHandleLineConfig, "width" | "opacity" | "style" | "dash"> = {
+	width: 1,
+	opacity: 0.9,
+	style: "dotted",
+	dash: [2, 4],
+};
 
 const commonHandleProperties: TradeHandleRectConfig = {
 	height: 22,
@@ -12,16 +53,50 @@ const commonHandleProperties: TradeHandleRectConfig = {
 		margin: 100,
 	},
 	borderWidth: 1,
-	borderColor: "#3b82f6",
-	borderOpacity: 0.4,
-	backgroundColor: "#111827",
+	borderColor: COLORS.blue,
+	borderOpacity: 0.9,
+	backgroundColor: COLORS.handleBackground,
 	backgroundOpacity: 0.9,
-	sectionDividerColor: "rgba(255,255,255,0.12)",
+	sectionDividerColor: COLORS.divider,
 	paddingX: 10,
-	closeButtonColor: "#3b82f6",
+	closeButtonColor: COLORS.blue,
 	showVolumeSection: true,
 	showPnlSection: true,
 	showCloseSection: true,
+};
+
+const commonMissingProtectionHandleProperties: MissingTradeProtectionHandleRectConfig = {
+	width: 32,
+	height: 22,
+	gapFromStartPriceHandle: 6,
+	gapBetweenHandles: 4,
+	placement: "right",
+	borderWidth: 1,
+	borderColor: COLORS.white,
+	borderOpacity: 0.5,
+	backgroundColor: COLORS.handleBackground,
+	backgroundOpacity: 0.3,
+	textColor: COLORS.white,
+	textOpacity: 0.6,
+	font: FONT.default,
+};
+
+const commonTemporaryProtectionHandleProperties: TemporaryTradeProtectionHandleRectConfig = {
+	height: 22,
+	widthPNL: 80,
+	position: {
+		placement: "left",
+		margin: 100,
+	},
+	borderWidth: 1,
+	borderColor: COLORS.white,
+	borderOpacity: 0.45,
+	backgroundColor: COLORS.handleBackground,
+	backgroundOpacity: 0.9,
+	paddingX: 10,
+	textColor: COLORS.white,
+	textOpacity: 0.85,
+	font: FONT.default,
 };
 
 export const CHART_CONFIG: ChartConfig = {
@@ -51,8 +126,8 @@ export const CHART_CONFIG: ChartConfig = {
 			width: 1,
 			opacity: 0.7,
 			dash: [4, 4],
-			bullishColor: "#22c55e",
-			bearishColor: "#ef4444",
+			bullishColor: COLORS.green,
+			bearishColor: COLORS.red,
 		},
 	},
 
@@ -67,23 +142,23 @@ export const CHART_CONFIG: ChartConfig = {
 
 		axisX: {
 			height: 30,
-			backgroundColor: "#11131a",
-			borderColor: "rgb(89, 89, 89)",
+			backgroundColor: COLORS.background,
+			borderColor: COLORS.axisBorder,
 			borderWidth: 1,
-			textColor: "rgba(255, 255, 255, 0.60)",
-			font: "12px Arial",
+			textColor: COLORS.axisText,
+			font: FONT.default,
 			textAlign: "center",
-			tickColor: "rgba(255,255,255,0.12)",
+			tickColor: COLORS.axisTick,
 			tickWidth: 1,
 			tickLength: 4,
 			labelOffsetY: 16,
 			minLabelGap: 16,
 			crosshairLabel: {
-				backgroundColor: "#494949",
-				borderColor: "#494949",
+				backgroundColor: COLORS.crosshairLabelBackground,
+				borderColor: COLORS.crosshairLabelBackground,
 				borderWidth: 1,
-				textColor: "#ffffff",
-				font: "12px Arial",
+				textColor: COLORS.white,
+				font: FONT.default,
 				paddingX: 8,
 				height: 26,
 			},
@@ -91,23 +166,23 @@ export const CHART_CONFIG: ChartConfig = {
 
 		axisY: {
 			width: 80,
-			backgroundColor: "#11131a",
-			borderColor: "rgb(89, 89, 89)",
+			backgroundColor: COLORS.background,
+			borderColor: COLORS.axisBorder,
 			borderWidth: 1,
-			textColor: "rgba(255, 255, 255, 0.60)",
-			font: "12px Arial",
+			textColor: COLORS.axisText,
+			font: FONT.default,
 			textAlign: "left",
 			tickCount: 12,
-			tickColor: "rgba(255,255,255,0.06)",
+			tickColor: COLORS.axisYTick,
 			tickWidth: 1,
 			tickLength: 8,
 			labelOffsetX: 8,
 			crosshairLabel: {
-				backgroundColor: "#494949",
-				borderColor: "#494949",
+				backgroundColor: COLORS.crosshairLabelBackground,
+				borderColor: COLORS.crosshairLabelBackground,
 				borderWidth: 1,
-				textColor: "#ffffff",
-				font: "12px Arial",
+				textColor: COLORS.white,
+				font: FONT.default,
 				paddingX: 8,
 				height: 20,
 			},
@@ -115,45 +190,44 @@ export const CHART_CONFIG: ChartConfig = {
 	},
 
 	tradeHandles: {
-		font: "12px Arial",
-		textColor: "#ffffff",
+		font: FONT.default,
+		textColor: COLORS.white,
 		textOpacity: 0.8,
+
+		pnlTextColors: {
+			positive: COLORS.green,
+			negative: COLORS.red,
+		},
 
 		slHandle: {
 			handle: {
 				...commonHandleProperties,
-				borderColor: "#ef4444",
+				borderColor: COLORS.red,
 				borderOpacity: 0.4,
-				backgroundColor: "#2a1111",
-				closeButtonColor: "#ef4444",
+				backgroundColor: COLORS.slBackground,
+				closeButtonColor: COLORS.red,
 				showVolumeSection: false,
 			},
 
 			handleLine: {
-				width: 1,
-				color: "#ef4444",
-				opacity: 0.9,
-				style: "dashed",
-				dash: [4, 4],
+				...commonDashedLine,
+				color: COLORS.red,
 			},
 		},
 
 		tpHandle: {
 			handle: {
 				...commonHandleProperties,
-				borderColor: "#22c55e",
+				borderColor: COLORS.green,
 				borderOpacity: 0.4,
-				backgroundColor: "#0d2418",
-				closeButtonColor: "#22c55e",
+				backgroundColor: COLORS.tpBackground,
+				closeButtonColor: COLORS.green,
 				showVolumeSection: false,
 			},
 
 			handleLine: {
-				width: 1,
-				color: "#22c55e",
-				opacity: 0.9,
-				style: "dashed",
-				dash: [4, 4],
+				...commonDashedLine,
+				color: COLORS.green,
 			},
 		},
 
@@ -164,16 +238,59 @@ export const CHART_CONFIG: ChartConfig = {
 
 			handleLine: {
 				width: 1,
-				color: "#3b82f6",
-				opacity: 0.9,
+				color: COLORS.blue,
+				opacity: 1,
 				style: "solid",
+			},
+		},
+
+		missingProtectionHandles: {
+			visible: true,
+			dragActivationThresholdPx: 2,
+
+			slHandle: {
+				...commonMissingProtectionHandleProperties,
+				borderColor: COLORS.red,
+				backgroundColor: COLORS.slBackground,
+				textColor: COLORS.red,
+			},
+
+			tpHandle: {
+				...commonMissingProtectionHandleProperties,
+				borderColor: COLORS.green,
+				backgroundColor: COLORS.tpBackground,
+				textColor: COLORS.green,
+			},
+
+			temporarySlHandle: {
+				...commonTemporaryProtectionHandleProperties,
+				borderColor: COLORS.red,
+				backgroundColor: COLORS.slBackground,
+				textColor: COLORS.red,
+			},
+
+			temporaryTpHandle: {
+				...commonTemporaryProtectionHandleProperties,
+				borderColor: COLORS.green,
+				backgroundColor: COLORS.tpBackground,
+				textColor: COLORS.green,
+			},
+
+			temporarySlLine: {
+				...commonDottedLine,
+				color: COLORS.red,
+			},
+
+			temporaryTpLine: {
+				...commonDottedLine,
+				color: COLORS.green,
 			},
 		},
 	},
 
 	colors: {
-		bullish: "#22c55e",
-		bearish: "#ef4444",
-		background: "#11131a",
+		bullish: COLORS.green,
+		bearish: COLORS.red,
+		background: COLORS.background,
 	},
 };

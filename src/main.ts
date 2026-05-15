@@ -3,7 +3,7 @@ import { AxisLayerY } from "./canvas/layers/AxisLayerY/AxisLayerY";
 import { CrosshairLayer } from "./canvas/layers/CrosshairLayer";
 import { ExistingCandlesLayer } from "./canvas/layers/ExistingCandlesLayer";
 import { TradeLayer } from "./canvas/layers/TradeLayer/TradeLayer";
-import type { TradeHandleType } from "./canvas/layers/TradeLayer/TradeLayer.types";
+import type { TradeHandleType, TradeProtectionHandleType } from "./canvas/layers/TradeLayer/TradeLayer.types";
 import { TradeLayerEvents } from "./canvas/layers/TradeLayer/TradeLayerEvents";
 import { CHART_CONFIG } from "./config/chartConfig";
 import type { Candle } from "./models/Candle";
@@ -46,6 +46,12 @@ type TradeModifiedPayload = {
 type TPSLChangePayload = {
 	trade: OpenTrade;
 	type: TradeHandleType;
+	price: number;
+};
+
+type MissingProtectionDragPayload = {
+	trade: OpenTrade;
+	type: TradeProtectionHandleType;
 	price: number;
 };
 
@@ -239,6 +245,11 @@ const handleTradeModified = async ({ ticket, sl, tp }: TradeModifiedPayload) => 
 
 		const data = await response.json();
 
+		updateTradesFromModifyResponse({
+			data,
+			fallbackPayload: body,
+		});
+
 		console.log(data);
 	} catch (error) {
 		console.error("Failed to modify the trade", error);
@@ -250,6 +261,67 @@ const createTradeModifyRequestBody = ({ ticket, sl, tp }: TradeModifiedPayload) 
 	...(tp !== undefined ? { tp } : {}),
 	...(sl !== undefined ? { sl } : {}),
 });
+
+const updateTradesFromModifyResponse = ({
+	data,
+	fallbackPayload,
+}: {
+	data: unknown;
+	fallbackPayload: TradeModifiedPayload;
+}) => {
+	if (!tradeLayer) {
+		return;
+	}
+
+	const responseTrade = getModifiedTradeFromResponse(data);
+	const updatedTrades = tradeLayer.trades.map((trade) => {
+		if (responseTrade && trade.ticket === responseTrade.ticket) {
+			return {
+				...trade,
+				...responseTrade,
+			};
+		}
+
+		if (trade.ticket !== fallbackPayload.ticket) {
+			return trade;
+		}
+
+		return {
+			...trade,
+			...(fallbackPayload.sl !== undefined ? { sl: fallbackPayload.sl } : {}),
+			...(fallbackPayload.tp !== undefined ? { tp: fallbackPayload.tp } : {}),
+		};
+	});
+
+	tradeLayer.setTrades(updatedTrades);
+	tradeLayer.clearTemporaryProtectionDrag();
+	tradeLayer.render();
+};
+
+const getModifiedTradeFromResponse = (data: unknown): Partial<OpenTrade> | null => {
+	if (!data || typeof data !== "object") {
+		return null;
+	}
+
+	const responseData = data as {
+		ticket?: number;
+		sl?: number | null;
+		tp?: number | null;
+		trade?: Partial<OpenTrade>;
+		position?: Partial<OpenTrade>;
+		order?: Partial<OpenTrade>;
+	};
+
+	if (responseData.ticket !== undefined) {
+		return {
+			ticket: responseData.ticket,
+			...(responseData.sl !== undefined ? { sl: responseData.sl } : {}),
+			...(responseData.tp !== undefined ? { tp: responseData.tp } : {}),
+		};
+	}
+
+	return responseData.trade ?? responseData.position ?? responseData.order ?? null;
+};
 
 const handleTPSLChange = ({ trade, type, price }: TPSLChangePayload) => {
 	if (!tradeLayer) {
@@ -269,6 +341,38 @@ const handleTPSLChange = ({ trade, type, price }: TPSLChangePayload) => {
 
 	tradeLayer.setTrades(updatedTrades);
 	tradeLayer.render();
+};
+
+const handleMissingProtectionDrag = ({ trade, type, price }: MissingProtectionDragPayload) => {
+	if (!tradeLayer || !tradeLayer.viewport) {
+		return;
+	}
+
+	tradeLayer.setIsDragging(true);
+	tradeLayer.setTemporaryProtectionDrag({
+		visible: true,
+		trade,
+		type,
+		price,
+		viewport: tradeLayer.viewport,
+	});
+	tradeLayer.render();
+};
+
+const handleMissingProtectionDragEnd = ({ trade, type, price }: MissingProtectionDragPayload) => {
+	tradeLayer?.setIsDragging(false);
+
+	handleTradeModified({
+		ticket: trade.ticket,
+		...(type === "stopLoss" ? { sl: price } : {}),
+		...(type === "takeProfit" ? { tp: price } : {}),
+	});
+};
+
+const handleMissingProtectionDragCancel = () => {
+	tradeLayer?.setIsDragging(false);
+	tradeLayer?.clearTemporaryProtectionDrag();
+	tradeLayer?.render();
 };
 
 const updateTradeTPSL = ({
@@ -358,6 +462,9 @@ const initializeLayers = (candles: Candle[]) => {
 		canvas: tradesCanvas,
 		getHandleHitboxes: () => tradeLayer?.handleHitboxes ?? [],
 		onDrag: handleTPSLChange,
+		onMissingProtectionDrag: handleMissingProtectionDrag,
+		onMissingProtectionDragEnd: handleMissingProtectionDragEnd,
+		onMissingProtectionDragCancel: handleMissingProtectionDragCancel,
 		onTradeModified: handleTradeModified,
 	});
 };

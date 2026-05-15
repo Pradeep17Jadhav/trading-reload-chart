@@ -1,5 +1,6 @@
+import { CHART_CONFIG } from "../../../config/chartConfig";
 import { normalizePrice } from "../../../helpers/math";
-import type { TradeHandleHitbox, TradeLayerEventsOptions } from "./TradeLayer.types";
+import type { TradeHandleHitbox, TradeLayerEventsOptions, TradeProtectionHandleType } from "./TradeLayer.types";
 
 const EVENT_TYPES_TO_HANDLE = ["pointerdown", "pointermove", "pointerup"] as const;
 
@@ -24,11 +25,23 @@ export class TradeLayerEvents {
 
 	readonly #onDrag: TradeLayerEventsOptions["onDrag"];
 
+	readonly #onMissingProtectionDrag: TradeLayerEventsOptions["onMissingProtectionDrag"];
+
+	readonly #onMissingProtectionDragEnd: TradeLayerEventsOptions["onMissingProtectionDragEnd"];
+
+	readonly #onMissingProtectionDragCancel: TradeLayerEventsOptions["onMissingProtectionDragCancel"];
+
 	readonly #onTradeModified: TradeLayerEventsOptions["onTradeModified"];
 
 	readonly #onTradeCloseClicked: TradeLayerEventsOptions["onTradeCloseClicked"];
 
 	#activeDragHitbox: TradeHandleHitbox | null = null;
+
+	#activeMissingProtectionHitbox: TradeHandleHitbox | null = null;
+
+	#hasActiveMissingProtectionMoved = false;
+
+	#dragStartMouseY = 0;
 
 	#lastMouseY = 0;
 
@@ -38,6 +51,12 @@ export class TradeLayerEvents {
 		this.#getHandleHitboxes = options.getHandleHitboxes;
 
 		this.#onDrag = options.onDrag;
+
+		this.#onMissingProtectionDrag = options.onMissingProtectionDrag;
+
+		this.#onMissingProtectionDragEnd = options.onMissingProtectionDragEnd;
+
+		this.#onMissingProtectionDragCancel = options.onMissingProtectionDragCancel;
 
 		this.#onTradeModified = options.onTradeModified;
 
@@ -56,6 +75,10 @@ export class TradeLayerEvents {
 		 * Active Drag
 		 * =========================
 		 */
+		if (event.type === "pointermove" && this.#activeMissingProtectionHitbox) {
+			return this.handleActiveMissingProtectionDrag(event, mousePoint);
+		}
+
 		if (event.type === "pointermove" && this.#activeDragHitbox) {
 			return this.handleActiveDrag(event, mousePoint);
 		}
@@ -66,6 +89,10 @@ export class TradeLayerEvents {
 		 * =========================
 		 */
 		if (event.type === "pointerup") {
+			if (this.#activeMissingProtectionHitbox) {
+				return this.handleMissingProtectionDragEnd();
+			}
+
 			return this.handleDragEnd();
 		}
 
@@ -116,6 +143,42 @@ export class TradeLayerEvents {
 		return true;
 	}
 
+	private handleActiveMissingProtectionDrag(
+		event: PointerEvent | WheelEvent | MouseEvent,
+		mousePoint: CanvasMousePoint,
+	) {
+		if (
+			!this.#activeMissingProtectionHitbox ||
+			!this.isProtectionHandleType(this.#activeMissingProtectionHitbox.type)
+		) {
+			return false;
+		}
+
+		const totalDeltaY = mousePoint.y - this.#dragStartMouseY;
+		const activationThresholdPx = CHART_CONFIG.tradeHandles.missingProtectionHandles.dragActivationThresholdPx;
+
+		if (!this.#hasActiveMissingProtectionMoved && Math.abs(totalDeltaY) < activationThresholdPx) {
+			this.consumeEvent(event);
+			return true;
+		}
+
+		this.#hasActiveMissingProtectionMoved = true;
+
+		const nextPrice = this.getNextMissingProtectionPrice(mousePoint.y);
+
+		this.#activeMissingProtectionHitbox.price = nextPrice;
+
+		this.#onMissingProtectionDrag?.({
+			trade: this.#activeMissingProtectionHitbox.trade,
+			type: this.#activeMissingProtectionHitbox.type,
+			price: nextPrice,
+		});
+
+		this.consumeEvent(event);
+
+		return true;
+	}
+
 	private getNextDragPrice(deltaY: number) {
 		if (!this.#activeDragHitbox) {
 			return 0;
@@ -126,12 +189,54 @@ export class TradeLayerEvents {
 		return normalizePrice(this.#activeDragHitbox.price - deltaY * pricePerPixel);
 	}
 
+	private getNextMissingProtectionPrice(mouseY: number) {
+		if (
+			!this.#activeMissingProtectionHitbox ||
+			!this.isProtectionHandleType(this.#activeMissingProtectionHitbox.type)
+		) {
+			return 0;
+		}
+
+		const rawPrice = normalizePrice(
+			this.#activeMissingProtectionHitbox.viewport.minPrice +
+				((this.#canvas.height - mouseY) / this.#canvas.height) *
+					this.#activeMissingProtectionHitbox.viewport.priceRange,
+		);
+
+		return this.constrainProtectionPrice({
+			price: rawPrice,
+			hitbox: this.#activeMissingProtectionHitbox,
+			type: this.#activeMissingProtectionHitbox.type,
+		});
+	}
+
 	private handleDragEnd() {
 		if (this.#activeDragHitbox) {
 			this.modifyActiveDragTrade();
 		}
 
 		this.#activeDragHitbox = null;
+
+		return false;
+	}
+
+	private handleMissingProtectionDragEnd() {
+		if (
+			this.#activeMissingProtectionHitbox &&
+			this.#hasActiveMissingProtectionMoved &&
+			this.isProtectionHandleType(this.#activeMissingProtectionHitbox.type)
+		) {
+			this.#onMissingProtectionDragEnd?.({
+				trade: this.#activeMissingProtectionHitbox.trade,
+				type: this.#activeMissingProtectionHitbox.type,
+				price: normalizePrice(this.#activeMissingProtectionHitbox.price),
+			});
+		} else {
+			this.#onMissingProtectionDragCancel?.();
+		}
+
+		this.#activeMissingProtectionHitbox = null;
+		this.#hasActiveMissingProtectionMoved = false;
 
 		return false;
 	}
@@ -169,6 +274,10 @@ export class TradeLayerEvents {
 		hitbox: TradeHandleHitbox,
 		mousePoint: CanvasMousePoint,
 	) {
+		if (hitbox.kind === "missingProtectionHandle") {
+			return this.handleMissingProtectionHandleHover(event, hitbox, mousePoint);
+		}
+
 		const isInsideCloseButton = this.isPointInsideArea(mousePoint, hitbox.closeButtonArea);
 		const isInsideLabelArea = this.isPointInsideArea(mousePoint, hitbox.labelArea);
 
@@ -193,6 +302,24 @@ export class TradeLayerEvents {
 		}
 
 		return false;
+	}
+
+	private handleMissingProtectionHandleHover(
+		event: PointerEvent | WheelEvent | MouseEvent,
+		hitbox: TradeHandleHitbox,
+		mousePoint: CanvasMousePoint,
+	) {
+		document.body.style.cursor = "ns-resize";
+
+		if (event.type === "pointerdown") {
+			this.startMissingProtectionDrag(hitbox, mousePoint.y);
+			this.consumeEvent(event);
+			return true;
+		}
+
+		this.consumeEvent(event);
+
+		return true;
 	}
 
 	private handleCloseButtonHover(event: PointerEvent | WheelEvent | MouseEvent, hitbox: TradeHandleHitbox) {
@@ -233,8 +360,15 @@ export class TradeLayerEvents {
 		this.#lastMouseY = mouseY;
 	}
 
+	private startMissingProtectionDrag(hitbox: TradeHandleHitbox, mouseY: number) {
+		this.#activeMissingProtectionHitbox = hitbox;
+		this.#dragStartMouseY = mouseY;
+		this.#lastMouseY = mouseY;
+		this.#hasActiveMissingProtectionMoved = false;
+	}
+
 	private resetCursorIfIdle() {
-		if (!this.#activeDragHitbox) {
+		if (!this.#activeDragHitbox && !this.#activeMissingProtectionHitbox) {
 			document.body.style.cursor = "crosshair";
 		}
 	}
@@ -244,6 +378,42 @@ export class TradeLayerEvents {
 		const isInsideY = point.y >= area.y && point.y <= area.y + area.height;
 
 		return isInsideX && isInsideY;
+	}
+
+	private isProtectionHandleType(type: TradeHandleHitbox["type"]): type is TradeProtectionHandleType {
+		return type === "stopLoss" || type === "takeProfit";
+	}
+
+	private constrainProtectionPrice({
+		price,
+		hitbox,
+		type,
+	}: {
+		price: number;
+		hitbox: TradeHandleHitbox;
+		type: TradeProtectionHandleType;
+	}) {
+		const direction = this.getProtectionDirection({
+			hitbox,
+			type,
+		});
+
+		if (direction > 0) {
+			return normalizePrice(Math.max(price, hitbox.trade.openPrice));
+		}
+
+		return normalizePrice(Math.min(price, hitbox.trade.openPrice));
+	}
+
+	private getProtectionDirection({ hitbox, type }: { hitbox: TradeHandleHitbox; type: TradeProtectionHandleType }) {
+		const isBuyTrade = this.isBuyTrade(hitbox);
+		const direction = type === "takeProfit" ? 1 : -1;
+
+		return isBuyTrade ? direction : -direction;
+	}
+
+	private isBuyTrade(hitbox: TradeHandleHitbox) {
+		return String(hitbox.trade.type).toLowerCase().includes("buy");
 	}
 
 	private consumeEvent(event: PointerEvent | WheelEvent | MouseEvent) {

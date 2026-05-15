@@ -1,5 +1,6 @@
 // chartConfig.ts
 
+import { CHART_SHAPE_CONFIG } from "./ChartShapeConfig/chartShapeConfig";
 import type {
 	ChartConfig,
 	MissingTradeProtectionHandleRectConfig,
@@ -7,7 +8,6 @@ import type {
 	TradeHandleLineConfig,
 	TradeHandleRectConfig,
 } from "./chartConfig.types";
-import { CHART_SHAPE_CONFIG } from "./ChartShapeConfig/chartShapeConfig";
 import { COLORS } from "./colors";
 
 const FONT = {

@@ -801,10 +801,7 @@ export class ShapesLayer {
 			getNearestCandleTimeForX: (x: number) => {
 				const time = this.getTimeForX(x);
 
-				if (
-					this.candles.length > 0 &&
-					time > this.candles[this.candles.length - 1].time
-				) {
+				if (this.candles.length > 0 && time > this.candles[this.candles.length - 1].time) {
 					return time;
 				}
 

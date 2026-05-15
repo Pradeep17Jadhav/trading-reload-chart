@@ -391,7 +391,6 @@ export const getCursorForHandle = (handleType: ShapeHandleHitbox["type"]): strin
 		case "lowerHeight":
 			return "ns-resize";
 
-		case "move":
 		default:
 			return "move";
 	}

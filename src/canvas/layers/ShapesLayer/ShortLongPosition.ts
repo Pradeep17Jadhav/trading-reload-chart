@@ -235,16 +235,16 @@ export class ShortLongPosition {
 				radius: resolvedConfig.handleRadius,
 				cursor: "ns-resize",
 			}),
-		createHandleHitbox({
-			shapeId: shape.id,
-			type: "start",
-			point: {
-				x: geometry.entryPoint.x,
-				y: geometry.entryY,
-			},
-			radius: resolvedConfig.handleRadius,
-			cursor: "ns-resize",
-		}),
+			createHandleHitbox({
+				shapeId: shape.id,
+				type: "start",
+				point: {
+					x: geometry.entryPoint.x,
+					y: geometry.entryY,
+				},
+				radius: resolvedConfig.handleRadius,
+				cursor: "ns-resize",
+			}),
 			createHandleHitbox({
 				shapeId: shape.id,
 				type: "end",

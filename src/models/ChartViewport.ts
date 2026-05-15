@@ -4,4 +4,7 @@ export type ChartViewport = {
 	priceRange: number;
 	offsetX: number;
 	zoomX: number;
+	candleWidth: number;
+	candleGap: number;
+	candleSpacing: number;
 };

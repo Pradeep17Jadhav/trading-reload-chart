@@ -713,6 +713,17 @@ export type ColorsConfig = {
  *   labelOffsetX: 12
  * }
  */
+
+export type AxisCrosshairLabelConfig = {
+	backgroundColor: string;
+	borderColor: string;
+	borderWidth: number;
+	textColor: string;
+	font: string;
+	paddingX: number;
+	height: number;
+};
+
 export type AxisYConfig = {
 	/**
 	 * Width of right-side axis canvas.
@@ -799,6 +810,8 @@ export type AxisYConfig = {
 	 * @example 12
 	 */
 	labelOffsetX: number;
+
+	crosshairLabel: AxisCrosshairLabelConfig;
 };
 
 /**
@@ -815,6 +828,22 @@ export type AxisYConfig = {
  *   }
  * }
  */
+export type AxisXConfig = {
+	height: number;
+	backgroundColor: string;
+	borderColor: string;
+	borderWidth: number;
+	textColor: string;
+	font: string;
+	textAlign: CanvasTextAlign;
+	tickColor: string;
+	tickWidth: number;
+	tickLength: number;
+	labelOffsetY: number;
+	minLabelGap: number;
+	crosshairLabel: AxisCrosshairLabelConfig;
+};
+
 export type AxisConfig = {
 	/**
 	 * Bottom horizontal axis height in pixels.
@@ -826,6 +855,7 @@ export type AxisConfig = {
 	/**
 	 * Right-side vertical axis configuration.
 	 */
+	axisX: AxisXConfig;
 	axisY: AxisYConfig;
 };
 

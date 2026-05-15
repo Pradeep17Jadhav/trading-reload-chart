@@ -63,7 +63,31 @@ export const CHART_CONFIG: ChartConfig = {
 	},
 
 	axis: {
-		axisXHeight: 60,
+		axisXHeight: 30,
+
+		axisX: {
+			height: 30,
+			backgroundColor: "#11131a",
+			borderColor: "rgb(89, 89, 89)",
+			borderWidth: 1,
+			textColor: "rgba(255, 255, 255, 0.60)",
+			font: "12px Arial",
+			textAlign: "center",
+			tickColor: "rgba(255,255,255,0.12)",
+			tickWidth: 1,
+			tickLength: 6,
+			labelOffsetY: 20,
+			minLabelGap: 16,
+			crosshairLabel: {
+				backgroundColor: "#3b82f6",
+				borderColor: "#60a5fa",
+				borderWidth: 1,
+				textColor: "#ffffff",
+				font: "12px Arial",
+				paddingX: 8,
+				height: 20,
+			},
+		},
 
 		axisY: {
 			width: 80,
@@ -78,6 +102,15 @@ export const CHART_CONFIG: ChartConfig = {
 			tickWidth: 1,
 			tickLength: 8,
 			labelOffsetX: 8,
+			crosshairLabel: {
+				backgroundColor: "#3b82f6",
+				borderColor: "#60a5fa",
+				borderWidth: 1,
+				textColor: "#ffffff",
+				font: "12px Arial",
+				paddingX: 8,
+				height: 20,
+			},
 		},
 	},
 

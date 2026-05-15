@@ -7,15 +7,7 @@
  *
  * - ExistingCandlesLayer
  * - TradeLayer
- * - Future drawing layers
- *
- * @example
- * const y = priceToY({
- *   price: 114.25,
- *   minPrice: 113.80,
- *   priceRange: 1.2,
- *   chartHeight: 900,
- * });
+ * - AxisLayerY
  */
 export const priceToY = ({
 	price,
@@ -31,4 +23,26 @@ export const priceToY = ({
 	const normalizedPrice = (price - minPrice) / priceRange;
 
 	return chartHeight - normalizedPrice * chartHeight;
+};
+
+/**
+ * Converts a canvas Y coordinate
+ * into a market price value.
+ *
+ * Used by the crosshair labels.
+ */
+export const yToPrice = ({
+	y,
+	minPrice,
+	priceRange,
+	chartHeight,
+}: {
+	y: number;
+	minPrice: number;
+	priceRange: number;
+	chartHeight: number;
+}) => {
+	const normalizedY = 1 - y / chartHeight;
+
+	return minPrice + normalizedY * priceRange;
 };

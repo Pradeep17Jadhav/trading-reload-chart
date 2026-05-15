@@ -1,21 +1,25 @@
+import { AxisLayerX } from "./canvas/layers/AxisLayerX/AxisLayerX";
+import { AxisLayerY } from "./canvas/layers/AxisLayerY/AxisLayerY";
 import { CrosshairLayer } from "./canvas/layers/CrosshairLayer";
 import { ExistingCandlesLayer } from "./canvas/layers/ExistingCandlesLayer";
 import { TradeLayer } from "./canvas/layers/TradeLayer/TradeLayer";
 import { TradeLayerEvents } from "./canvas/layers/TradeLayer/TradeLayerEvents";
+import type { TradeHandleType } from "./canvas/layers/TradeLayer/TradeLayer.types";
+import { CHART_CONFIG } from "./config/chartConfig";
 import type { Candle } from "./models/Candle";
 import type { OpenTrade } from "./models/Trade";
 import "./main.css";
-import { AxisLayerY } from "./canvas/layers/AxisLayerY/AxisLayerY";
-import type { TradeHandleType } from "./canvas/layers/TradeLayer/TradeLayer.types";
-import { CHART_CONFIG } from "./config/chartConfig";
 
+const chartStack = document.querySelector<HTMLDivElement>("#chart-stack");
 const candleCanvas = document.querySelector<HTMLCanvasElement>("#chart");
 const overlayCanvas = document.querySelector<HTMLCanvasElement>("#overlay");
 const tradesCanvas = document.querySelector<HTMLCanvasElement>("#trades");
+const axisXCanvas = document.querySelector<HTMLCanvasElement>("#axis-x");
 const axisYCanvas = document.querySelector<HTMLCanvasElement>("#axis-y");
+
 const activeSymbol = "GBPJPY";
 
-if (!candleCanvas || !overlayCanvas || !tradesCanvas || !axisYCanvas) {
+if (!chartStack || !candleCanvas || !overlayCanvas || !tradesCanvas || !axisXCanvas || !axisYCanvas) {
 	throw new Error("Canvas not found");
 }
 
@@ -25,20 +29,25 @@ if (!candleCanvas || !overlayCanvas || !tradesCanvas || !axisYCanvas) {
  * =========================
  */
 const resizeCanvases = () => {
-	const width = window.innerWidth;
-	const height = window.innerHeight;
+	const chartStackWidth = chartStack.clientWidth;
+	const chartStackHeight = chartStack.clientHeight;
+	const axisXHeight = CHART_CONFIG.axis.axisX.height;
+	const plotHeight = Math.max(0, chartStackHeight - axisXHeight);
 
-	candleCanvas.width = width;
-	candleCanvas.height = height;
+	candleCanvas.width = chartStackWidth;
+	candleCanvas.height = plotHeight;
 
-	overlayCanvas.width = width;
-	overlayCanvas.height = height;
+	overlayCanvas.width = chartStackWidth;
+	overlayCanvas.height = plotHeight;
 
-	tradesCanvas.width = width;
-	tradesCanvas.height = height;
+	tradesCanvas.width = chartStackWidth;
+	tradesCanvas.height = plotHeight;
+
+	axisXCanvas.width = chartStackWidth;
+	axisXCanvas.height = axisXHeight;
 
 	axisYCanvas.width = CHART_CONFIG.axis.axisY.width;
-	axisYCanvas.height = height;
+	axisYCanvas.height = plotHeight;
 };
 
 resizeCanvases();
@@ -51,31 +60,103 @@ resizeCanvases();
 let candleLayer: ExistingCandlesLayer | null = null;
 let tradeLayer: TradeLayer | null = null;
 let tradeLayerEvents: TradeLayerEvents | null = null;
+let axisLayerX: AxisLayerX | null = null;
 let axisLayerY: AxisLayerY | null = null;
-
-const renderAllLayers = () => {
-	if (!candleLayer) {
-		return;
-	}
-	candleLayer.render();
-	tradeLayer?.setViewport(candleLayer.viewport);
-	tradeLayer?.render();
-	axisLayerY?.setViewport(candleLayer.viewport);
-	axisLayerY?.render();
-	crosshairLayer.render();
-};
 
 const crosshairLayer = new CrosshairLayer({
 	canvas: overlayCanvas,
 });
 
+const renderAxisLayers = () => {
+	if (!candleLayer) {
+		return;
+	}
+
+	axisLayerX?.setCandles(candleLayer.candles);
+	axisLayerX?.setViewport(candleLayer.viewport);
+	axisLayerX?.render();
+
+	axisLayerY?.setViewport(candleLayer.viewport);
+	axisLayerY?.render();
+};
+
+const renderAllLayers = () => {
+	if (!candleLayer) {
+		return;
+	}
+
+	candleLayer.render();
+
+	tradeLayer?.setViewport(candleLayer.viewport);
+	tradeLayer?.render();
+
+	renderAxisLayers();
+	crosshairLayer.render();
+};
+
+const getCanvasPoint = (canvas: HTMLCanvasElement, event: PointerEvent | MouseEvent) => {
+	const rect = canvas.getBoundingClientRect();
+	const scaleX = canvas.width / rect.width;
+	const scaleY = canvas.height / rect.height;
+
+	return {
+		x: (event.clientX - rect.left) * scaleX,
+		y: (event.clientY - rect.top) * scaleY,
+	};
+};
+
+const updateCrosshairAndAxisLabels = (event: PointerEvent | MouseEvent) => {
+	if (!candleLayer) {
+		crosshairLayer.updateMousePosition(event.clientX, event.clientY);
+		crosshairLayer.render();
+		return;
+	}
+
+	const pointer = getCanvasPoint(overlayCanvas, event);
+	const nearestCandleIndex = candleLayer.getNearestCandleIndexByX(pointer.x);
+	const nearestCandle = nearestCandleIndex === null ? null : candleLayer.candles[nearestCandleIndex];
+	const snapX = nearestCandleIndex === null ? pointer.x : candleLayer.getCandleCenterX(nearestCandleIndex);
+
+	crosshairLayer.updateMousePosition(event.clientX, event.clientY, {
+		snapX,
+	});
+
+	const crosshairPrice = candleLayer.getPriceAtY(crosshairLayer.mouseY);
+
+	axisLayerY?.setCrosshair({
+		visible: true,
+		y: crosshairLayer.mouseY,
+		price: crosshairPrice,
+	});
+
+	axisLayerX?.setCrosshair({
+		visible: true,
+		x: crosshairLayer.mouseX,
+		candle: nearestCandle ?? null,
+	});
+
+	renderAxisLayers();
+	crosshairLayer.render();
+};
+
+const hideCrosshairAndAxisLabels = () => {
+	crosshairLayer.hide();
+	axisLayerX?.hideCrosshair();
+	axisLayerY?.hideCrosshair();
+
+	renderAxisLayers();
+	crosshairLayer.render();
+};
+
 const handleTradeModified = async ({ ticket, sl, tp }: { ticket: number; sl?: number | null; tp?: number | null }) => {
 	tradeLayer?.setIsDragging(false);
+
 	const body = {
 		ticket,
 		...(tp !== undefined ? { tp } : {}),
 		...(sl !== undefined ? { sl } : {}),
 	};
+
 	try {
 		const response = await fetch(`https://api-tradingreload.pradeepjadhav.com/trade/modify`, {
 			method: "POST",
@@ -89,6 +170,7 @@ const handleTradeModified = async ({ ticket, sl, tp }: { ticket: number; sl?: nu
 		}
 
 		const data = await response.json();
+
 		console.log(data);
 	} catch (error) {
 		console.error("Failed to modify the trade", error);
@@ -101,6 +183,7 @@ const handleTPSLChange = ({ trade, type, price }: { trade: OpenTrade; type: Trad
 	}
 
 	tradeLayer.setIsDragging(true);
+
 	const updatedTrades = tradeLayer.trades.map((currentTrade) => {
 		if (currentTrade.ticket !== trade.ticket) {
 			return currentTrade;
@@ -134,14 +217,15 @@ const handleTPSLChange = ({ trade, type, price }: { trade: OpenTrade; type: Trad
  */
 const loadCandles = async () => {
 	try {
-		const response = await fetch(`http://localhost:5000/candles?symbol=${activeSymbol}&tf=15m&limit=500`);
+		const response = await fetch(
+			`https://api-tradingreload.pradeepjadhav.com/candles?symbol=${activeSymbol}&tf=15m&limit=500`,
+		);
 
 		if (!response.ok) {
 			throw new Error(`Failed to fetch candles: ${response.status}`);
 		}
 
 		const data = await response.json();
-
 		const candles: Candle[] = data.candles ?? [];
 
 		candleLayer = new ExistingCandlesLayer({
@@ -153,6 +237,11 @@ const loadCandles = async () => {
 
 		tradeLayer = new TradeLayer({
 			canvas: tradesCanvas,
+		});
+
+		axisLayerX = new AxisLayerX({
+			canvas: axisXCanvas,
+			candles,
 		});
 
 		axisLayerY = new AxisLayerY({
@@ -173,22 +262,14 @@ const loadCandles = async () => {
 
 		await loadOpenTradesLiveFeed();
 
-		/**
-		 * Start websocket feed
-		 */
 		initializeLiveFeed();
 	} catch (error) {
 		console.error("Failed to load candles", error);
 	}
 };
 
-/**
- * =========================
- * Load Open Trades
- * =========================
- */
 const loadOpenTradesLiveFeed = async () => {
-	const socket = new WebSocket("ws://localhost:5000/ws/positions");
+	const socket = new WebSocket("wss://api-tradingreload.pradeepjadhav.com/ws/positions");
 
 	socket.addEventListener("message", (event: MessageEvent) => {
 		if (!tradeLayer) {
@@ -225,7 +306,7 @@ const loadOpenTradesLiveFeed = async () => {
  * not inside chart library.
  */
 const initializeLiveFeed = () => {
-	const socket = new WebSocket(`ws://localhost:5000/ws/candles?symbol=${activeSymbol}&tf=15m`);
+	const socket = new WebSocket(`wss://api-tradingreload.pradeepjadhav.com/ws/candles?symbol=${activeSymbol}&tf=15m`);
 
 	socket.addEventListener("message", (event: MessageEvent) => {
 		if (!candleLayer || !tradeLayer) {
@@ -241,6 +322,7 @@ const initializeLiveFeed = () => {
 
 			candleLayer.updateLiveCandle(data.candle);
 			tradeLayer.setLiveCandle(candleLayer.liveCandle);
+
 			renderAllLayers();
 		} catch (error) {
 			console.error("Failed to parse websocket candle", error);
@@ -258,14 +340,19 @@ const handleWheelEvent = (event: WheelEvent) => {
 	if (!candleLayer || !tradeLayer) {
 		return;
 	}
+
 	tradeLayerEvents?.handlePointerEvent(event);
+
 	event.preventDefault();
+
 	const zoomDelta = event.deltaY < 0 ? 1 : -1;
+
 	if (event.ctrlKey || event.metaKey) {
 		candleLayer.zoomVertically(zoomDelta);
 	} else {
 		candleLayer.zoomHorizontally(zoomDelta);
 	}
+
 	renderAllLayers();
 };
 
@@ -282,11 +369,7 @@ const handlePointerDownEvent = (event: PointerEvent) => {
 const handlePointerMoveEvent = (event: PointerEvent) => {
 	tradeLayerEvents?.handlePointerEvent(event);
 
-	/**
-	 * Crosshair
-	 */
-	crosshairLayer.updateMousePosition(event.clientX, event.clientY);
-	crosshairLayer.render();
+	updateCrosshairAndAxisLabels(event);
 
 	if (!isDragging || !candleLayer) {
 		/**
@@ -305,6 +388,7 @@ const handlePointerMoveEvent = (event: PointerEvent) => {
 	candleLayer.panVertically(deltaY);
 
 	renderAllLayers();
+	updateCrosshairAndAxisLabels(event);
 };
 
 const handlePointerUpEvent = (event: PointerEvent) => {
@@ -317,18 +401,12 @@ const handlePointerEnterEvent = (event: PointerEvent) => {
 };
 
 const handlePointerLeaveEvent = () => {
-	crosshairLayer.hide();
-	crosshairLayer.render();
+	hideCrosshairAndAxisLabels();
 };
 
 const handleResizeEvent = () => {
 	resizeCanvases();
-	candleLayer?.render();
-	if (candleLayer && tradeLayer) {
-		tradeLayer.setViewport(candleLayer.viewport);
-		tradeLayer.render();
-	}
-	crosshairLayer.render();
+	renderAllLayers();
 };
 
 let isDragging = false;

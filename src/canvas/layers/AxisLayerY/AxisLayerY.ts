@@ -10,12 +10,22 @@ type AxisLayerYOptions = {
 	canvas: HTMLCanvasElement;
 };
 
+type AxisLayerYCrosshair = {
+	visible: boolean;
+	y: number;
+	price: number;
+};
+
 export class AxisLayerY {
 	readonly #canvas: HTMLCanvasElement;
-
 	readonly #ctx: CanvasRenderingContext2D;
 
 	viewport: ChartViewport | null = null;
+	crosshair: AxisLayerYCrosshair = {
+		visible: false,
+		y: 0,
+		price: 0,
+	};
 
 	constructor(options: AxisLayerYOptions) {
 		this.#canvas = options.canvas;
@@ -33,17 +43,22 @@ export class AxisLayerY {
 		this.viewport = viewport;
 	}
 
+	setCrosshair(crosshair: AxisLayerYCrosshair) {
+		this.crosshair = crosshair;
+	}
+
+	hideCrosshair() {
+		this.crosshair.visible = false;
+	}
+
 	render() {
 		if (!this.viewport) {
 			return;
 		}
 
 		const ctx = this.#ctx;
-
 		const canvasWidth = this.#canvas.width;
-
 		const canvasHeight = this.#canvas.height;
-
 		const axisYConfig = CHART_CONFIG.axis.axisY;
 
 		ctx.clearRect(0, 0, canvasWidth, canvasHeight);
@@ -54,11 +69,8 @@ export class AxisLayerY {
 		 * =========================
 		 */
 		ctx.save();
-
 		ctx.fillStyle = axisYConfig.backgroundColor;
-
 		ctx.fillRect(0, 0, canvasWidth, canvasHeight);
-
 		ctx.restore();
 
 		/**
@@ -67,19 +79,12 @@ export class AxisLayerY {
 		 * =========================
 		 */
 		ctx.save();
-
 		ctx.strokeStyle = axisYConfig.borderColor;
-
 		ctx.lineWidth = axisYConfig.borderWidth;
-
 		ctx.beginPath();
-
 		ctx.moveTo(0, 0);
-
 		ctx.lineTo(0, canvasHeight);
-
 		ctx.stroke();
-
 		ctx.restore();
 
 		/**
@@ -89,13 +94,9 @@ export class AxisLayerY {
 		 */
 
 		ctx.save();
-
 		ctx.font = axisYConfig.font;
-
 		ctx.fillStyle = axisYConfig.textColor;
-
 		ctx.textAlign = axisYConfig.textAlign;
-
 		ctx.textBaseline = "middle";
 
 		const step = getPriceStep({
@@ -104,7 +105,6 @@ export class AxisLayerY {
 		});
 
 		const startPrice = Math.floor(this.viewport.minPrice / step) * step;
-
 		const endPrice = this.viewport.maxPrice + step;
 
 		for (let price = startPrice; price <= endPrice; price += step) {
@@ -120,22 +120,49 @@ export class AxisLayerY {
 			}
 
 			ctx.strokeStyle = axisYConfig.tickColor;
-
 			ctx.lineWidth = axisYConfig.tickWidth;
 
 			ctx.beginPath();
-
 			ctx.moveTo(0, y);
-
 			ctx.lineTo(axisYConfig.tickLength, y);
-
 			ctx.stroke();
 
-			/**
-			 * Price Label
-			 */
+			ctx.fillStyle = axisYConfig.textColor;
 			ctx.fillText(normalizePrice(price).toFixed(5), axisYConfig.labelOffsetX, y);
 		}
+
+		ctx.restore();
+
+		this.drawCrosshairPriceLabel();
+	}
+
+	drawCrosshairPriceLabel() {
+		if (!this.crosshair.visible) {
+			return;
+		}
+
+		const ctx = this.#ctx;
+		const canvasWidth = this.#canvas.width;
+		const canvasHeight = this.#canvas.height;
+		const labelConfig = CHART_CONFIG.axis.axisY.crosshairLabel;
+		const label = normalizePrice(this.crosshair.price).toFixed(5);
+		const rectHeight = labelConfig.height;
+		const rectY = Math.max(0, Math.min(canvasHeight - rectHeight, this.crosshair.y - rectHeight / 2));
+
+		ctx.save();
+
+		ctx.fillStyle = labelConfig.backgroundColor;
+		ctx.fillRect(0, rectY, canvasWidth, rectHeight);
+
+		ctx.strokeStyle = labelConfig.borderColor;
+		ctx.lineWidth = labelConfig.borderWidth;
+		ctx.strokeRect(0, rectY, canvasWidth, rectHeight);
+
+		ctx.font = labelConfig.font;
+		ctx.fillStyle = labelConfig.textColor;
+		ctx.textAlign = "left";
+		ctx.textBaseline = "middle";
+		ctx.fillText(label, labelConfig.paddingX, rectY + rectHeight / 2);
 
 		ctx.restore();
 	}

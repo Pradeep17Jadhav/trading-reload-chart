@@ -1,5 +1,3 @@
-// chartConfig.ts
-
 import { CHART_SHAPE_CONFIG } from "./ChartShapeConfig/chartShapeConfig";
 import type {
 	ChartConfig,
@@ -280,6 +278,30 @@ export const CHART_CONFIG: ChartConfig = {
 				...commonDottedLine,
 				color: COLORS.green,
 			},
+		},
+	},
+
+	pastTradeIndicators: {
+		visible: true,
+
+		arrow: {
+			visible: true,
+			width: 60,
+			height: 30,
+			headHeightRatio: 0.45,
+			shaftWidthRatio: 6,
+			buyColor: COLORS.green,
+			buyBorderColor: COLORS.white,
+			sellColor: COLORS.red,
+			sellBorderColor: COLORS.white,
+			borderWidth: 1,
+			opacity: 1,
+		},
+
+		connectorLine: {
+			...commonDottedLine,
+			color: COLORS.white,
+			opacity: 0.65,
 		},
 	},
 

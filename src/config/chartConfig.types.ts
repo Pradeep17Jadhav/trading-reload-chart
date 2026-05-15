@@ -1,4 +1,3 @@
-// chartConfig.types.ts
 import type { PartialShapeConfig } from "../canvas/layers/ShapesLayer/ShapesLayer.types";
 
 export type { PartialShapeConfig };
@@ -152,6 +151,26 @@ export type TradeHandlesConfig = {
 	missingProtectionHandles: MissingTradeProtectionConfig;
 };
 
+export type PastTradeIndicatorArrowConfig = {
+	visible: boolean;
+	width: number;
+	height: number;
+	headHeightRatio: number;
+	shaftWidthRatio: number;
+	buyColor: string;
+	sellColor: string;
+	buyBorderColor: string;
+	sellBorderColor: string;
+	borderWidth: number;
+	opacity: number;
+};
+
+export type PastTradeIndicatorsConfig = {
+	visible: boolean;
+	arrow: PastTradeIndicatorArrowConfig;
+	connectorLine: TradeHandleLineConfig;
+};
+
 export type ColorsConfig = {
 	bullish: string;
 	bearish: string;
@@ -212,6 +231,7 @@ export type ChartConfig = {
 	volume: VolumeConfig;
 	crosshair: CrosshairConfig;
 	tradeHandles: TradeHandlesConfig;
+	pastTradeIndicators: PastTradeIndicatorsConfig;
 	colors: ColorsConfig;
 	axis: AxisConfig;
 	shapes: PartialShapeConfig;

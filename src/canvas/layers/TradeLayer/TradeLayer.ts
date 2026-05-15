@@ -1,8 +1,7 @@
-// TradeLayer.ts
-
 import { CHART_CONFIG } from "../../../config/chartConfig";
 import type {
 	MissingTradeProtectionHandleRectConfig,
+	PastTradeIndicatorArrowConfig,
 	TemporaryTradeProtectionHandleRectConfig,
 	TradeHandleLineConfig,
 	TradeHandleRectConfig,
@@ -11,10 +10,11 @@ import type {
 import { normalizePrice } from "../../../helpers/math";
 import type { Candle } from "../../../models/Candle";
 import type { ChartViewport } from "../../../models/ChartViewport";
-import type { OpenTrade } from "../../../models/Trade";
+import type { OpenTrade, TradeType } from "../../../models/Trade";
 import { priceToY } from "../helpers/LayerHelpers";
 import { calculatePotentialPnlUsd } from "./TradeLayer.helpers";
 import type {
+	PastTradeIndicator,
 	TemporaryTradeProtectionDrag,
 	TradeHandleHitbox,
 	TradeHandleType,
@@ -77,6 +77,21 @@ type TemporaryProtectionRenderState = {
 	handleHeight: number;
 };
 
+type PastTradeIndicatorPoint = {
+	x: number;
+	y: number;
+	price: number;
+	time: number;
+};
+
+type PastTradeIndicatorRenderState = {
+	trade: PastTradeIndicator;
+	start: PastTradeIndicatorPoint;
+	close: PastTradeIndicatorPoint;
+	arrowWidth: number;
+	arrowHeight: number;
+};
+
 type DrawTradeHandleOptions = {
 	price: number;
 	type: TradeHandleType;
@@ -112,6 +127,14 @@ type DrawHandleLineOptions = {
 	config: TradeHandleLineConfig;
 };
 
+type DrawConnectorLineOptions = {
+	x1: number;
+	y1: number;
+	x2: number;
+	y2: number;
+	config: TradeHandleLineConfig;
+};
+
 type DrawHandleRectOptions = {
 	x: number;
 	y: number;
@@ -144,6 +167,15 @@ type DrawHandleSectionsOptions = {
 	y: number;
 };
 
+type DrawPastTradeArrowOptions = {
+	x: number;
+	y: number;
+	type: TradeType;
+	width: number;
+	height: number;
+	config: PastTradeIndicatorArrowConfig;
+};
+
 type HandleSection = {
 	label: string;
 	width: number;
@@ -162,6 +194,8 @@ export class TradeLayer {
 
 	isDragging: boolean;
 	trades: OpenTrade[] = [];
+	pastTrades: PastTradeIndicator[] = [];
+	candles: Candle[] = [];
 	viewport: ChartViewport | null = null;
 	liveCandle: Candle | null = null;
 	handleHitboxes: TradeHandleHitbox[] = [];
@@ -182,6 +216,14 @@ export class TradeLayer {
 
 	setTrades(trades: OpenTrade[]) {
 		this.trades = trades;
+	}
+
+	setPastTrades(pastTrades: PastTradeIndicator[]) {
+		this.pastTrades = pastTrades;
+	}
+
+	setCandles(candles: Candle[]) {
+		this.candles = candles;
 	}
 
 	setViewport(viewport: ChartViewport) {
@@ -213,6 +255,8 @@ export class TradeLayer {
 	render() {
 		this.clearCanvas();
 		this.resetHitboxes();
+
+		this.drawPastTradeIndicators();
 
 		for (const trade of this.trades) {
 			this.drawTrade({
@@ -385,6 +429,24 @@ export class TradeLayer {
 		ctx.beginPath();
 		ctx.moveTo(x1, y);
 		ctx.lineTo(x2, y);
+		ctx.stroke();
+
+		ctx.restore();
+	}
+
+	drawConnectorLine({ x1, y1, x2, y2, config }: DrawConnectorLineOptions) {
+		const ctx = this.#ctx;
+
+		ctx.save();
+
+		ctx.globalAlpha = config.opacity;
+		ctx.strokeStyle = config.color;
+		ctx.lineWidth = config.width;
+		ctx.setLineDash(this.getHandleLineDash(config));
+
+		ctx.beginPath();
+		ctx.moveTo(x1, y1);
+		ctx.lineTo(x2, y2);
 		ctx.stroke();
 
 		ctx.restore();
@@ -571,6 +633,272 @@ export class TradeLayer {
 
 	private resetHitboxes() {
 		this.handleHitboxes = [];
+	}
+
+	private drawPastTradeIndicators() {
+		const config = CHART_CONFIG.pastTradeIndicators;
+
+		if (!config.visible || !this.viewport || this.candles.length === 0) {
+			return;
+		}
+
+		for (const trade of this.pastTrades) {
+			const renderState = this.getPastTradeIndicatorRenderState(trade);
+
+			if (!renderState) {
+				continue;
+			}
+
+			this.drawPastTradeConnector(renderState);
+			this.drawPastTradeArrows(renderState);
+		}
+	}
+
+	private getPastTradeIndicatorRenderState(trade: PastTradeIndicator): PastTradeIndicatorRenderState | null {
+		if (!this.viewport) {
+			return null;
+		}
+
+		const startX = this.getTimeX(trade.startTime);
+		const closeX = this.getTimeX(trade.closeTime);
+
+		if (startX === null || closeX === null) {
+			return null;
+		}
+
+		const startY = this.getPriceY(trade.openPrice, this.viewport);
+		const closeY = this.getPriceY(trade.closePrice, this.viewport);
+		const arrowConfig = CHART_CONFIG.pastTradeIndicators.arrow;
+		const arrowWidth = arrowConfig.width;
+		const arrowHeight = arrowConfig.height;
+
+		return {
+			trade,
+			start: {
+				x: startX,
+				y: startY,
+				time: trade.startTime,
+				price: trade.openPrice,
+			},
+			close: {
+				x: closeX,
+				y: closeY,
+				time: trade.closeTime,
+				price: trade.closePrice,
+			},
+			arrowWidth,
+			arrowHeight,
+		};
+	}
+
+	private drawPastTradeConnector({ start, close }: PastTradeIndicatorRenderState) {
+		const config = CHART_CONFIG.pastTradeIndicators.connectorLine;
+
+		this.drawConnectorLine({
+			x1: start.x,
+			y1: start.y,
+			x2: close.x,
+			y2: close.y,
+			config,
+		});
+	}
+
+	private drawPastTradeArrows({ trade, start, close, arrowWidth, arrowHeight }: PastTradeIndicatorRenderState) {
+		const config = CHART_CONFIG.pastTradeIndicators.arrow;
+
+		if (!config.visible) {
+			return;
+		}
+
+		const closeType = trade.type === "buy" ? "sell" : "buy";
+
+		this.drawPastTradeArrow({
+			x: start.x,
+			y: start.y,
+			type: trade.type,
+			width: arrowWidth,
+			height: arrowHeight,
+			config,
+		});
+
+		this.drawPastTradeArrow({
+			x: close.x,
+			y: close.y,
+			type: closeType,
+			width: arrowWidth,
+			height: arrowHeight,
+			config,
+		});
+	}
+
+	private drawPastTradeArrow({ x, y, type, width, height, config }: DrawPastTradeArrowOptions) {
+		if (width <= 0 || height <= 0) {
+			return;
+		}
+
+		const ctx = this.#ctx;
+		const isBuy = type === "buy";
+		const color = isBuy ? config.buyColor : config.sellColor;
+		const borderColor = isBuy ? config.buyBorderColor : config.sellBorderColor;
+
+		/**
+		 * Canvas Y increases downward.
+		 *
+		 * BUY:
+		 * - arrow points upward
+		 * - tip is exactly at price point y
+		 * - tail extends below price point
+		 *
+		 * SELL:
+		 * - arrow points downward
+		 * - tip is exactly at price point y
+		 * - tail extends above price point
+		 */
+		const tailDirection = isBuy ? 1 : -1;
+
+		const tipX = x;
+		const tipY = y;
+
+		const tailX = x;
+		const tailY = y + tailDirection * height;
+
+		const headLength = height / 2;
+		const headOffsetX = headLength / Math.SQRT2;
+		const headOffsetY = headLength / Math.SQRT2;
+
+		const leftHeadX = tipX - headOffsetX;
+		const rightHeadX = tipX + headOffsetX;
+		const headBaseY = tipY + tailDirection * headOffsetY;
+
+		const innerLineWidth = Math.max(1, config.shaftWidthRatio);
+		const outerLineWidth = innerLineWidth + config.borderWidth * 2;
+
+		const drawArrowPath = () => {
+			ctx.beginPath();
+
+			// Shaft: tail -> tip
+			ctx.moveTo(tailX, tailY);
+			ctx.lineTo(tipX, tipY);
+
+			// Left head line: tip -> base
+			ctx.moveTo(tipX, tipY);
+			ctx.lineTo(leftHeadX, headBaseY);
+
+			// Right head line: tip -> base
+			ctx.moveTo(tipX, tipY);
+			ctx.lineTo(rightHeadX, headBaseY);
+
+			ctx.stroke();
+		};
+
+		ctx.save();
+
+		ctx.globalAlpha = config.opacity;
+		ctx.lineCap = "round";
+		ctx.lineJoin = "round";
+
+		// Border pass.
+		ctx.strokeStyle = borderColor;
+		ctx.lineWidth = outerLineWidth;
+		drawArrowPath();
+
+		// Colored inner pass.
+		ctx.strokeStyle = color;
+		ctx.lineWidth = innerLineWidth;
+		drawArrowPath();
+
+		ctx.restore();
+	}
+
+	private getTimeX(time: number) {
+		if (!this.viewport || this.candles.length === 0 || !Number.isFinite(time)) {
+			return null;
+		}
+
+		const normalizedTime = this.normalizeTimestamp(time);
+		const firstCandle = this.candles[0];
+		const lastCandle = this.candles[this.candles.length - 1];
+
+		if (!firstCandle || !lastCandle) {
+			return null;
+		}
+
+		if (this.candles.length === 1) {
+			return this.getCandleCenterX(0);
+		}
+
+		if (normalizedTime <= firstCandle.time) {
+			const interval = this.getCandleTimeInterval(0);
+			const offsetCandles = (firstCandle.time - normalizedTime) / interval;
+
+			return this.getCandleCenterX(0) - offsetCandles * this.viewport.candleSpacing;
+		}
+
+		if (normalizedTime >= lastCandle.time) {
+			const lastIndex = this.candles.length - 1;
+			const interval = this.getCandleTimeInterval(lastIndex);
+			const offsetCandles = (normalizedTime - lastCandle.time) / interval;
+
+			return this.getCandleCenterX(lastIndex) + offsetCandles * this.viewport.candleSpacing;
+		}
+
+		const rightIndex = this.getFirstCandleIndexAtOrAfterTime(normalizedTime);
+		const leftIndex = Math.max(0, rightIndex - 1);
+		const leftCandle = this.candles[leftIndex];
+		const rightCandle = this.candles[rightIndex];
+
+		if (!leftCandle || !rightCandle || rightCandle.time === leftCandle.time) {
+			return this.getCandleCenterX(leftIndex);
+		}
+
+		const ratio = (normalizedTime - leftCandle.time) / (rightCandle.time - leftCandle.time);
+
+		return this.getCandleCenterX(leftIndex) + ratio * this.viewport.candleSpacing;
+	}
+
+	private normalizeTimestamp(time: number) {
+		return time < 1e12 ? time * 1000 : time;
+	}
+
+	private getFirstCandleIndexAtOrAfterTime(time: number) {
+		let low = 0;
+		let high = this.candles.length - 1;
+
+		while (low < high) {
+			const mid = Math.floor((low + high) / 2);
+
+			if (this.candles[mid].time < time) {
+				low = mid + 1;
+			} else {
+				high = mid;
+			}
+		}
+
+		return low;
+	}
+
+	private getCandleCenterX(candleIndex: number) {
+		if (!this.viewport) {
+			return 0;
+		}
+
+		return candleIndex * this.viewport.candleSpacing + this.viewport.offsetX + this.viewport.candleWidth / 2;
+	}
+
+	private getCandleTimeInterval(candleIndex: number) {
+		const currentCandle = this.candles[candleIndex];
+		const previousCandle = this.candles[candleIndex - 1];
+		const nextCandle = this.candles[candleIndex + 1];
+
+		if (currentCandle && nextCandle && nextCandle.time > currentCandle.time) {
+			return nextCandle.time - currentCandle.time;
+		}
+
+		if (currentCandle && previousCandle && currentCandle.time > previousCandle.time) {
+			return currentCandle.time - previousCandle.time;
+		}
+
+		return 60 * 1000;
 	}
 
 	private getTradeHandleRenderState({ price, type, trade }: DrawTradeHandleOptions): TradeHandleRenderState | null {

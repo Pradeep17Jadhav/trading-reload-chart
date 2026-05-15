@@ -11,25 +11,29 @@ import type {
 } from "./canvas/layers/ShapesLayer/ShapesLayer.types";
 
 import { TradeLayer } from "./canvas/layers/TradeLayer/TradeLayer";
-import type { TradeHandleType, TradeProtectionHandleType } from "./canvas/layers/TradeLayer/TradeLayer.types";
+import type {
+	PastTradeIndicator,
+	TradeHandleType,
+	TradeProtectionHandleType,
+} from "./canvas/layers/TradeLayer/TradeLayer.types";
 import { TradeLayerEvents } from "./canvas/layers/TradeLayer/TradeLayerEvents";
 import { VolumeLayer } from "./canvas/layers/VolumeLayer/VolumeLayer";
 import { CHART_CONFIG } from "./config/chartConfig";
 import type { Candle } from "./models/Candle";
-import type { OpenTrade } from "./models/Trade";
+import type { OpenTrade, TradeType } from "./models/Trade";
 import "./main.css";
 
 const API_BASE_URL = "https://api-tradingreload.pradeepjadhav.com";
 const WS_BASE_URL = "wss://api-tradingreload.pradeepjadhav.com";
 
-const activeSymbol = "GBPJPY";
+const activeSymbol = "AUDJPY";
 
 /**
  * Broker (MT4/MT5) sends candle times in UTC+3 server time encoded as
  * plain Unix seconds. Convert to true UTC milliseconds by multiplying
  * by 1000 and stripping the 3-hour broker timezone offset.
  */
-const BROKER_TZ_OFFSET_MS = 3 * 60 * 60 * 1000; // UTC+3 → UTC
+const BROKER_TZ_OFFSET_MS = 3 * 60 * 60 * 1000;
 
 const toMs = (candle: Candle): Candle =>
 	candle.time < 1e12 ? { ...candle, time: candle.time * 1000 - BROKER_TZ_OFFSET_MS } : candle;
@@ -68,6 +72,26 @@ type MissingProtectionDragPayload = {
 	price: number;
 };
 
+type TradeHistoryApiItem = {
+	commission: number;
+	endPrice: number;
+	endTime: number;
+	pnl: number;
+	sl: number | null;
+	startPrice: number;
+	startTime: number;
+	swap: number;
+	symbol: string;
+	tp: number | null;
+	type: TradeType;
+	volume: number;
+};
+
+type TradeHistoryApiResponse = {
+	count: number;
+	history: TradeHistoryApiItem[];
+};
+
 function getRequiredElement<T extends Element>(selector: string): T {
 	const element = document.querySelector<T>(selector);
 
@@ -82,12 +106,6 @@ function getRequiredElement<T extends Element>(selector: string): T {
  * =========================
  * Demo Shapes
  * =========================
- *
- * NOTE:
- * This is ONLY for local demo/testing.
- *
- * Actual shapes should be owned by the parent React app and passed
- * to the chart library through the `shapes` prop.
  */
 let demoShapes: Shape[] = [];
 const createDemoShapes = (candles: Candle[]): Shape[] => {
@@ -118,64 +136,34 @@ const createDemoShapes = (candles: Candle[]): Shape[] => {
 			id: "demo-trendline-1",
 			type: "trendline",
 			vertices: [
-				{
-					time: trendStart.time,
-					price: priceAt(trendStart, 0.25),
-				},
-				{
-					time: trendEnd.time,
-					price: priceAt(trendEnd, 0.75),
-				},
+				{ time: trendStart.time, price: priceAt(trendStart, 0.25) },
+				{ time: trendEnd.time, price: priceAt(trendEnd, 0.75) },
 			],
 		},
 		{
 			id: "demo-rectangle-1",
 			type: "rectangle",
 			vertices: [
-				{
-					time: rectangleStart.time,
-					price: priceAt(rectangleStart, 0.85),
-				},
-				{
-					time: rectangleEnd.time,
-					price: priceAt(rectangleEnd, 0.15),
-				},
+				{ time: rectangleStart.time, price: priceAt(rectangleStart, 0.85) },
+				{ time: rectangleEnd.time, price: priceAt(rectangleEnd, 0.15) },
 			],
 		},
 		{
 			id: "demo-path-1",
 			type: "path",
 			vertices: [
-				{
-					time: pathA.time,
-					price: priceAt(pathA, 0.2),
-				},
-				{
-					time: pathB.time,
-					price: priceAt(pathB, 0.8),
-				},
-				{
-					time: pathC.time,
-					price: priceAt(pathC, 0.35),
-				},
-				{
-					time: pathD.time,
-					price: priceAt(pathD, 0.7),
-				},
+				{ time: pathA.time, price: priceAt(pathA, 0.2) },
+				{ time: pathB.time, price: priceAt(pathB, 0.8) },
+				{ time: pathC.time, price: priceAt(pathC, 0.35) },
+				{ time: pathD.time, price: priceAt(pathD, 0.7) },
 			],
 		},
 		{
 			id: "demo-fib-1",
 			type: "fibRetracement",
 			vertices: [
-				{
-					time: fibStart.time,
-					price: priceAt(fibStart, 0.9),
-				},
-				{
-					time: fibEnd.time,
-					price: priceAt(fibEnd, 0.1),
-				},
+				{ time: fibStart.time, price: priceAt(fibStart, 0.9) },
+				{ time: fibEnd.time, price: priceAt(fibEnd, 0.1) },
 			],
 		},
 		{
@@ -198,19 +186,11 @@ const createDemoShapes = (candles: Candle[]): Shape[] => {
 			},
 			endTime: shortEnd.time,
 			stopLossPercent: 0.25,
-			takeProfitPercent: 0.375,
+			takeProfitPercent: 0.25,
 		},
 	];
 };
 
-/**
- * This should eventually be controlled by React props / toolbar state.
- *
- * When this value is not null:
- * - shapeToolActive becomes true
- * - trade handles and close buttons are ignored
- * - chart panning is blocked
- */
 let activeShapeTool: ShapeToolType | null = null;
 let shapeToolActive = false;
 const getShapeToolActive = () => shapeToolActive;
@@ -228,17 +208,6 @@ const setActiveShapeTool = (tool: ShapeToolType | null) => {
 	shapesLayer?.setActiveTool(activeShapeTool);
 };
 
-/**
- * Temporary demo API so local testing can select a tool from console:
- *
- * window.setActiveShapeTool("trendline")
- * window.setActiveShapeTool("rectangle")
- * window.setActiveShapeTool("path")
- * window.setActiveShapeTool("fibRetracement")
- * window.setActiveShapeTool("shortPosition")
- * window.setActiveShapeTool("longPosition")
- * window.setActiveShapeTool(null)
- */
 declare global {
 	interface Window {
 		setActiveShapeTool?: (tool: ShapeToolType | null) => void;
@@ -332,6 +301,7 @@ const renderAllLayers = () => {
 	shapesLayer?.setViewport(candleLayer.viewport);
 	shapesLayer?.render();
 
+	tradeLayer?.setCandles(candleLayer.candles);
 	tradeLayer?.setViewport(candleLayer.viewport);
 	tradeLayer?.render();
 
@@ -425,14 +395,6 @@ const hideCrosshairAndAxisLabels = () => {
 };
 
 const handleShapeAdded = (payload: ShapeAddedPayload) => {
-	/**
-	 * Library behavior:
-	 * The final React version should only emit this callback.
-	 * The parent app should store the shape and pass the updated `shapes` prop back.
-	 *
-	 * Demo behavior:
-	 * We append locally only so main.ts can show newly drawn shapes before React wiring exists.
-	 */
 	console.log("Shape added", payload);
 
 	demoShapes = [...demoShapes, payload.shape];
@@ -443,14 +405,6 @@ const handleShapeAdded = (payload: ShapeAddedPayload) => {
 };
 
 const handleShapeModified = (payload: ShapeModifiedPayload) => {
-	/**
-	 * Library behavior:
-	 * The final React version should only emit this callback.
-	 * The parent app should store the modified shape and pass the updated `shapes` prop back.
-	 *
-	 * Demo behavior:
-	 * We update locally only so main.ts can preview edits before React wiring exists.
-	 */
 	console.log("Shape modified", payload);
 
 	demoShapes = demoShapes.map((shape) => (shape.id === payload.shape.id ? payload.shape : shape));
@@ -649,6 +603,7 @@ const loadCandles = async () => {
 		const candles = await fetchHistoricalCandles();
 
 		initializeLayers(candles);
+		await loadPastTradeHistory();
 		renderAllLayers();
 		await loadOpenTradesLiveFeed();
 		initializeLiveFeed();
@@ -685,6 +640,7 @@ const initializeLayers = (candles: Candle[]) => {
 	if (demoShapes.length === 0) {
 		demoShapes = createDemoShapes(candles);
 	}
+
 	shapesLayer = new ShapesLayer({
 		canvas: shapesCanvas,
 		candles,
@@ -699,6 +655,8 @@ const initializeLayers = (candles: Candle[]) => {
 	tradeLayer = new TradeLayer({
 		canvas: tradesCanvas,
 	});
+
+	tradeLayer.setCandles(candles);
 
 	axisLayerX = new AxisLayerX({
 		canvas: axisXCanvas,
@@ -718,6 +676,87 @@ const initializeLayers = (candles: Candle[]) => {
 		onMissingProtectionDragCancel: handleMissingProtectionDragCancel,
 		onTradeModified: handleTradeModified,
 	});
+};
+
+const loadPastTradeHistory = async () => {
+	if (!tradeLayer) {
+		return;
+	}
+
+	try {
+		const response = await fetch(`${API_BASE_URL}/history`, {
+			cache: "no-store",
+		});
+
+		if (!response.ok) {
+			throw new Error(`Failed to fetch trade history: ${response.status}`);
+		}
+
+		const data = (await response.json()) as TradeHistoryApiResponse;
+		const history = Array.isArray(data.history) ? data.history : [];
+		const activeSymbolHistory = history.filter((trade) => isTradeForActiveSymbol(trade.symbol));
+		const pastTrades = activeSymbolHistory
+			.map(normalizePastTradeIndicator)
+			.filter((trade): trade is PastTradeIndicator => trade !== null);
+
+		tradeLayer.setPastTrades(pastTrades);
+
+		const invalidTradeCount = activeSymbolHistory.length - pastTrades.length;
+
+		if (invalidTradeCount > 0) {
+			console.warn(
+				`Skipped ${invalidTradeCount} historical trade(s) because start/end time or open/close price was missing.`,
+			);
+		}
+	} catch (error) {
+		console.error("Failed to load trade history", error);
+	}
+};
+
+const isTradeForActiveSymbol = (symbol: unknown) => {
+	if (typeof symbol !== "string") {
+		return false;
+	}
+
+	const normalizedTradeSymbol = normalizeSymbol(symbol);
+	const normalizedActiveSymbol = normalizeSymbol(activeSymbol);
+
+	return normalizedTradeSymbol === normalizedActiveSymbol;
+};
+
+const normalizeSymbol = (symbol: string) => symbol.split(".")[0].toUpperCase();
+
+const normalizePastTradeIndicator = (trade: TradeHistoryApiItem): PastTradeIndicator | null => {
+	const startTime = getFiniteNumber(trade.startTime);
+	const closeTime = getFiniteNumber(trade.endTime);
+	const openPrice = getFiniteNumber(trade.startPrice);
+	const closePrice = getFiniteNumber(trade.endPrice);
+
+	if (startTime === null || closeTime === null || openPrice === null || closePrice === null) {
+		return null;
+	}
+	return {
+		symbol: trade.symbol,
+		type: trade.type,
+		startTime,
+		closeTime,
+		openPrice,
+		closePrice,
+		volume: trade.volume,
+		commission: trade.commission,
+		swap: trade.swap,
+		pnl: trade.pnl,
+		sl: trade.sl,
+		tp: trade.tp,
+	};
+};
+
+const getFiniteNumber = (value: unknown) => {
+	if (typeof value !== "number" || !Number.isFinite(value)) {
+		return null;
+	}
+
+	return value;
 };
 
 const loadOpenTradesLiveFeed = async () => {
@@ -751,13 +790,6 @@ const handleOpenTradesMessage = (event: MessageEvent) => {
  * =========================
  * Demo Live Candle Feed
  * =========================
- *
- * NOTE:
- * This is ONLY for local demo/testing.
- *
- * Actual websocket/fetch logic
- * should live inside React app,
- * not inside chart library.
  */
 const initializeLiveFeed = () => {
 	const socket = new WebSocket(`${WS_BASE_URL}/ws/candles?symbol=${activeSymbol}&tf=15m`);
@@ -780,6 +812,7 @@ const handleLiveCandleMessage = (event: MessageEvent) => {
 
 		candleLayer.updateLiveCandle(toMs(data.candle));
 		tradeLayer.setLiveCandle(candleLayer.liveCandle);
+		tradeLayer.setCandles(candleLayer.candles);
 
 		renderAllLayers();
 	} catch (error) {
@@ -852,9 +885,6 @@ const handlePointerMoveEvent = (event: PointerEvent) => {
 	}
 
 	if (!isDragging || !candleLayer || shapeToolActive) {
-		/**
-		 * Panning
-		 */
 		return;
 	}
 

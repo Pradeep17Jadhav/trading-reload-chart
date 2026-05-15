@@ -77,9 +77,7 @@ export const getXAxisNiceIntervalMs = ({
 export const isAlignedToInterval = (timestamp: number, intervalMs: number): boolean => {
 	const date = new Date(timestamp);
 	const msFromLocalMidnight =
-		(date.getHours() * 60 + date.getMinutes()) * 60 * 1000 +
-		date.getSeconds() * 1000 +
-		date.getMilliseconds();
+		(date.getHours() * 60 + date.getMinutes()) * 60 * 1000 + date.getSeconds() * 1000 + date.getMilliseconds();
 
 	if (intervalMs >= 24 * 60 * 60 * 1000) {
 		return msFromLocalMidnight === 0;
@@ -107,13 +105,20 @@ export const formatXAxisLabel = (timestamp: number): string => {
 };
 
 /**
- * Full HH:MM format — used for the crosshair tooltip where we always
- * want the time, never the date number.
+ * Full date + time format for the crosshair tooltip.
+ * Example: "Wed 15 May 10.35"
  */
-export const formatTimeHHMM = (timestamp: number): string => {
+export const formatTimeDayDateHHMM = (timestamp: number): string => {
 	const date = new Date(timestamp);
+	const day = date.toLocaleDateString("en-US", {
+		weekday: "short",
+	});
+	const month = date.toLocaleDateString("en-US", {
+		month: "short",
+	});
+	const dayOfMonth = date.getDate();
 	const hours = date.getHours().toString().padStart(2, "0");
 	const minutes = date.getMinutes().toString().padStart(2, "0");
 
-	return `${hours}:${minutes}`;
+	return `${day} ${dayOfMonth} ${month} ${hours}.${minutes}`;
 };

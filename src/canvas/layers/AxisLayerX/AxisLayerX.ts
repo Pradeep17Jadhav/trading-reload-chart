@@ -5,7 +5,7 @@ import type { Candle } from "../../../models/Candle";
 import type { ChartViewport } from "../../../models/ChartViewport";
 import {
 	detectCandleTimeframeMs,
-	formatTimeHHMM,
+	formatTimeDayDateHHMM,
 	formatXAxisLabel,
 	getXAxisNiceIntervalMs,
 	isAlignedToInterval,
@@ -173,7 +173,7 @@ export class AxisLayerX {
 		const canvasWidth = this.#canvas.width;
 		const canvasHeight = this.#canvas.height;
 		const labelConfig = CHART_CONFIG.axis.axisX.crosshairLabel;
-		const label = formatTimeHHMM(this.crosshair.candle.time);
+		const label = formatTimeDayDateHHMM(this.crosshair.candle.time);
 
 		ctx.save();
 
@@ -182,7 +182,7 @@ export class AxisLayerX {
 		const labelWidth = ctx.measureText(label).width;
 		const rectWidth = labelWidth + labelConfig.paddingX * 2;
 		const rectHeight = labelConfig.height;
-		const rectX = Math.max(0, Math.min(canvasWidth - rectWidth, this.crosshair.x - rectWidth / 2));
+		const rectX = Math.max(120, Math.min(canvasWidth - rectWidth, this.crosshair.x - rectWidth / 2));
 		const rectY = Math.max(0, (canvasHeight - rectHeight) / 2);
 
 		ctx.fillStyle = labelConfig.backgroundColor;

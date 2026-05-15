@@ -3,7 +3,13 @@
 import { CHART_CONFIG } from "../../../config/chartConfig";
 import type { Candle } from "../../../models/Candle";
 import type { ChartViewport } from "../../../models/ChartViewport";
-import { formatTimeHHMM, getXAxisLabelInterval } from "./AxisLayerX.helpers";
+import {
+	detectCandleTimeframeMs,
+	formatTimeHHMM,
+	formatXAxisLabel,
+	getXAxisNiceIntervalMs,
+	isAlignedToInterval,
+} from "./AxisLayerX.helpers";
 
 type AxisLayerXOptions = {
 	canvas: HTMLCanvasElement;
@@ -95,32 +101,46 @@ export class AxisLayerX {
 		ctx.textBaseline = "middle";
 
 		const sampleLabelWidth = ctx.measureText("00:00").width;
-		const labelInterval = getXAxisLabelInterval({
+		const candleTimeframeMs = detectCandleTimeframeMs(this.candles);
+		const niceIntervalMs = getXAxisNiceIntervalMs({
 			candleSpacing: this.viewport.candleSpacing,
+			candleTimeframeMs,
 			labelWidth: sampleLabelWidth,
 			minLabelGap: axisXConfig.minLabelGap,
 		});
 
 		const startIndex = Math.max(0, Math.floor(-this.viewport.offsetX / this.viewport.candleSpacing));
-		const endIndex = Math.min(
-			this.candles.length - 1,
-			Math.ceil((canvasWidth - this.viewport.offsetX) / this.viewport.candleSpacing),
-		);
+		// Include future candle slots beyond the last loaded candle
+		const endIndex = Math.ceil((canvasWidth - this.viewport.offsetX) / this.viewport.candleSpacing);
+
+		const lastCandle = this.candles[this.candles.length - 1];
 
 		for (let candleIndex = startIndex; candleIndex <= endIndex; candleIndex += 1) {
-			if (candleIndex % labelInterval !== 0) {
+			let slotTime: number;
+
+			if (candleIndex < this.candles.length) {
+				const candle = this.candles[candleIndex];
+
+				if (!candle) {
+					continue;
+				}
+
+				slotTime = candle.time;
+			} else if (lastCandle) {
+				// Extrapolate time for future candle slots
+				const futureDelta = candleIndex - (this.candles.length - 1);
+				slotTime = lastCandle.time + futureDelta * candleTimeframeMs;
+			} else {
 				continue;
 			}
 
-			const candle = this.candles[candleIndex];
-
-			if (!candle) {
+			if (!isAlignedToInterval(slotTime, niceIntervalMs)) {
 				continue;
 			}
 
 			const candleX = candleIndex * this.viewport.candleSpacing + this.viewport.offsetX;
 			const candleCenterX = candleX + this.viewport.candleWidth / 2;
-			const label = formatTimeHHMM(candle.time);
+			const label = formatXAxisLabel(slotTime);
 			const labelWidth = ctx.measureText(label).width;
 
 			if (candleCenterX + labelWidth / 2 < 0 || candleCenterX - labelWidth / 2 > canvasWidth) {

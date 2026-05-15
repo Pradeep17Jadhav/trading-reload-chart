@@ -1,0 +1,16 @@
+export const COLORS = {
+	blue: "#2962FF",
+	green: "#26A69A",
+	red: "#EF5350",
+	white: "#ffffff",
+	background: "#0F0F0F",
+	handleBackground: "#111827",
+	slBackground: "#2a1111",
+	tpBackground: "#0d2418",
+	axisBorder: "rgb(89, 89, 89)",
+	axisText: "rgba(255, 255, 255, 0.60)",
+	axisTick: "rgba(255,255,255,0.12)",
+	axisYTick: "rgba(255,255,255,0.06)",
+	divider: "rgba(255,255,255,0.12)",
+	crosshairLabelBackground: "#494949",
+} as const;

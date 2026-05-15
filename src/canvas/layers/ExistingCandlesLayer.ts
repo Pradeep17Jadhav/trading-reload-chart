@@ -268,6 +268,16 @@ export class ExistingCandlesLayer {
 		return this.clampCandleIndex(rawIndex);
 	}
 
+	/**
+	 * Returns the grid-snapped canvas X for any position,
+	 * including positions beyond the last candle (unclamped).
+	 */
+	getRawCandleSnapX(x: number) {
+		const rawIndex = Math.round((x - this.offsetX - this.candleWidth / 2) / this.candleSpacing);
+
+		return this.getCandleCenterX(rawIndex);
+	}
+
 	getPriceAtY(y: number) {
 		return normalizePrice(
 			yToPrice({

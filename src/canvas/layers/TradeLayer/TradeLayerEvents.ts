@@ -63,6 +63,18 @@ export class TradeLayerEvents {
 		this.#onTradeCloseClicked = options.onTradeCloseClicked;
 	}
 
+	cancelActiveInteraction() {
+		if (this.#activeMissingProtectionHitbox) {
+			this.#onMissingProtectionDragCancel?.();
+		}
+
+		this.#activeDragHitbox = null;
+		this.#activeMissingProtectionHitbox = null;
+		this.#hasActiveMissingProtectionMoved = false;
+		this.#dragStartMouseY = 0;
+		this.#lastMouseY = 0;
+	}
+
 	handlePointerEvent(event: PointerEvent | WheelEvent | MouseEvent) {
 		if (!this.isSupportedEventType(event.type)) {
 			return false;
@@ -369,7 +381,7 @@ export class TradeLayerEvents {
 
 	private resetCursorIfIdle() {
 		if (!this.#activeDragHitbox && !this.#activeMissingProtectionHitbox) {
-			document.body.style.cursor = "crosshair";
+			document.body.style.cursor = "default";
 		}
 	}
 

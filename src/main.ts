@@ -2,6 +2,14 @@ import { AxisLayerX } from "./canvas/layers/AxisLayerX/AxisLayerX";
 import { AxisLayerY } from "./canvas/layers/AxisLayerY/AxisLayerY";
 import { CrosshairLayer } from "./canvas/layers/CrosshairLayer";
 import { ExistingCandlesLayer } from "./canvas/layers/ExistingCandlesLayer";
+import { ShapesLayer } from "./canvas/layers/ShapesLayer/ShapesLayer";
+import type {
+	Shape,
+	ShapeAddedPayload,
+	ShapeModifiedPayload,
+	ShapeToolType,
+} from "./canvas/layers/ShapesLayer/ShapesLayer.types";
+
 import { TradeLayer } from "./canvas/layers/TradeLayer/TradeLayer";
 import type { TradeHandleType, TradeProtectionHandleType } from "./canvas/layers/TradeLayer/TradeLayer.types";
 import { TradeLayerEvents } from "./canvas/layers/TradeLayer/TradeLayerEvents";
@@ -29,6 +37,7 @@ const toMs = (candle: Candle): Candle =>
 const chartStack = getRequiredElement<HTMLDivElement>("#chart-stack");
 const volumeCanvas = getRequiredElement<HTMLCanvasElement>("#volume");
 const candleCanvas = getRequiredElement<HTMLCanvasElement>("#chart");
+const shapesCanvas = getRequiredElement<HTMLCanvasElement>("#shapes");
 const overlayCanvas = getRequiredElement<HTMLCanvasElement>("#overlay");
 const tradesCanvas = getRequiredElement<HTMLCanvasElement>("#trades");
 const axisXCanvas = getRequiredElement<HTMLCanvasElement>("#axis-x");
@@ -71,6 +80,178 @@ function getRequiredElement<T extends Element>(selector: string): T {
 
 /**
  * =========================
+ * Demo Shapes
+ * =========================
+ *
+ * NOTE:
+ * This is ONLY for local demo/testing.
+ *
+ * Actual shapes should be owned by the parent React app and passed
+ * to the chart library through the `shapes` prop.
+ */
+let demoShapes: Shape[] = [];
+const createDemoShapes = (candles: Candle[]): Shape[] => {
+	if (candles.length < 80) {
+		return [];
+	}
+
+	const candleAt = (offsetFromEnd: number) => candles[Math.max(0, candles.length - offsetFromEnd)];
+	const priceAt = (candle: Candle, ratio: number) => candle.low + (candle.high - candle.low) * ratio;
+
+	const trendStart = candleAt(70);
+	const trendEnd = candleAt(55);
+	const rectangleStart = candleAt(52);
+	const rectangleEnd = candleAt(40);
+	const pathA = candleAt(65);
+	const pathB = candleAt(60);
+	const pathC = candleAt(54);
+	const pathD = candleAt(48);
+	const fibStart = candleAt(38);
+	const fibEnd = candleAt(25);
+	const longEntry = candleAt(35);
+	const longEnd = candleAt(25);
+	const shortEntry = candleAt(22);
+	const shortEnd = candleAt(12);
+
+	return [
+		{
+			id: "demo-trendline-1",
+			type: "trendline",
+			vertices: [
+				{
+					time: trendStart.time,
+					price: priceAt(trendStart, 0.25),
+				},
+				{
+					time: trendEnd.time,
+					price: priceAt(trendEnd, 0.75),
+				},
+			],
+		},
+		{
+			id: "demo-rectangle-1",
+			type: "rectangle",
+			vertices: [
+				{
+					time: rectangleStart.time,
+					price: priceAt(rectangleStart, 0.85),
+				},
+				{
+					time: rectangleEnd.time,
+					price: priceAt(rectangleEnd, 0.15),
+				},
+			],
+		},
+		{
+			id: "demo-path-1",
+			type: "path",
+			vertices: [
+				{
+					time: pathA.time,
+					price: priceAt(pathA, 0.2),
+				},
+				{
+					time: pathB.time,
+					price: priceAt(pathB, 0.8),
+				},
+				{
+					time: pathC.time,
+					price: priceAt(pathC, 0.35),
+				},
+				{
+					time: pathD.time,
+					price: priceAt(pathD, 0.7),
+				},
+			],
+		},
+		{
+			id: "demo-fib-1",
+			type: "fibRetracement",
+			vertices: [
+				{
+					time: fibStart.time,
+					price: priceAt(fibStart, 0.9),
+				},
+				{
+					time: fibEnd.time,
+					price: priceAt(fibEnd, 0.1),
+				},
+			],
+		},
+		{
+			id: "demo-long-position-1",
+			type: "longPosition",
+			entry: {
+				time: longEntry.time,
+				price: longEntry.close,
+			},
+			endTime: longEnd.time,
+			stopLossPercent: 0.25,
+			takeProfitPercent: 0.375,
+		},
+		{
+			id: "demo-short-position-1",
+			type: "shortPosition",
+			entry: {
+				time: shortEntry.time,
+				price: shortEntry.close,
+			},
+			endTime: shortEnd.time,
+			stopLossPercent: 0.25,
+			takeProfitPercent: 0.375,
+		},
+	];
+};
+
+/**
+ * This should eventually be controlled by React props / toolbar state.
+ *
+ * When this value is not null:
+ * - shapeToolActive becomes true
+ * - trade handles and close buttons are ignored
+ * - chart panning is blocked
+ */
+let activeShapeTool: ShapeToolType | null = null;
+let shapeToolActive = false;
+const getShapeToolActive = () => shapeToolActive;
+
+const setActiveShapeTool = (tool: ShapeToolType | null) => {
+	activeShapeTool = tool;
+	shapeToolActive = activeShapeTool !== null;
+
+	if (shapeToolActive) {
+		isDragging = false;
+		tradeLayer?.setIsDragging(false);
+		tradeLayerEvents?.cancelActiveInteraction();
+	}
+
+	shapesLayer?.setActiveTool(activeShapeTool);
+};
+
+/**
+ * Temporary demo API so local testing can select a tool from console:
+ *
+ * window.setActiveShapeTool("trendline")
+ * window.setActiveShapeTool("rectangle")
+ * window.setActiveShapeTool("path")
+ * window.setActiveShapeTool("fibRetracement")
+ * window.setActiveShapeTool("shortPosition")
+ * window.setActiveShapeTool("longPosition")
+ * window.setActiveShapeTool(null)
+ */
+declare global {
+	interface Window {
+		setActiveShapeTool?: (tool: ShapeToolType | null) => void;
+		getShapeToolActive?: () => boolean;
+	}
+}
+
+window.setActiveShapeTool = setActiveShapeTool;
+window.getShapeToolActive = getShapeToolActive;
+window.setActiveShapeTool = setActiveShapeTool;
+
+/**
+ * =========================
  * Resize Canvases
  * =========================
  */
@@ -79,6 +260,7 @@ const resizeCanvases = () => {
 
 	setCanvasSize(volumeCanvas, plotWidth, plotHeight);
 	setCanvasSize(candleCanvas, plotWidth, plotHeight);
+	setCanvasSize(shapesCanvas, plotWidth, plotHeight);
 	setCanvasSize(overlayCanvas, plotWidth, plotHeight);
 	setCanvasSize(tradesCanvas, plotWidth, plotHeight);
 	setCanvasSize(axisXCanvas, plotWidth, axisXHeight);
@@ -111,6 +293,7 @@ resizeCanvases();
  */
 let volumeLayer: VolumeLayer | null = null;
 let candleLayer: ExistingCandlesLayer | null = null;
+let shapesLayer: ShapesLayer | null = null;
 let tradeLayer: TradeLayer | null = null;
 let tradeLayerEvents: TradeLayerEvents | null = null;
 let axisLayerX: AxisLayerX | null = null;
@@ -144,6 +327,10 @@ const renderAllLayers = () => {
 	volumeLayer?.render();
 
 	candleLayer.render();
+
+	shapesLayer?.setCandles(candleLayer.candles);
+	shapesLayer?.setViewport(candleLayer.viewport);
+	shapesLayer?.render();
 
 	tradeLayer?.setViewport(candleLayer.viewport);
 	tradeLayer?.render();
@@ -199,7 +386,7 @@ const getCrosshairSnapX = (pointerX: number, candleIndex: number | null) => {
 		return pointerX;
 	}
 
-	return candleLayer.getCandleCenterX(candleIndex);
+	return candleLayer.getRawCandleSnapX(pointerX);
 };
 
 const updateCrosshairPosition = (event: PointerEvent | MouseEvent, snapX: number) => {
@@ -235,6 +422,40 @@ const hideCrosshairAndAxisLabels = () => {
 
 	renderAxisLayers();
 	crosshairLayer.render();
+};
+
+const handleShapeAdded = (payload: ShapeAddedPayload) => {
+	/**
+	 * Library behavior:
+	 * The final React version should only emit this callback.
+	 * The parent app should store the shape and pass the updated `shapes` prop back.
+	 *
+	 * Demo behavior:
+	 * We append locally only so main.ts can show newly drawn shapes before React wiring exists.
+	 */
+	console.log("Shape added", payload);
+
+	demoShapes = [...demoShapes, payload.shape];
+	shapesLayer?.setShapes(demoShapes);
+	shapesLayer?.render();
+
+	setActiveShapeTool(null);
+};
+
+const handleShapeModified = (payload: ShapeModifiedPayload) => {
+	/**
+	 * Library behavior:
+	 * The final React version should only emit this callback.
+	 * The parent app should store the modified shape and pass the updated `shapes` prop back.
+	 *
+	 * Demo behavior:
+	 * We update locally only so main.ts can preview edits before React wiring exists.
+	 */
+	console.log("Shape modified", payload);
+
+	demoShapes = demoShapes.map((shape) => (shape.id === payload.shape.id ? payload.shape : shape));
+	shapesLayer?.setShapes(demoShapes);
+	shapesLayer?.render();
 };
 
 const handleTradeModified = async ({ ticket, sl, tp }: TradeModifiedPayload) => {
@@ -461,6 +682,20 @@ const initializeLayers = (candles: Candle[]) => {
 		baseCandleGap: 4,
 	});
 
+	if (demoShapes.length === 0) {
+		demoShapes = createDemoShapes(candles);
+	}
+	shapesLayer = new ShapesLayer({
+		canvas: shapesCanvas,
+		candles,
+		shapes: demoShapes,
+		activeTool: activeShapeTool,
+		config: CHART_CONFIG.shapes,
+		onShapeAdded: handleShapeAdded,
+		onShapeModified: handleShapeModified,
+		onToolChange: setActiveShapeTool,
+	});
+
 	tradeLayer = new TradeLayer({
 		canvas: tradesCanvas,
 	});
@@ -476,7 +711,7 @@ const initializeLayers = (candles: Candle[]) => {
 
 	tradeLayerEvents = new TradeLayerEvents({
 		canvas: tradesCanvas,
-		getHandleHitboxes: () => tradeLayer?.handleHitboxes ?? [],
+		getHandleHitboxes: () => (shapeToolActive ? [] : (tradeLayer?.handleHitboxes ?? [])),
 		onDrag: handleTPSLChange,
 		onMissingProtectionDrag: handleMissingProtectionDrag,
 		onMissingProtectionDragEnd: handleMissingProtectionDragEnd,
@@ -563,7 +798,9 @@ const handleWheelEvent = (event: WheelEvent) => {
 		return;
 	}
 
-	tradeLayerEvents?.handlePointerEvent(event);
+	if (!shapeToolActive) {
+		tradeLayerEvents?.handlePointerEvent(event);
+	}
 
 	event.preventDefault();
 
@@ -579,6 +816,17 @@ const handleWheelEvent = (event: WheelEvent) => {
 };
 
 const handlePointerDownEvent = (event: PointerEvent) => {
+	const shapeEventHandled = shapesLayer?.handlePointerEvent(event) ?? false;
+
+	if (shapeEventHandled) {
+		renderAllLayers();
+		return;
+	}
+
+	if (shapeToolActive) {
+		return;
+	}
+
 	if (tradeLayerEvents?.handlePointerEvent(event)) {
 		return;
 	}
@@ -589,11 +837,21 @@ const handlePointerDownEvent = (event: PointerEvent) => {
 };
 
 const handlePointerMoveEvent = (event: PointerEvent) => {
-	tradeLayerEvents?.handlePointerEvent(event);
+	const shapeEventHandled = shapesLayer?.handlePointerEvent(event) ?? false;
+
+	if (!shapeToolActive) {
+		tradeLayerEvents?.handlePointerEvent(event);
+	}
 
 	updateCrosshairAndAxisLabels(event);
 
-	if (!isDragging || !candleLayer) {
+	if (shapeEventHandled) {
+		renderAllLayers();
+		updateCrosshairAndAxisLabels(event);
+		return;
+	}
+
+	if (!isDragging || !candleLayer || shapeToolActive) {
 		/**
 		 * Panning
 		 */
@@ -623,15 +881,51 @@ const panChart = (event: PointerEvent) => {
 
 const handlePointerUpEvent = (event: PointerEvent) => {
 	isDragging = false;
-	tradeLayerEvents?.handlePointerEvent(event);
+
+	const shapeEventHandled = shapesLayer?.handlePointerEvent(event) ?? false;
+
+	if (shapeEventHandled) {
+		renderAllLayers();
+		return;
+	}
+
+	if (!shapeToolActive) {
+		tradeLayerEvents?.handlePointerEvent(event);
+	}
 };
 
 const handlePointerEnterEvent = (event: PointerEvent) => {
-	tradeLayerEvents?.handlePointerEvent(event);
+	shapesLayer?.handlePointerEvent(event);
+
+	if (!shapeToolActive) {
+		tradeLayerEvents?.handlePointerEvent(event);
+	}
 };
 
 const handlePointerLeaveEvent = () => {
+	shapesLayer?.clearHoverState();
+	if (!shapeToolActive) {
+		document.body.style.cursor = "default";
+	}
 	hideCrosshairAndAxisLabels();
+};
+
+const handleContextMenuEvent = (event: MouseEvent) => {
+	const shapeEventHandled = shapesLayer?.handlePointerEvent(event) ?? false;
+	if (shapeEventHandled || shapeToolActive) {
+		event.preventDefault();
+		event.stopPropagation();
+		renderAllLayers();
+	}
+};
+
+const handleKeyDownEvent = (event: KeyboardEvent) => {
+	const shapeEventHandled = shapesLayer?.handleKeyboardEvent(event) ?? false;
+
+	if (shapeEventHandled) {
+		event.preventDefault();
+		renderAllLayers();
+	}
 };
 
 const handleResizeEvent = () => {
@@ -648,5 +942,7 @@ window.addEventListener("pointerup", handlePointerUpEvent);
 window.addEventListener("pointermove", handlePointerMoveEvent);
 window.addEventListener("pointerenter", handlePointerEnterEvent);
 window.addEventListener("pointerleave", handlePointerLeaveEvent);
+window.addEventListener("contextmenu", handleContextMenuEvent);
+window.addEventListener("keydown", handleKeyDownEvent);
 window.addEventListener("wheel", handleWheelEvent, { passive: false });
 window.addEventListener("resize", handleResizeEvent);

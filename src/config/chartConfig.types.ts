@@ -1,4 +1,8 @@
 // chartConfig.types.ts
+import type { PartialShapeConfig } from "../canvas/layers/ShapesLayer/ShapesLayer.types";
+
+export type { PartialShapeConfig };
+
 export type HorizontalZoomConfig = {
 	speed: number;
 	min: number;
@@ -210,4 +214,5 @@ export type ChartConfig = {
 	tradeHandles: TradeHandlesConfig;
 	colors: ColorsConfig;
 	axis: AxisConfig;
+	shapes: PartialShapeConfig;
 };

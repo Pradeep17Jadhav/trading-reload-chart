@@ -1,4 +1,11 @@
 import { CHART_CONFIG } from "../../../config/chartConfig";
+import type {
+	MissingTradeProtectionHandleRectConfig,
+	TemporaryTradeProtectionHandleRectConfig,
+	TradeHandleLineConfig,
+	TradeHandleRectConfig,
+	TradeHandleStyleConfig,
+} from "../../../config/chartConfig.types";
 import { normalizePrice } from "../../../helpers/math";
 import type { Candle } from "../../../models/Candle.types";
 import type { ChartViewport } from "../../../models/ChartViewport.types";
@@ -20,7 +27,6 @@ import type {
 	LineBlockedRange,
 	MissingProtectionHandleRenderState,
 	PastTradeIndicator,
-	PastTradeIndicatorPoint,
 	PastTradeIndicatorRenderState,
 	TemporaryProtectionRenderState,
 	TemporaryTradeProtectionDrag,

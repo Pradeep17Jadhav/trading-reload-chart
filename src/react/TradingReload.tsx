@@ -28,23 +28,10 @@ export const TradingReload = ({ className, style, ...chartProps }: TradingReload
 		};
 	}, []);
 
+	// biome-ignore lint/correctness/useExhaustiveDependencies: We need multiple updates with the changes in chatProps
 	useEffect(() => {
 		controllerRef.current?.updateProps(chartPropsRef.current);
-	}, [
-		chartProps.activeSymbol,
-		chartProps.candles,
-		chartProps.liveCandle,
-		chartProps.openTrades,
-		chartProps.pastTrades,
-		chartProps.shapes,
-		chartProps.activeShapeTool,
-		chartProps.config,
-		chartProps.brokerTimezoneOffsetMs,
-		chartProps.onShapeAdded,
-		chartProps.onShapeModified,
-		chartProps.onActiveShapeToolChange,
-		chartProps.onTradeModify,
-	]);
+	}, [chartProps]);
 
 	return (
 		<div

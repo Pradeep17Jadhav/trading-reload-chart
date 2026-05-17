@@ -1,4 +1,4 @@
-import type { Candle } from "../../../models/Candle";
+import type { Candle } from "../../../models/Candle.types";
 
 /**
  * Nice tick intervals in milliseconds.

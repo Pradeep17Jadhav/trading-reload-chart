@@ -2,19 +2,10 @@
 
 import { CHART_CONFIG } from "../../../config/chartConfig";
 import { normalizePrice } from "../../../helpers/math";
-import type { ChartViewport } from "../../../models/ChartViewport";
+import type { ChartViewport } from "../../../models/ChartViewport.types";
 import { priceToY } from "../helpers/LayerHelpers";
 import { getPriceStep } from "./AxisLayerY.helpers";
-
-type AxisLayerYOptions = {
-	canvas: HTMLCanvasElement;
-};
-
-type AxisLayerYCrosshair = {
-	visible: boolean;
-	y: number;
-	price: number;
-};
+import type { AxisLayerYCrosshair, AxisLayerYOptions } from "./AxisLayerY.types";
 
 export class AxisLayerY {
 	readonly #canvas: HTMLCanvasElement;

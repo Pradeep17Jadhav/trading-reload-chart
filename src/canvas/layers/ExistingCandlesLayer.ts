@@ -1,83 +1,16 @@
 import { CHART_CONFIG } from "../../config/chartConfig";
 import { normalizePrice } from "../../helpers/math";
-import type { Candle } from "../../models/Candle";
+import type { Candle } from "../../models/Candle.types";
+import type { ChartViewport } from "../../models/ChartViewport.types";
+import type { VisibleRange } from "../../models/VisibleRange.types";
+import type {
+	CandleYCoordinates,
+	DrawCandlesOptions,
+	DrawLivePriceLineOptions,
+	DrawSingleCandleOptions,
+	ExistingCandlesLayerOptions,
+} from "./ExistingCandlesLayer.types";
 import { priceToY, yToPrice } from "./helpers/LayerHelpers";
-
-type ExistingCandlesLayerOptions = {
-	canvas: HTMLCanvasElement;
-	candles: Candle[];
-	baseCandleWidth?: number;
-	baseCandleGap?: number;
-	bullishColor?: string;
-	bearishColor?: string;
-	offsetX?: number;
-	zoomX?: number;
-	priceRange?: number;
-	priceCenter?: number;
-	/**
-	 * Enable automatic scrolling
-	 * when latest candle moves
-	 */
-	autoFollowLatestCandle?: boolean;
-	/**
-	 * Number of candles from right edge
-	 * where auto-follow becomes active.
-	 *
-	 * 0 = only when latest candle reaches right edge
-	 *
-	 * Example:
-	 * 10 = auto-follow activates when
-	 * latest candle reaches 10th position
-	 * from right edge
-	 */
-	autoFollowThresholdCandles?: number;
-	/**
-	 * Empty candle space on right side
-	 */
-	rightOffsetCandles?: number;
-};
-
-export type VisibleRange = {
-	startIndex: number;
-	endIndex: number;
-};
-
-export type ExistingCandlesLayerViewport = {
-	minPrice: number;
-	maxPrice: number;
-	priceRange: number;
-	offsetX: number;
-	zoomX: number;
-	candleWidth: number;
-	candleGap: number;
-	candleSpacing: number;
-};
-
-type CandleYCoordinates = {
-	openY: number;
-	closeY: number;
-	highY: number;
-	lowY: number;
-};
-
-type DrawCandlesOptions = {
-	ctx: CanvasRenderingContext2D;
-	candles: Candle[];
-	startIndex: number;
-	chartHeight: number;
-};
-
-type DrawSingleCandleOptions = CandleYCoordinates & {
-	ctx: CanvasRenderingContext2D;
-	candleX: number;
-	candleColor: string;
-};
-
-type DrawLivePriceLineOptions = {
-	ctx: CanvasRenderingContext2D;
-	chartWidth: number;
-	chartHeight: number;
-};
 
 export class ExistingCandlesLayer {
 	readonly #canvas: HTMLCanvasElement;
@@ -227,7 +160,7 @@ export class ExistingCandlesLayer {
 		return this.candles[this.candles.length - 1];
 	}
 
-	get viewport(): ExistingCandlesLayerViewport {
+	get viewport(): ChartViewport {
 		return {
 			minPrice: this.minPrice,
 			maxPrice: this.maxPrice,

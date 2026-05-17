@@ -1,192 +1,35 @@
 import { CHART_CONFIG } from "../../../config/chartConfig";
-import type {
-	MissingTradeProtectionHandleRectConfig,
-	PastTradeIndicatorArrowConfig,
-	TemporaryTradeProtectionHandleRectConfig,
-	TradeHandleLineConfig,
-	TradeHandleRectConfig,
-	TradeHandleStyleConfig,
-} from "../../../config/chartConfig.types";
 import { normalizePrice } from "../../../helpers/math";
-import type { Candle } from "../../../models/Candle";
-import type { ChartViewport } from "../../../models/ChartViewport";
-import type { OpenTrade, TradeType } from "../../../models/Trade";
+import type { Candle } from "../../../models/Candle.types";
+import type { ChartViewport } from "../../../models/ChartViewport.types";
+import type { OpenTrade } from "../../../models/Trade.types";
 import { priceToY } from "../helpers/LayerHelpers";
 import { calculatePotentialPnlUsd } from "./TradeLayer.helpers";
 import type {
+	CreateHitBoxOptions,
+	CreateMissingProtectionHitBoxOptions,
+	DrawConnectorLineOptions,
+	DrawHandleLineOptions,
+	DrawHandleRectOptions,
+	DrawHandleSectionsOptions,
+	DrawMissingProtectionHandleRectOptions,
+	DrawPastTradeArrowOptions,
+	DrawTemporaryProtectionHandleRectOptions,
+	DrawTradeHandleOptions,
+	HandleSection,
+	LineBlockedRange,
+	MissingProtectionHandleRenderState,
 	PastTradeIndicator,
+	PastTradeIndicatorPoint,
+	PastTradeIndicatorRenderState,
+	TemporaryProtectionRenderState,
 	TemporaryTradeProtectionDrag,
 	TradeHandleHitbox,
+	TradeHandleRenderState,
 	TradeHandleType,
 	TradeLayerOptions,
 	TradeProtectionHandleType,
 } from "./TradeLayer.types";
-
-/**
- * TradeHandle
- *
- * Reusable visual structure
- * used for rendering:
- *
- * - Pending order SL/TP/Entry
- * - Active order SL/TP/Entry
- *
- * Structure:
- * - Horizontal line
- * - Information rectangle
- */
-type TradeHandleRenderState = {
-	price: number;
-	type: TradeHandleType;
-	trade: OpenTrade;
-	viewport: ChartViewport;
-	y: number;
-	handleStyleConfig: TradeHandleStyleConfig;
-	handleConfig: TradeHandleRectConfig;
-	lineConfig: TradeHandleLineConfig;
-	handleX: number;
-	handleY: number;
-	handleWidth: number;
-	handleHeight: number;
-};
-
-type MissingProtectionHandleRenderState = {
-	price: number;
-	type: TradeProtectionHandleType;
-	trade: OpenTrade;
-	viewport: ChartViewport;
-	y: number;
-	config: MissingTradeProtectionHandleRectConfig;
-	handleX: number;
-	handleY: number;
-	handleWidth: number;
-	handleHeight: number;
-};
-
-type TemporaryProtectionRenderState = {
-	price: number;
-	type: TradeProtectionHandleType;
-	trade: OpenTrade;
-	viewport: ChartViewport;
-	y: number;
-	handleConfig: TemporaryTradeProtectionHandleRectConfig;
-	lineConfig: TradeHandleLineConfig;
-	handleX: number;
-	handleY: number;
-	handleWidth: number;
-	handleHeight: number;
-};
-
-type PastTradeIndicatorPoint = {
-	x: number;
-	y: number;
-	price: number;
-	time: number;
-};
-
-type PastTradeIndicatorRenderState = {
-	trade: PastTradeIndicator;
-	start: PastTradeIndicatorPoint;
-	close: PastTradeIndicatorPoint;
-	arrowWidth: number;
-	arrowHeight: number;
-};
-
-type DrawTradeHandleOptions = {
-	price: number;
-	type: TradeHandleType;
-	trade: OpenTrade;
-};
-
-type CreateHitBoxOptions = {
-	price: number;
-	trade: OpenTrade;
-	type: TradeHandleType;
-	x: number;
-	y: number;
-	width: number;
-	height: number;
-	viewport: ChartViewport;
-};
-
-type CreateMissingProtectionHitBoxOptions = {
-	price: number;
-	trade: OpenTrade;
-	type: TradeProtectionHandleType;
-	x: number;
-	y: number;
-	width: number;
-	height: number;
-	viewport: ChartViewport;
-};
-
-type DrawHandleLineOptions = {
-	x1: number;
-	x2: number;
-	y: number;
-	config: TradeHandleLineConfig;
-};
-
-type DrawConnectorLineOptions = {
-	x1: number;
-	y1: number;
-	x2: number;
-	y2: number;
-	config: TradeHandleLineConfig;
-};
-
-type DrawHandleRectOptions = {
-	x: number;
-	y: number;
-	width: number;
-	config: TradeHandleRectConfig;
-};
-
-type DrawMissingProtectionHandleRectOptions = {
-	x: number;
-	y: number;
-	width: number;
-	config: MissingTradeProtectionHandleRectConfig;
-};
-
-type DrawTemporaryProtectionHandleRectOptions = {
-	x: number;
-	y: number;
-	width: number;
-	config: TemporaryTradeProtectionHandleRectConfig;
-};
-
-type DrawHandleSectionsOptions = {
-	handleType: TradeHandleType;
-	handleX: number;
-	handleY: number;
-	handleWidth: number;
-	handleHeight: number;
-	handleConfig: TradeHandleRectConfig;
-	trade: OpenTrade;
-	y: number;
-};
-
-type DrawPastTradeArrowOptions = {
-	x: number;
-	y: number;
-	type: TradeType;
-	width: number;
-	height: number;
-	config: PastTradeIndicatorArrowConfig;
-};
-
-type HandleSection = {
-	label: string;
-	width: number;
-	visible: boolean;
-	color?: string;
-};
-
-type LineBlockedRange = {
-	x1: number;
-	x2: number;
-};
 
 export class TradeLayer {
 	readonly #canvas: HTMLCanvasElement;

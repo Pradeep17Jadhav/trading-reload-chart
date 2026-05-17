@@ -18,17 +18,7 @@ import type {
 	ShapePoint,
 	ShapeVertex,
 } from "./ShapesLayer.types";
-
-type PositionGeometry = {
-	entryPoint: ShapePoint;
-	endX: number;
-	entryY: number;
-	box: ShapeBoundingBox;
-	profitBox: ShapeBoundingBox;
-	lossBox: ShapeBoundingBox;
-	upperPrice: number;
-	lowerPrice: number;
-};
+import type { PositionGeometry } from "./ShortLongPosition.types";
 
 export class ShortLongPosition {
 	static defaultLongConfig: PositionShapeConfig = {

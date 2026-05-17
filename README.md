@@ -1,479 +1,246 @@
 # Trading Chart Library by Pradeep
 
-A high-performance HTML Canvas based trading chart application built with TypeScript.
+A **React chart library** (HTML Canvas) for trading UIs: candlesticks, volume, axes, crosshair, drawing tools, and open/past trade overlays. Data and state are **controlled by the parent** via props and callbacks.
 
-This project focuses on rendering large financial datasets efficiently while providing smooth interactions such as zooming, panning, crosshair tracking, and real-time market visualization.
+The repo includes a **demo app** under `demo/` (Vite dev server) that loads live/historical data from an API. That harness is not published in the npm package.
 
-The application is designed with a layered canvas rendering architecture to minimize unnecessary redraws and improve rendering performance.
-
----
-
-# Features
-
-## Rendering Engine
-
-- High-performance HTML Canvas rendering
-- Layer-based rendering architecture
-- Optimized redraw cycles
-- Separate candle and overlay canvases
-- Device pixel ratio scaling support
-- Smooth rendering during drag and zoom interactions
-
-## Chart Interactions
-
-- Horizontal zoom
-- Vertical zoom
-- Mouse wheel zooming
-- Ctrl + wheel vertical scaling
-- Chart panning
-- Crosshair tracking
-- Real-time mouse position handling
-- Pointer event support
-- Resize-aware rendering
-
-## Trading Visualization
-
-- Candlestick rendering
-- Price scaling
-- Time scaling
-- Dynamic candle spacing
-- Price range calculation
-- Grid alignment support
-- Crosshair price and time tracking
-
-## Developer Experience
-
-- Written fully in TypeScript
-- Modular architecture
-- Layer-based rendering system
-- Strong typing support
-- Simple extensibility model
-- Easy integration with APIs and WebSockets
+For architecture, conventions, and agent guidelines, see [AGENTS.md](./AGENTS.md).
 
 ---
 
-# Tech Stack
+## Requirements
 
-| Technology  | Purpose                           |
-| ----------- | --------------------------------- |
-| TypeScript  | Core application logic            |
-| HTML Canvas | High-performance rendering        |
-| Vite        | Development server and build tool |
-| CSS         | Styling                           |
+- Node.js 18+
+- npm (or compatible package manager)
+- React **18.3+** or **19** (peer dependency when consuming the library)
 
 ---
 
-# Project Structure
+## Quick start (local development)
 
-```txt
-src/
-├── canvas/
-│   ├── layers/
-│   │   ├── ExistingCandlesLayer.ts
-│   │   ├── CrosshairLayer.ts
-│   │   └── ...
-│   ├── utils/
-│   └── renderer/
-│
-├── models/
-│   ├── Candle.ts
-│   └── ...
-│
-├── utils/
-├── constants/
-├── config/
-├── main.ts
-└── main.css
-```
-
----
-
-# Architecture Overview
-
-The chart uses a multi-layer canvas architecture.
-
-## Candle Canvas
-
-Responsible for rendering:
-
-- Candlesticks
-- Historical data
-- Static chart visuals
-- Grid structures
-
-This layer redraws only when required.
-
-## Overlay Canvas
-
-Responsible for rendering:
-
-- Crosshair
-- Hover interactions
-- Temporary overlays
-- Pointer-driven visuals
-
-This layer updates frequently without forcing candle redraws.
-
----
-
-# Installation
-
-## Clone Repository
+1. **Clone and install**
 
 ```bash
-git clone <your-repository-url>
-cd <project-name>
-```
-
-## Install Dependencies
-
-```bash
+git clone <repository-url>
+cd trading-reload-chart
 npm install
 ```
 
-## Start Development Server
+2. **Run the demo** (hot reload, port **8999** by default)
 
 ```bash
 npm run dev
 ```
 
-## Build Production Version
+Open the URL Vite prints (typically `http://localhost:8999`). The demo mounts `TradingReload` with sample API/WebSocket wiring in `demo/`.
+
+3. **Optional checks**
+
+```bash
+npm run typecheck   # TypeScript
+npm run lint        # Biome
+npm run format      # Biome format
+```
+
+---
+
+## Build commands
+
+| Script | Purpose |
+|--------|---------|
+| `npm run dev` | Demo app from source (`demo/main.tsx`) |
+| `npm run build` | **Library** build → `dist/` (ESM + `.d.ts`) |
+| `npm run build:demo` | Static **demo** site build |
+| `npm run preview` | Preview last Vite build |
+
+### Production library build
 
 ```bash
 npm run build
 ```
 
-## Preview Production Build
+Output (gitignored):
+
+- `dist/trading-reload-chart.js` — ESM bundle (React externalized)
+- `dist/index.d.ts` — public TypeScript declarations
+
+`package.json` exposes the library via `"exports"`, `"main"`, `"module"`, and `"types"`. Only `dist/` is included in `"files"` for publishing.
+
+### Demo production build
 
 ```bash
+npm run build:demo
 npm run preview
 ```
 
 ---
 
-# Development Workflow
+## Using the library in React / Next.js
 
-## Start Local Development
+The chart is **client-only** (canvas + DOM). It does **not** support SSR.
 
-```bash
-npm run dev
-```
+### 1. Install the package
 
-Vite will start a local development server with hot module replacement.
-
-## Type Checking
+**From npm** (after publish):
 
 ```bash
-npm run typecheck
+npm install trading-reload-chart react react-dom
 ```
 
-## Linting
+**From this repo** (local path or `npm pack`):
 
 ```bash
-npm run lint
+# In trading-reload-chart repo
+npm run build
+npm pack
+# In your app
+npm install /path/to/trading-reload-chart/trading-reload-chart-0.0.0.tgz
 ```
 
-## Formatting
+Or link during development:
 
 ```bash
-npm run format
+cd trading-reload-chart && npm run build && npm link
+cd your-app && npm link trading-reload-chart
 ```
 
----
+### 2. Next.js App Router
 
-# Data Model
+Use a client boundary. The component already includes `"use client"`.
 
-## Candle Structure
+```tsx
+"use client";
 
-```ts
-export type Candle = {
-  time: number;
-  open: number;
-  high: number;
-  low: number;
-  close: number;
-  volume?: number;
-};
+import { useState } from "react";
+import {
+  TradingReload,
+  type Candle,
+  type Shape,
+  type ShapeToolType,
+  type OpenTrade,
+} from "trading-reload-chart";
+
+export function ChartPanel() {
+  const [candles, setCandles] = useState<Candle[]>([]);
+  const [shapes, setShapes] = useState<Shape[]>([]);
+  const [activeShapeTool, setActiveShapeTool] = useState<ShapeToolType | null>(null);
+
+  return (
+    <div className="h-full w-full min-h-[400px]">
+      <TradingReload
+        activeSymbol="EURUSD"
+        candles={candles}
+        shapes={shapes}
+        activeShapeTool={activeShapeTool}
+        onShapeAdded={(payload) => {
+          setShapes((prev) => [...prev, payload.shape]);
+          setActiveShapeTool(null);
+        }}
+        onActiveShapeToolChange={setActiveShapeTool}
+      />
+    </div>
+  );
+}
 ```
 
----
+- Give the parent a **defined height** (flex child, `h-full`, or fixed `min-height`). `TradingReload` fills **100%** of that container.
+- Do **not** import chart CSS manually; styles ship with the component (`src/styles/chart.css`).
 
-# Rendering Pipeline
+### 3. Vite / Create React App
 
-The rendering pipeline is optimized to reduce unnecessary work.
+Same import; wrap the chart in a sized container:
 
-## Pipeline Steps
+```tsx
+import { TradingReload, type Candle } from "trading-reload-chart";
 
-1. Receive dataset
-2. Calculate visible range
-3. Compute candle positions
-4. Convert prices to Y coordinates
-5. Draw visible candles only
-6. Draw overlays separately
-7. Render crosshair layer
-
----
-
-# Coordinate System
-
-## X Axis
-
-The horizontal axis represents time.
-
-Values are calculated based on:
-
-- Candle width
-- Candle gap
-- Current zoom level
-- Horizontal offset
-
-## Y Axis
-
-The vertical axis represents price.
-
-Values are calculated using:
-
-- Current visible price range
-- Min/max visible prices
-- Dynamic scaling
-- Zoom multiplier
-
----
-
-# Zoom System
-
-The chart supports independent X and Y axis zooming.
-
-## Horizontal Zoom
-
-Triggered using:
-
-- Mouse wheel
-- Trackpad gestures
-
-Adjusts:
-
-- Candle spacing
-- Visible candle count
-- Horizontal scaling
-
-## Vertical Zoom
-
-Triggered using:
-
-- Ctrl + Mouse wheel
-
-Adjusts:
-
-- Price scaling
-- Visible price range
-- Vertical compression/expansion
-
----
-
-# Input Handling
-
-The application uses pointer-driven interaction handling.
-
-## Supported Events
-
-```ts
-pointerdown;
-pointermove;
-pointerup;
-pointerleave;
-pointerenter;
-wheel;
-resize;
+export function App() {
+  return (
+    <div style={{ width: "100%", height: "100vh" }}>
+      <TradingReload
+        activeSymbol="EURUSD"
+        candles={candles}
+        shapes={[]}
+        activeShapeTool={null}
+      />
+    </div>
+  );
+}
 ```
 
----
+### 4. Public API surface
 
-# Performance Optimizations
+Import from the package root:
 
-## Layer Separation
+| Export | Description |
+|--------|-------------|
+| `TradingReload` | Main React component |
+| `TradingReloadProps` | Component props |
+| `Candle`, `OpenTrade`, `ClosedTrade`, … | Domain types |
+| `Shape`, `ShapeToolType`, shape payloads | Drawing types |
+| `ChartConfig`, `CHART_CONFIG`, `DeepPartial` | Configuration |
+| `PastTradeIndicator`, trade handle types | Trade overlay types |
 
-Overlay rendering is separated from heavy candle rendering.
+Controlled props (parent owns state): `candles`, `liveCandle`, `openTrades`, `pastTrades`, `shapes`, `activeShapeTool`, `config`, `activeSymbol`.
 
-## Partial Redraws
+Callbacks: `onShapeAdded`, `onShapeModified`, `onActiveShapeToolChange`, `onTradeModify`.
 
-Only visible data is rendered.
-
-## Device Pixel Ratio Scaling
-
-Canvas dimensions are scaled for high-DPI displays.
-
-## Efficient Coordinate Conversion
-
-Coordinate calculations are minimized during frame rendering.
-
-## Lightweight Rendering Loops
-
-Rendering avoids unnecessary object creation inside hot paths.
+See [AGENTS.md](./AGENTS.md) for the full props contract.
 
 ---
 
-# Example Usage
+## Project layout
 
-## Basic Initialization
-
-```ts
-import type { Candle } from "./models/Candle";
-
-const candles: Candle[] = [
-  {
-    time: 1710000000,
-    open: 100,
-    high: 110,
-    low: 95,
-    close: 108,
-  },
-];
+```txt
+trading-reload-chart/
+├── demo/                 # Dev harness (API/WebSocket); not published
+├── src/
+│   ├── index.ts          # Public exports
+│   ├── react/            # TradingReload component
+│   ├── chart/            # ChartController, DOM, utils
+│   ├── canvas/layers/    # Canvas layers (candles, shapes, trades, …)
+│   ├── config/           # CHART_CONFIG and types
+│   ├── models/           # Candle, Trade, ChartViewport, … (*.types.ts)
+│   ├── helpers/          # Shared pure utilities
+│   ├── core/             # Coordinate math
+│   └── styles/           # chart.css
+├── dist/                 # Library build output
+├── AGENTS.md
+└── vite.config.ts        # `dev` = demo; `build --mode library` = package
 ```
 
----
-
-# Interaction Controls
-
-| Action             | Result             |
-| ------------------ | ------------------ |
-| Mouse Move         | Move crosshair     |
-| Mouse Drag         | Pan chart          |
-| Mouse Wheel        | Horizontal zoom    |
-| Ctrl + Mouse Wheel | Vertical zoom      |
-| Resize Window      | Recalculate layout |
+Type declarations live in **`*.types.ts`** files next to implementation code (see AGENTS.md).
 
 ---
 
-# Configuration
+## Features
 
-Example chart configuration:
-
-```ts
-export const CHART_CONFIG = {
-  zoom: {
-    x: {
-      speed: 0.1,
-      min: 5,
-      max: 500,
-    },
-    y: {
-      speed: 0.1,
-      min: 0.5,
-      max: 10,
-    },
-  },
-};
-```
+- Layered canvas rendering (volume, candles, shapes, trades, axes, crosshair)
+- Pan, horizontal wheel zoom, Ctrl+wheel vertical zoom
+- Drawing tools (trendline, rectangle, path, fib, long/short position)
+- Open trade SL/TP drag with `onTradeModify` on release
+- Past trade markers
+- Deep-merge chart `config` over defaults
 
 ---
 
-# Future Improvements
+## Interaction
 
-## Planned Features
-
-- Real-time WebSocket streaming
-- Technical indicators
-- Drawing tools
-- Order book visualization
-- Trade markers
-- Multi-timeframe support
-- Volume profile
-- Price alerts
-- Replay mode
-- Mobile gesture support
-- GPU acceleration experiments
-- Offscreen canvas rendering
-- Virtualized datasets
+| Action | Result |
+|--------|--------|
+| Drag | Pan chart |
+| Mouse wheel | Horizontal zoom |
+| Ctrl + wheel | Vertical zoom |
+| Move pointer | Crosshair + axis labels |
+| Escape (while drawing) | Cancel tool (`onActiveShapeToolChange(null)`) |
 
 ---
 
-# Scalability Goals
+## Browser support
 
-The architecture is designed to support:
-
-- Large candle datasets
-- Real-time updates
-- High-frequency redraws
-- Multiple chart instances
-- Professional trading interfaces
+Modern evergreen browsers with Canvas 2D (Chrome, Edge, Firefox, Safari).
 
 ---
 
-# Browser Support
+## License
 
-| Browser | Supported |
-| ------- | --------- |
-| Chrome  | Yes       |
-| Edge    | Yes       |
-| Firefox | Yes       |
-| Safari  | Yes       |
-
----
-
-# Recommended Improvements
-
-## Rendering
-
-- Dirty rectangle rendering
-- WebGL renderer
-- OffscreenCanvas workers
-- Frame scheduling optimizations
-
-## Interaction System
-
-- Touch gestures
-- Kinetic scrolling
-- Zoom centering
-- Inertial panning
-
-## Data System
-
-- Incremental candle loading
-- Historical pagination
-- Streaming APIs
-- Binary transport support
-
----
-
-# Design Philosophy
-
-This project focuses on:
-
-- Performance first
-- Minimal rendering overhead
-- Modular architecture
-- Strong TypeScript safety
-- Extensibility
-- Professional trading UX
-
----
-
-# Contributing
-
-## Setup
-
-```bash
-npm install
-npm run dev
-```
-
-## Guidelines
-
-- Keep rendering logic optimized
-- Avoid allocations in hot paths
-- Maintain strict TypeScript typing
-- Prefer modular architecture
-- Benchmark rendering-heavy changes
-
----
-
-# License
-
-MIT License
-
----
-
-# Author
-
-Built by Pradeep.
+MIT

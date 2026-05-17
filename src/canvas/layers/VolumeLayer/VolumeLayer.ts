@@ -1,38 +1,12 @@
 import { CHART_CONFIG } from "../../../config/chartConfig";
-import type { Candle } from "../../../models/Candle";
-import type { ChartViewport } from "../../../models/ChartViewport";
-
-type VolumeLayerOptions = {
-	canvas: HTMLCanvasElement;
-	candles: Candle[];
-	bullishColor?: string;
-	bearishColor?: string;
-	opacity?: number;
-	height?: number;
-	bottomOffset?: number;
-	minBarHeight?: number;
-};
-
-type DrawVolumeBarsOptions = {
-	ctx: CanvasRenderingContext2D;
-	candles: Candle[];
-	startIndex: number;
-	maxVolume: number;
-	chartHeight: number;
-};
-
-type DrawSingleVolumeBarOptions = {
-	ctx: CanvasRenderingContext2D;
-	candle: Candle;
-	candleX: number;
-	maxVolume: number;
-	chartHeight: number;
-};
-
-type VisibleRange = {
-	startIndex: number;
-	endIndex: number;
-};
+import type { Candle } from "../../../models/Candle.types";
+import type { ChartViewport } from "../../../models/ChartViewport.types";
+import type { VisibleRange } from "../../../models/VisibleRange.types";
+import type {
+	DrawSingleVolumeBarOptions,
+	DrawVolumeBarsOptions,
+	VolumeLayerOptions,
+} from "./VolumeLayer.types";
 
 export class VolumeLayer {
 	readonly #canvas: HTMLCanvasElement;

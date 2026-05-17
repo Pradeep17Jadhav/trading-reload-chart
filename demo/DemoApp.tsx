@@ -2,8 +2,8 @@ import { useCallback, useEffect, useState } from "react";
 import type { Shape, ShapeToolType } from "../src/canvas/layers/ShapesLayer/ShapesLayer.types";
 import type { PastTradeIndicator } from "../src/canvas/layers/TradeLayer/TradeLayer.types";
 import type { TradeModifyPayload } from "../src/chart/ChartController.types";
-import type { Candle } from "../src/models/Candle";
-import type { OpenTrade } from "../src/models/Trade";
+import type { Candle } from "../src/models/Candle.types";
+import type { OpenTrade } from "../src/models/Trade.types";
 import { TradingReload } from "../src/react/TradingReload";
 import { createDemoShapes } from "./createDemoShapes";
 import {

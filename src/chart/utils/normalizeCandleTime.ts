@@ -1,4 +1,4 @@
-import type { Candle } from "../../models/Candle";
+import type { Candle } from "../../models/Candle.types";
 
 export const normalizeCandleTime = (candle: Candle, brokerTimezoneOffsetMs?: number): Candle => {
 	if (brokerTimezoneOffsetMs === undefined || candle.time >= 1e12) {

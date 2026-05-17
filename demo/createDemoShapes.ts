@@ -1,5 +1,5 @@
 import type { Shape } from "../src/canvas/layers/ShapesLayer/ShapesLayer.types";
-import type { Candle } from "../src/models/Candle";
+import type { Candle } from "../src/models/Candle.types";
 
 export const createDemoShapes = (candles: Candle[]): Shape[] => {
 	if (candles.length < 80) {

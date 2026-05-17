@@ -26,7 +26,7 @@ import "./main.css";
 const API_BASE_URL = "https://api-tradingreload.pradeepjadhav.com";
 const WS_BASE_URL = "wss://api-tradingreload.pradeepjadhav.com";
 
-const activeSymbol = "EURUSD";
+const activeSymbol = "BTCUSD";
 
 /**
  * Broker (MT4/MT5) sends candle times in UTC+3 server time encoded as

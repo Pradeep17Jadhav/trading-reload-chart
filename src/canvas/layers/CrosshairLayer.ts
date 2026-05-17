@@ -1,10 +1,6 @@
-import { CHART_CONFIG } from "../../config/chartConfig";
 import type { CanvasPoint } from "../../chart/utils/getCanvasPoint.types";
-import type {
-	CrosshairLayerOptions,
-	CrosshairStyle,
-	UpdateMousePositionOptions,
-} from "./CrosshairLayer.types";
+import { CHART_CONFIG } from "../../config/chartConfig";
+import type { CrosshairLayerOptions, CrosshairStyle, UpdateMousePositionOptions } from "./CrosshairLayer.types";
 
 export class CrosshairLayer {
 	readonly #canvas: HTMLCanvasElement;

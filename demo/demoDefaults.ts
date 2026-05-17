@@ -1,5 +1,5 @@
-import { CHART_CONFIG } from "../src/config/chartConfig";
 import type { ShapeToolType } from "../src/canvas/layers/ShapesLayer/ShapesLayer.types";
+import { CHART_CONFIG } from "../src/config/chartConfig";
 
 export const DEMO_ACTIVE_SYMBOL = "BTCUSD";
 

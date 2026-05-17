@@ -17,7 +17,7 @@ import {
 } from "./ShapesLayer.helpers";
 import type {
 	ActiveShapeDraft,
-	ActiveShapeEdit,
+	InternalDragState,
 	PartialShapeConfig,
 	Shape,
 	ShapeAddedPayload,
@@ -27,7 +27,6 @@ import type {
 	ShapeModifiedPayload,
 	ShapePoint,
 	ShapesLayerOptions,
-	InternalDragState,
 	ShapeToolType,
 	ShapeVertex,
 } from "./ShapesLayer.types";

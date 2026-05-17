@@ -5,17 +5,15 @@ import { ExistingCandlesLayer } from "../canvas/layers/ExistingCandlesLayer";
 import { ShapesLayer } from "../canvas/layers/ShapesLayer/ShapesLayer";
 import type { ShapeToolType } from "../canvas/layers/ShapesLayer/ShapesLayer.types";
 import { TradeLayer } from "../canvas/layers/TradeLayer/TradeLayer";
-import type {
-	TradeHandleType,
-	TradeProtectionHandleType,
-} from "../canvas/layers/TradeLayer/TradeLayer.types";
+import type { TradeHandleType, TradeProtectionHandleType } from "../canvas/layers/TradeLayer/TradeLayer.types";
 import { TradeLayerEvents } from "../canvas/layers/TradeLayer/TradeLayerEvents";
 import { VolumeLayer } from "../canvas/layers/VolumeLayer/VolumeLayer";
 import type { ChartConfig } from "../config/chartConfig.types";
 import type { Candle } from "../models/Candle.types";
 import type { OpenTrade } from "../models/Trade.types";
 import type { ChartControllerProps, TradeModifyPayload } from "./ChartController.types";
-import { createChartDom, type ChartDomElements } from "./createChartDom";
+import { createChartDom } from "./createChartDom";
+import type { ChartDomElements } from "./createChartDom.types";
 import { getCanvasPoint } from "./utils/getCanvasPoint";
 import { mergeChartConfig } from "./utils/mergeChartConfig";
 import { normalizeCandleTime } from "./utils/normalizeCandleTime";
@@ -130,9 +128,7 @@ export class ChartController {
 			return;
 		}
 
-		const normalizedCandles = candles.map((candle) =>
-			normalizeCandleTime(candle, this.#props.brokerTimezoneOffsetMs),
-		);
+		const normalizedCandles = candles.map((candle) => normalizeCandleTime(candle, this.#props.brokerTimezoneOffsetMs));
 
 		this.#volumeLayer = new VolumeLayer({
 			canvas: this.#dom.volumeCanvas,
@@ -193,8 +189,7 @@ export class ChartController {
 
 		this.#tradeLayerEvents = new TradeLayerEvents({
 			canvas: this.#dom.tradesCanvas,
-			getHandleHitboxes: () =>
-				this.#isShapeToolActive() ? [] : (this.#tradeLayer?.handleHitboxes ?? []),
+			getHandleHitboxes: () => (this.#isShapeToolActive() ? [] : (this.#tradeLayer?.handleHitboxes ?? [])),
 			onDrag: (payload) => this.#handleTradeDrag(payload),
 			onMissingProtectionDrag: (payload) => this.#handleMissingProtectionDrag(payload),
 			onMissingProtectionDragEnd: (payload) => this.#handleMissingProtectionDragEnd(payload),
@@ -361,15 +356,7 @@ export class ChartController {
 		this.#tradeLayer?.setCandles(this.#candleLayer.candles);
 	}
 
-	#handleTradeDrag({
-		trade,
-		type,
-		price,
-	}: {
-		trade: OpenTrade;
-		type: TradeHandleType;
-		price: number;
-	}) {
+	#handleTradeDrag({ trade, type, price }: { trade: OpenTrade; type: TradeHandleType; price: number }) {
 		if (!this.#tradeLayer) {
 			return;
 		}
@@ -453,12 +440,8 @@ export class ChartController {
 
 		const pointer = getCanvasPoint(this.#dom.overlayCanvas, event);
 		const nearestCandleIndex = this.#candleLayer.getNearestCandleIndexByX(pointer.x);
-		const nearestCandle =
-			nearestCandleIndex === null ? null : (this.#candleLayer.candles[nearestCandleIndex] ?? null);
-		const snapX =
-			nearestCandleIndex === null
-				? pointer.x
-				: this.#candleLayer.getRawCandleSnapX(pointer.x);
+		const nearestCandle = nearestCandleIndex === null ? null : (this.#candleLayer.candles[nearestCandleIndex] ?? null);
+		const snapX = nearestCandleIndex === null ? pointer.x : this.#candleLayer.getRawCandleSnapX(pointer.x);
 
 		this.#crosshairLayer.updateMousePosition(event.clientX, event.clientY, { snapX });
 

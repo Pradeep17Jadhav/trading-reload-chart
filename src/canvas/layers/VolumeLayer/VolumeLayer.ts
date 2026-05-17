@@ -2,11 +2,7 @@ import { CHART_CONFIG } from "../../../config/chartConfig";
 import type { Candle } from "../../../models/Candle.types";
 import type { ChartViewport } from "../../../models/ChartViewport.types";
 import type { VisibleRange } from "../../../models/VisibleRange.types";
-import type {
-	DrawSingleVolumeBarOptions,
-	DrawVolumeBarsOptions,
-	VolumeLayerOptions,
-} from "./VolumeLayer.types";
+import type { DrawSingleVolumeBarOptions, DrawVolumeBarsOptions, VolumeLayerOptions } from "./VolumeLayer.types";
 
 export class VolumeLayer {
 	readonly #canvas: HTMLCanvasElement;

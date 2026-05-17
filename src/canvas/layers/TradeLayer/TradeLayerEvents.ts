@@ -1,11 +1,7 @@
 import { CHART_CONFIG } from "../../../config/chartConfig";
 import { normalizePrice } from "../../../helpers/math";
 import type { TradeHandleHitbox, TradeLayerEventsOptions, TradeProtectionHandleType } from "./TradeLayer.types";
-import type {
-	CanvasMousePoint,
-	HitboxArea,
-	SupportedPointerEventType,
-} from "./TradeLayerEvents.types";
+import type { CanvasMousePoint, HitboxArea, SupportedPointerEventType } from "./TradeLayerEvents.types";
 import { TRADE_LAYER_EVENT_TYPES_TO_HANDLE } from "./TradeLayerEvents.types";
 
 export class TradeLayerEvents {

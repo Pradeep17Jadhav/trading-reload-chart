@@ -1,13 +1,8 @@
 import type { PastTradeIndicator } from "../src/canvas/layers/TradeLayer/TradeLayer.types";
 import type { Candle } from "../src/models/Candle.types";
 import type { OpenTrade } from "../src/models/Trade.types";
-import {
-	DEMO_ACTIVE_SYMBOL,
-	DEMO_BROKER_TIMEZONE_OFFSET_MS,
-	DEMO_CANDLE_LIMIT,
-	DEMO_TIMEFRAME,
-} from "./demoDefaults";
 import type { TradeHistoryApiItem, TradeHistoryApiResponse, TradeModifyRequest } from "./demoApi.types";
+import { DEMO_ACTIVE_SYMBOL, DEMO_BROKER_TIMEZONE_OFFSET_MS, DEMO_CANDLE_LIMIT, DEMO_TIMEFRAME } from "./demoDefaults";
 
 export type { TradeModifyRequest } from "./demoApi.types";
 
@@ -15,9 +10,7 @@ export const API_BASE_URL = "https://api-tradingreload.pradeepjadhav.com";
 export const WS_BASE_URL = "wss://api-tradingreload.pradeepjadhav.com";
 
 export const normalizeCandleFromApi = (candle: Candle): Candle =>
-	candle.time < 1e12
-		? { ...candle, time: candle.time * 1000 - DEMO_BROKER_TIMEZONE_OFFSET_MS }
-		: candle;
+	candle.time < 1e12 ? { ...candle, time: candle.time * 1000 - DEMO_BROKER_TIMEZONE_OFFSET_MS } : candle;
 
 const normalizeSymbol = (symbol: string) => symbol.split(".")[0].toUpperCase();
 

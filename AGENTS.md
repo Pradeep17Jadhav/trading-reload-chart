@@ -107,7 +107,7 @@ Purpose: Stand in for the future parent React app until it exists. **Not publish
 | `demo/main.tsx` | Vite entry; mounts `TradingReload` with `createRoot`. |
 | `demo/DemoApp.tsx` | Local React state mirroring future parent (candles, trades, shapes, tool). |
 | `demo/demoApi.ts` | `fetch`, WebSocket, `API_BASE_URL`, `WS_BASE_URL`. |
-| `demo/demoDefaults.ts` | Hardcoded symbol, initial shapes, `activeShapeTool`, merged config, `brokerTimezoneOffsetMs`, timeframe `15m`, `limit=500`. |
+| `demo/demoDefaults.ts` | Hardcoded symbol, initial shapes, `activeShapeTool`, merged config, `brokerTimezoneOffsetMs`, timeframe `15m`, `limit=1000`. |
 | `demo/createDemoShapes.ts` | Logic moved from legacy `main.ts` `createDemoShapes`. |
 
 Rules:

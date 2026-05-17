@@ -24,6 +24,7 @@ import type {
 	ShapeConfig,
 	ShapeCoordinateConverter,
 	ShapeHandleHitbox,
+	ShapeHandleType,
 	ShapeModifiedPayload,
 	ShapePoint,
 	ShapesLayerOptions,
@@ -515,12 +516,7 @@ export class ShapesLayer {
 		return ShortLongPosition.move(shape, delta);
 	}
 
-	private resizeShape(
-		shape: Shape,
-		handleType: ShapeHandleHitbox["type"],
-		vertex: ShapeVertex,
-		handleIndex?: number,
-	): Shape {
+	private resizeShape(shape: Shape, handleType: ShapeHandleType, vertex: ShapeVertex, handleIndex?: number): Shape {
 		if (shape.type === "trendline") {
 			return LineShape.resize(shape, handleType, vertex);
 		}

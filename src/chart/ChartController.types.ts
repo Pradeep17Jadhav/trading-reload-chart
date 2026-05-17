@@ -19,9 +19,9 @@ export type TradeModifyPayload = {
 export type ChartControllerProps = {
 	activeSymbol: string;
 	candles: Candle[];
-	liveCandle?: Candle | null;
-	openTrades?: OpenTrade[];
-	pastTrades?: PastTradeIndicator[];
+	liveCandle: Candle | null;
+	openTrades: OpenTrade[];
+	pastTrades: PastTradeIndicator[];
 	shapes: Shape[];
 	activeShapeTool: ShapeToolType | null;
 	config?: DeepPartial<ChartConfig>;

@@ -1,22 +1,10 @@
 import { CHART_CONFIG } from "../../config/chartConfig";
-
-type CrosshairStyle = "solid" | "dashed" | "dotted";
-
-type CrosshairLayerOptions = {
-	canvas: HTMLCanvasElement;
-	crosshairColor?: string;
-	crosshairThickness?: number;
-	crosshairStyle?: CrosshairStyle;
-};
-
-type UpdateMousePositionOptions = {
-	snapX?: number;
-};
-
-type CanvasPoint = {
-	x: number;
-	y: number;
-};
+import type { CanvasPoint } from "../../chart/utils/getCanvasPoint.types";
+import type {
+	CrosshairLayerOptions,
+	CrosshairStyle,
+	UpdateMousePositionOptions,
+} from "./CrosshairLayer.types";
 
 export class CrosshairLayer {
 	readonly #canvas: HTMLCanvasElement;

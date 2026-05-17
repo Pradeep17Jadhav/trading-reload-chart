@@ -1,22 +1,12 @@
 import { CHART_CONFIG } from "../../../config/chartConfig";
 import { normalizePrice } from "../../../helpers/math";
 import type { TradeHandleHitbox, TradeLayerEventsOptions, TradeProtectionHandleType } from "./TradeLayer.types";
-
-const EVENT_TYPES_TO_HANDLE = ["pointerdown", "pointermove", "pointerup"] as const;
-
-type SupportedPointerEventType = (typeof EVENT_TYPES_TO_HANDLE)[number];
-
-type CanvasMousePoint = {
-	x: number;
-	y: number;
-};
-
-type HitboxArea = {
-	x: number;
-	y: number;
-	width: number;
-	height: number;
-};
+import type {
+	CanvasMousePoint,
+	HitboxArea,
+	SupportedPointerEventType,
+} from "./TradeLayerEvents.types";
+import { TRADE_LAYER_EVENT_TYPES_TO_HANDLE } from "./TradeLayerEvents.types";
 
 export class TradeLayerEvents {
 	readonly #canvas: HTMLCanvasElement;
@@ -119,7 +109,7 @@ export class TradeLayerEvents {
 	}
 
 	private isSupportedEventType(eventType: string): eventType is SupportedPointerEventType {
-		return EVENT_TYPES_TO_HANDLE.includes(eventType as SupportedPointerEventType);
+		return TRADE_LAYER_EVENT_TYPES_TO_HANDLE.includes(eventType as SupportedPointerEventType);
 	}
 
 	private getCanvasMousePoint(event: PointerEvent | WheelEvent | MouseEvent): CanvasMousePoint {

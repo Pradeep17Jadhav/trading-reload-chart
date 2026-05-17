@@ -1,7 +1,4 @@
-export type CanvasPoint = {
-	x: number;
-	y: number;
-};
+import type { CanvasPoint } from "./getCanvasPoint.types";
 
 export const getCanvasPoint = (canvas: HTMLCanvasElement, event: PointerEvent | MouseEvent): CanvasPoint => {
 	const rect = canvas.getBoundingClientRect();

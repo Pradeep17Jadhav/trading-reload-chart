@@ -1,5 +1,6 @@
-import type { Candle } from "../../../models/Candle";
-import type { ChartViewport } from "../../../models/ChartViewport";
+import type { Candle } from "../../../models/Candle.types";
+import type { ChartViewport } from "../../../models/ChartViewport.types";
+import type { Point2D } from "../../../models/Point.types";
 
 export type ShapeToolType = "trendline" | "rectangle" | "path" | "fibRetracement" | "shortPosition" | "longPosition";
 
@@ -12,10 +13,7 @@ export type ShapeVertex = {
 	price: number;
 };
 
-export type ShapePoint = {
-	x: number;
-	y: number;
-};
+export type ShapePoint = Point2D;
 
 export type ShapeBoundingBox = {
 	left: number;
@@ -195,13 +193,6 @@ export type ShapeModifiedPayload = {
 	shape: Shape;
 };
 
-export type ShapeLayerViewport = {
-	offsetX: number;
-	offsetY: number;
-	scaleX: number;
-	scaleY: number;
-};
-
 /**
  * Adapter around ExistingCandlesLayer viewport/candle conversion behavior.
  *
@@ -282,4 +273,9 @@ export type ShapesLayerOptions = {
 	onShapeAdded?: (payload: ShapeAddedPayload) => void;
 	onShapeModified?: (payload: ShapeModifiedPayload) => void;
 	onToolChange?: (tool: ShapeToolType | null) => void;
+};
+
+export type InternalDragState = {
+	edit: ActiveShapeEdit;
+	lastModifiedShape: Shape;
 };

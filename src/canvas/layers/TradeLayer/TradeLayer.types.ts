@@ -1,5 +1,13 @@
-import type { ChartViewport } from "../../../models/ChartViewport";
-import type { OpenTrade, TradeType } from "../../../models/Trade";
+import type {
+	MissingTradeProtectionHandleRectConfig,
+	PastTradeIndicatorArrowConfig,
+	TemporaryTradeProtectionHandleRectConfig,
+	TradeHandleLineConfig,
+	TradeHandleRectConfig,
+	TradeHandleStyleConfig,
+} from "../../../config/chartConfig.types";
+import type { ChartViewport } from "../../../models/ChartViewport.types";
+import type { OpenTrade, TradeType } from "../../../models/Trade.types";
 
 export type TradeHandleType = "startPrice" | "stopLoss" | "takeProfit";
 
@@ -81,4 +89,157 @@ export type TradeLayerEventsOptions = {
 
 export type TradeLayerOptions = {
 	canvas: HTMLCanvasElement;
+};
+
+export type TradeHandleRenderState = {
+	price: number;
+	type: TradeHandleType;
+	trade: OpenTrade;
+	viewport: ChartViewport;
+	y: number;
+	handleStyleConfig: TradeHandleStyleConfig;
+	handleConfig: TradeHandleRectConfig;
+	lineConfig: TradeHandleLineConfig;
+	handleX: number;
+	handleY: number;
+	handleWidth: number;
+	handleHeight: number;
+};
+
+export type MissingProtectionHandleRenderState = {
+	price: number;
+	type: TradeProtectionHandleType;
+	trade: OpenTrade;
+	viewport: ChartViewport;
+	y: number;
+	config: MissingTradeProtectionHandleRectConfig;
+	handleX: number;
+	handleY: number;
+	handleWidth: number;
+	handleHeight: number;
+};
+
+export type TemporaryProtectionRenderState = {
+	price: number;
+	type: TradeProtectionHandleType;
+	trade: OpenTrade;
+	viewport: ChartViewport;
+	y: number;
+	handleConfig: TemporaryTradeProtectionHandleRectConfig;
+	lineConfig: TradeHandleLineConfig;
+	handleX: number;
+	handleY: number;
+	handleWidth: number;
+	handleHeight: number;
+};
+
+export type PastTradeIndicatorPoint = {
+	x: number;
+	y: number;
+	price: number;
+	time: number;
+};
+
+export type PastTradeIndicatorRenderState = {
+	trade: PastTradeIndicator;
+	start: PastTradeIndicatorPoint;
+	close: PastTradeIndicatorPoint;
+	arrowWidth: number;
+	arrowHeight: number;
+};
+
+export type DrawTradeHandleOptions = {
+	price: number;
+	type: TradeHandleType;
+	trade: OpenTrade;
+};
+
+export type CreateHitBoxOptions = {
+	price: number;
+	trade: OpenTrade;
+	type: TradeHandleType;
+	x: number;
+	y: number;
+	width: number;
+	height: number;
+	viewport: ChartViewport;
+};
+
+export type CreateMissingProtectionHitBoxOptions = {
+	price: number;
+	trade: OpenTrade;
+	type: TradeProtectionHandleType;
+	x: number;
+	y: number;
+	width: number;
+	height: number;
+	viewport: ChartViewport;
+};
+
+export type DrawHandleLineOptions = {
+	x1: number;
+	x2: number;
+	y: number;
+	config: TradeHandleLineConfig;
+};
+
+export type DrawConnectorLineOptions = {
+	x1: number;
+	y1: number;
+	x2: number;
+	y2: number;
+	config: TradeHandleLineConfig;
+};
+
+export type DrawHandleRectOptions = {
+	x: number;
+	y: number;
+	width: number;
+	config: TradeHandleRectConfig;
+};
+
+export type DrawMissingProtectionHandleRectOptions = {
+	x: number;
+	y: number;
+	width: number;
+	config: MissingTradeProtectionHandleRectConfig;
+};
+
+export type DrawTemporaryProtectionHandleRectOptions = {
+	x: number;
+	y: number;
+	width: number;
+	config: TemporaryTradeProtectionHandleRectConfig;
+};
+
+export type DrawHandleSectionsOptions = {
+	handleType: TradeHandleType;
+	handleX: number;
+	handleY: number;
+	handleWidth: number;
+	handleHeight: number;
+	handleConfig: TradeHandleRectConfig;
+	trade: OpenTrade;
+	y: number;
+};
+
+export type DrawPastTradeArrowOptions = {
+	x: number;
+	y: number;
+	type: TradeType;
+	width: number;
+	height: number;
+	config: PastTradeIndicatorArrowConfig;
+};
+
+export type HandleSection = {
+	label: string;
+	width: number;
+	visible: boolean;
+	color?: string;
+};
+
+export type LineBlockedRange = {
+	x1: number;
+	x2: number;
 };

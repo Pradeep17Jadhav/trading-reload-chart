@@ -1,5 +1,5 @@
 import type { TradeHandleType } from "../../canvas/layers/TradeLayer/TradeLayer.types";
-import type { OpenTrade } from "../../models/Trade";
+import type { OpenTrade } from "../../models/Trade.types";
 
 export const updateTradeTPSL = ({
 	currentTrade,

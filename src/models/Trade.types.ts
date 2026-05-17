@@ -1,4 +1,3 @@
-//models/Trade.ts
 export type TradeType = "buy" | "sell";
 
 export type BaseTrade = {
@@ -18,6 +17,7 @@ export type BaseTrade = {
 export type OpenTrade = BaseTrade & {
 	status: "open";
 };
+
 export type ClosedTrade = BaseTrade & {
 	closePrice: number;
 	closeTime: number;

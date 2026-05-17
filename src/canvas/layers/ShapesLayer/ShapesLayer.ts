@@ -1,5 +1,5 @@
-import type { Candle } from "../../../models/Candle";
-import type { ChartViewport } from "../../../models/ChartViewport";
+import type { Candle } from "../../../models/Candle.types";
+import type { ChartViewport } from "../../../models/ChartViewport.types";
 import { priceToY, yToPrice } from "../helpers/LayerHelpers";
 import { FibRetracementShape } from "./FibRetracementShape";
 import { LineShape } from "./LineShape";
@@ -27,15 +27,11 @@ import type {
 	ShapeModifiedPayload,
 	ShapePoint,
 	ShapesLayerOptions,
+	InternalDragState,
 	ShapeToolType,
 	ShapeVertex,
 } from "./ShapesLayer.types";
 import { ShortLongPosition } from "./ShortLongPosition";
-
-type InternalDragState = {
-	edit: ActiveShapeEdit;
-	lastModifiedShape: Shape;
-};
 
 export class ShapesLayer {
 	canvas: HTMLCanvasElement;

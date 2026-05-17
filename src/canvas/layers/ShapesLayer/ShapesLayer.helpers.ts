@@ -1,4 +1,5 @@
-import type { Candle } from "../../../models/Candle";
+import { getCanvasPoint as getChartCanvasPoint } from "../../../chart/utils/getCanvasPoint";
+import type { Candle } from "../../../models/Candle.types";
 import type {
 	FibLevelValue,
 	Shape,
@@ -22,16 +23,8 @@ export const generateShapeId = () => {
 	return `shape-${Date.now()}-${Math.random().toString(16).slice(2)}`;
 };
 
-export const getCanvasPoint = (canvas: HTMLCanvasElement, event: PointerEvent | MouseEvent): ShapePoint => {
-	const rect = canvas.getBoundingClientRect();
-	const scaleX = canvas.width / rect.width;
-	const scaleY = canvas.height / rect.height;
-
-	return {
-		x: (event.clientX - rect.left) * scaleX,
-		y: (event.clientY - rect.top) * scaleY,
-	};
-};
+export const getCanvasPoint = (canvas: HTMLCanvasElement, event: PointerEvent | MouseEvent): ShapePoint =>
+	getChartCanvasPoint(canvas, event);
 
 export const createVertexFromPoint = (point: ShapePoint, converter: ShapeCoordinateConverter): ShapeVertex => ({
 	time: converter.getNearestCandleTimeForX(point.x),

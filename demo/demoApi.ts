@@ -1,12 +1,15 @@
 import type { PastTradeIndicator } from "../src/canvas/layers/TradeLayer/TradeLayer.types";
-import type { Candle } from "../src/models/Candle";
-import type { OpenTrade, TradeType } from "../src/models/Trade";
+import type { Candle } from "../src/models/Candle.types";
+import type { OpenTrade } from "../src/models/Trade.types";
 import {
 	DEMO_ACTIVE_SYMBOL,
 	DEMO_BROKER_TIMEZONE_OFFSET_MS,
 	DEMO_CANDLE_LIMIT,
 	DEMO_TIMEFRAME,
 } from "./demoDefaults";
+import type { TradeHistoryApiItem, TradeHistoryApiResponse, TradeModifyRequest } from "./demoApi.types";
+
+export type { TradeModifyRequest } from "./demoApi.types";
 
 export const API_BASE_URL = "https://api-tradingreload.pradeepjadhav.com";
 export const WS_BASE_URL = "wss://api-tradingreload.pradeepjadhav.com";
@@ -15,26 +18,6 @@ export const normalizeCandleFromApi = (candle: Candle): Candle =>
 	candle.time < 1e12
 		? { ...candle, time: candle.time * 1000 - DEMO_BROKER_TIMEZONE_OFFSET_MS }
 		: candle;
-
-type TradeHistoryApiItem = {
-	commission: number;
-	endPrice: number;
-	endTime: number;
-	pnl: number;
-	sl: number | null;
-	startPrice: number;
-	startTime: number;
-	swap: number;
-	symbol: string;
-	tp: number | null;
-	type: TradeType;
-	volume: number;
-};
-
-type TradeHistoryApiResponse = {
-	count: number;
-	history: TradeHistoryApiItem[];
-};
 
 const normalizeSymbol = (symbol: string) => symbol.split(".")[0].toUpperCase();
 
@@ -168,12 +151,6 @@ export const subscribeLiveCandles = (onCandle: (candle: Candle) => void) => {
 	return () => {
 		socket.close();
 	};
-};
-
-export type TradeModifyRequest = {
-	ticket: number;
-	sl?: number | null;
-	tp?: number | null;
 };
 
 export const modifyTrade = async (payload: TradeModifyRequest) => {

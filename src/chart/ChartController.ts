@@ -12,8 +12,8 @@ import type {
 import { TradeLayerEvents } from "../canvas/layers/TradeLayer/TradeLayerEvents";
 import { VolumeLayer } from "../canvas/layers/VolumeLayer/VolumeLayer";
 import type { ChartConfig } from "../config/chartConfig.types";
-import type { Candle } from "../models/Candle";
-import type { OpenTrade } from "../models/Trade";
+import type { Candle } from "../models/Candle.types";
+import type { OpenTrade } from "../models/Trade.types";
 import type { ChartControllerProps, TradeModifyPayload } from "./ChartController.types";
 import { createChartDom, type ChartDomElements } from "./createChartDom";
 import { getCanvasPoint } from "./utils/getCanvasPoint";

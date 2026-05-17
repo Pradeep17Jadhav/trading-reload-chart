@@ -1,8 +1,8 @@
 // AxisLayerX.ts
 
 import { CHART_CONFIG } from "../../../config/chartConfig";
-import type { Candle } from "../../../models/Candle";
-import type { ChartViewport } from "../../../models/ChartViewport";
+import type { Candle } from "../../../models/Candle.types";
+import type { ChartViewport } from "../../../models/ChartViewport.types";
 import {
 	detectCandleTimeframeMs,
 	formatTimeDayDateHHMM,
@@ -10,17 +10,7 @@ import {
 	getXAxisNiceIntervalMs,
 	isAlignedToInterval,
 } from "./AxisLayerX.helpers";
-
-type AxisLayerXOptions = {
-	canvas: HTMLCanvasElement;
-	candles: Candle[];
-};
-
-type AxisLayerXCrosshair = {
-	visible: boolean;
-	x: number;
-	candle: Candle | null;
-};
+import type { AxisLayerXCrosshair, AxisLayerXOptions } from "./AxisLayerX.types";
 
 export class AxisLayerX {
 	readonly #canvas: HTMLCanvasElement;

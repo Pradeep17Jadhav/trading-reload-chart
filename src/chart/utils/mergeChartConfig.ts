@@ -1,6 +1,6 @@
 import { CHART_CONFIG } from "../../config/chartConfig";
 import type { ChartConfig } from "../../config/chartConfig.types";
-import type { DeepPartial } from "./deepPartial";
+import type { DeepPartial } from "./deepPartial.types";
 
 const isPlainObject = (value: unknown): value is Record<string, unknown> =>
 	typeof value === "object" && value !== null && !Array.isArray(value);

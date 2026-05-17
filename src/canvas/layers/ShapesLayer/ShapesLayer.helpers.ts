@@ -245,9 +245,11 @@ export const drawHandle = (
 	options: {
 		fillColor: string;
 		borderColor: string;
+		borderThickness: number;
 	} = {
 		fillColor: "#ffffff",
 		borderColor: "#2962ff",
+		borderThickness: 3,
 	},
 ) => {
 	ctx.save();
@@ -255,7 +257,7 @@ export const drawHandle = (
 	ctx.arc(handle.x, handle.y, handle.radius, 0, Math.PI * 2);
 	ctx.fillStyle = options.fillColor;
 	ctx.fill();
-	ctx.lineWidth = 1.5;
+	ctx.lineWidth = options.borderThickness;
 	ctx.strokeStyle = options.borderColor;
 	ctx.stroke();
 	ctx.restore();
@@ -267,6 +269,7 @@ export const drawHandles = (
 	options?: {
 		fillColor: string;
 		borderColor: string;
+		borderThickness: number;
 	},
 ) => {
 	handles.forEach((handle) => {

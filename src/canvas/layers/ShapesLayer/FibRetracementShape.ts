@@ -66,6 +66,7 @@ export class FibRetracementShape {
 		fillOpacity: 0.04,
 		handleColor: "#ffffff",
 		handleBorderColor: "#2962ff",
+		handleBorderThickness: 1.5,
 		handleRadius: 5,
 		hoverLineWidth: 2,
 		selectedLineWidth: 2,
@@ -131,6 +132,7 @@ export class FibRetracementShape {
 			drawHandles(ctx, FibRetracementShape.getHandles(shape, converter, config), {
 				fillColor: config.handleColor,
 				borderColor: config.handleBorderColor,
+				borderThickness: config.handleBorderThickness,
 			});
 		}
 

@@ -60,6 +60,7 @@ export type ShapeDrawStyle = {
 	fillOpacity?: number;
 	handleColor: string;
 	handleBorderColor: string;
+	handleBorderThickness: number;
 	handleRadius: number;
 	hoverLineWidth?: number;
 	selectedLineWidth?: number;
@@ -82,6 +83,7 @@ export type FibRetracementConfig = {
 	fillOpacity?: number;
 	handleColor: string;
 	handleBorderColor: string;
+	handleBorderThickness: number;
 	handleRadius: number;
 	hoverLineWidth: number;
 	selectedLineWidth: number;
@@ -105,6 +107,7 @@ export type PositionShapeConfig = {
 	midLineStyle: ShapeLineStyle;
 	handleColor: string;
 	handleBorderColor: string;
+	handleBorderThickness: number;
 	handleRadius: number;
 	hoverLineWidth: number;
 	selectedLineWidth: number;
@@ -272,6 +275,7 @@ export type ActiveShapeEdit =
 export type ShapesLayerOptions = {
 	canvas: HTMLCanvasElement;
 	candles: Candle[];
+	activeSymbol: string;
 	shapes: Shape[];
 	activeTool?: ShapeToolType | null;
 	config?: PartialShapeConfig;

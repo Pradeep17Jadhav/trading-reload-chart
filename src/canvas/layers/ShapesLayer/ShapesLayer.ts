@@ -40,6 +40,7 @@ type InternalDragState = {
 export class ShapesLayer {
 	canvas: HTMLCanvasElement;
 	ctx: CanvasRenderingContext2D;
+	activeSymbol: string;
 	candles: Candle[];
 	viewport: ChartViewport | null = null;
 	shapes: Shape[];
@@ -65,6 +66,7 @@ export class ShapesLayer {
 		}
 
 		this.ctx = ctx;
+		this.activeSymbol = options.activeSymbol;
 		this.candles = options.candles;
 		this.shapes = options.shapes;
 		this.activeTool = options.activeTool ?? null;
@@ -609,6 +611,7 @@ export class ShapesLayer {
 
 		ShortLongPosition.draw({
 			ctx: this.ctx,
+			activeSymbol: this.activeSymbol,
 			shape,
 			converter,
 			config: shape.type === "longPosition" ? this.config.longPosition : this.config.shortPosition,

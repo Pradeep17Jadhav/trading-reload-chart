@@ -26,6 +26,7 @@ export class PathShape {
 		fillOpacity: 0,
 		handleColor: "#ffffff",
 		handleBorderColor: "#2962ff",
+		handleBorderThickness: 1.5,
 		handleRadius: 5,
 		hoverLineWidth: 3,
 		selectedLineWidth: 3,
@@ -85,6 +86,7 @@ export class PathShape {
 			drawHandles(ctx, PathShape.getHandles(shape, converter, config), {
 				fillColor: config.handleColor,
 				borderColor: config.handleBorderColor,
+				borderThickness: config.handleBorderThickness,
 			});
 		}
 

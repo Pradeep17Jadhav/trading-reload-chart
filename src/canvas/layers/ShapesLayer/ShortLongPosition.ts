@@ -1,3 +1,4 @@
+import { getPipSize } from "../TradeLayer/TradeLayer.helpers";
 import {
 	createHandleHitbox,
 	drawHandles,
@@ -48,6 +49,7 @@ export class ShortLongPosition {
 		midLineStyle: "dashed",
 		handleColor: "#ffffff",
 		handleBorderColor: "#2962ff",
+		handleBorderThickness: 1.5,
 		handleRadius: 5,
 		hoverLineWidth: 2,
 		selectedLineWidth: 2,
@@ -59,6 +61,7 @@ export class ShortLongPosition {
 
 	static draw({
 		ctx,
+		activeSymbol,
 		shape,
 		converter,
 		config = shape.type === "longPosition" ? ShortLongPosition.defaultLongConfig : ShortLongPosition.defaultShortConfig,
@@ -66,6 +69,7 @@ export class ShortLongPosition {
 		hovered = false,
 	}: {
 		ctx: CanvasRenderingContext2D;
+		activeSymbol: string;
 		shape: PositionShapeData;
 		converter: ShapeCoordinateConverter;
 		config?: PositionShapeConfig;
@@ -105,6 +109,7 @@ export class ShortLongPosition {
 
 		ShortLongPosition.drawLabels({
 			ctx,
+			activeSymbol,
 			shape,
 			geometry,
 			config,
@@ -114,6 +119,7 @@ export class ShortLongPosition {
 			drawHandles(ctx, ShortLongPosition.getHandles(shape, converter, config), {
 				fillColor: config.handleColor,
 				borderColor: config.handleBorderColor,
+				borderThickness: config.handleBorderThickness,
 			});
 		}
 
@@ -367,26 +373,39 @@ export class ShortLongPosition {
 
 	private static drawLabels({
 		ctx,
+		activeSymbol,
 		shape,
 		geometry,
 		config,
 	}: {
 		ctx: CanvasRenderingContext2D;
+		activeSymbol: string;
 		shape: PositionShapeData;
 		geometry: PositionGeometry;
 		config: PositionShapeConfig;
 	}) {
-		const profitText = `TP ${shape.takeProfitPercent.toFixed(3)}%`;
-		const lossText = `SL ${shape.stopLossPercent.toFixed(3)}%`;
-		const labelX = geometry.box.left + 6;
-
+		ctx.save();
 		ctx.font = "11px sans-serif";
 		ctx.textBaseline = "middle";
 
+		const type = shape.type;
+		const pipSize = getPipSize(activeSymbol);
+		const profitPips = (shape.entry.price * (shape.takeProfitPercent / 100)) / pipSize;
+		const lossPips = (shape.entry.price * (shape.stopLossPercent / 100)) / pipSize;
+		const labelX = geometry.box.left + 6;
+		const rrr = profitPips / lossPips;
 		ctx.fillStyle = withOpacity(config.profitFillColor, 0.95);
-		ctx.fillText(profitText, labelX, geometry.profitBox.top + geometry.profitBox.height / 2);
+		const profitLabelPosition =
+			type === "longPosition"
+				? geometry.profitBox.top + geometry.profitBox.height / 10
+				: geometry.profitBox.bottom - geometry.profitBox.height / 10;
+		ctx.fillText(`${profitPips.toFixed(2)} (${rrr.toFixed(2)})`, labelX, profitLabelPosition);
 
 		ctx.fillStyle = withOpacity(config.lossFillColor, 0.95);
-		ctx.fillText(lossText, labelX, geometry.lossBox.top + geometry.lossBox.height / 2);
+		const lossLabelPosition =
+			type === "shortPosition"
+				? geometry.lossBox.top + geometry.lossBox.height / 10
+				: geometry.lossBox.bottom - geometry.lossBox.height / 10;
+		ctx.fillText(lossPips.toFixed(1), labelX, lossLabelPosition);
 	}
 }

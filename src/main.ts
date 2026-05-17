@@ -643,6 +643,7 @@ const initializeLayers = (candles: Candle[]) => {
 
 	shapesLayer = new ShapesLayer({
 		canvas: shapesCanvas,
+		activeSymbol,
 		candles,
 		shapes: demoShapes,
 		activeTool: activeShapeTool,

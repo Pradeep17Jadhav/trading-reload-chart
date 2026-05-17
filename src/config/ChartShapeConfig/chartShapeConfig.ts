@@ -1,4 +1,4 @@
-import type { PartialShapeConfig } from "../../canvas/layers/ShapesLayer/ShapesLayer.types";
+import type { PartialShapeConfig, PositionShapeConfig } from "../../canvas/layers/ShapesLayer/ShapesLayer.types";
 import { COLORS } from "../colors";
 
 const SHAPE_COLORS = {
@@ -7,10 +7,10 @@ const SHAPE_COLORS = {
 	orange: "#ff9500",
 	purple: "#af52de",
 	handleBorder: COLORS.blue,
-	handleFill: COLORS.white,
+	handleFill: COLORS.background,
 } as const;
 
-const commonPositionConfig = {
+const commonPositionConfig: Partial<PositionShapeConfig> = {
 	defaultWidthCandles: 10,
 	defaultStopLossPercent: 0.25,
 	defaultRiskRewardRatio: 1.5,
@@ -28,6 +28,7 @@ const commonPositionConfig = {
 	midLineStyle: "solid" as const,
 	handleColor: SHAPE_COLORS.handleFill,
 	handleBorderColor: SHAPE_COLORS.handleBorder,
+	handleBorderThickness: 1.5,
 	handleRadius: 5,
 	hoverLineWidth: 2,
 	selectedLineWidth: 2,

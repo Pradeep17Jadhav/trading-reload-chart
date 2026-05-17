@@ -1,0 +1,82 @@
+.trading-reload-chart {
+	box-sizing: border-box;
+	width: 100%;
+	height: 100%;
+	overflow: hidden;
+	outline: none;
+}
+
+.trading-reload-chart *,
+.trading-reload-chart *::before,
+.trading-reload-chart *::after {
+	box-sizing: border-box;
+}
+
+.trading-reload-chart__layout {
+	position: relative;
+	display: flex;
+	width: 100%;
+	height: 100%;
+	overflow: hidden;
+}
+
+.trading-reload-chart__stack {
+	--axis-x-height: 30px;
+	position: relative;
+	flex: 1;
+	height: 100%;
+	overflow: hidden;
+}
+
+.trading-reload-chart canvas {
+	display: block;
+}
+
+.trading-reload-chart__volume,
+.trading-reload-chart__plot,
+.trading-reload-chart__shapes,
+.trading-reload-chart__trades,
+.trading-reload-chart__overlay {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: calc(100% - var(--axis-x-height));
+}
+
+.trading-reload-chart__volume {
+	z-index: 0;
+	pointer-events: none;
+}
+
+.trading-reload-chart__plot {
+	z-index: 1;
+}
+
+.trading-reload-chart__shapes {
+	z-index: 2;
+}
+
+.trading-reload-chart__trades {
+	z-index: 3;
+}
+
+.trading-reload-chart__overlay {
+	z-index: 4;
+}
+
+.trading-reload-chart__axis-x {
+	position: absolute;
+	left: 0;
+	bottom: 0;
+	width: 100%;
+	height: var(--axis-x-height);
+	z-index: 5;
+}
+
+.trading-reload-chart__axis-y {
+	position: relative;
+	height: calc(100% - var(--axis-x-height));
+	flex-shrink: 0;
+	z-index: 4;
+}

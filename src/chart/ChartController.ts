@@ -499,7 +499,7 @@ export class ChartController {
 
 		event.preventDefault();
 
-		const zoomDelta = event.deltaY < 0 ? -1 : 1;
+		const zoomDelta = event.deltaY < 0 ? 1 : -1;
 
 		if (event.ctrlKey || event.metaKey) {
 			this.#candleLayer.zoomVertically(zoomDelta);

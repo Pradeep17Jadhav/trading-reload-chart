@@ -1,4 +1,4 @@
-# Trading Chart Library
+# Trading Chart Library by Pradeep
 
 A high-performance HTML Canvas based trading chart application built with TypeScript.
 

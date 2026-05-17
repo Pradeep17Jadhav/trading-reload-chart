@@ -26,7 +26,7 @@ import "./main.css";
 const API_BASE_URL = "https://api-tradingreload.pradeepjadhav.com";
 const WS_BASE_URL = "wss://api-tradingreload.pradeepjadhav.com";
 
-const activeSymbol = "AUDJPY";
+const activeSymbol = "EURUSD";
 
 /**
  * Broker (MT4/MT5) sends candle times in UTC+3 server time encoded as
@@ -128,8 +128,8 @@ const createDemoShapes = (candles: Candle[]): Shape[] => {
 	const fibEnd = candleAt(25);
 	const longEntry = candleAt(35);
 	const longEnd = candleAt(25);
-	const shortEntry = candleAt(22);
-	const shortEnd = candleAt(12);
+	const shortEntry = candleAt(1);
+	const shortEnd = candleAt(10);
 
 	return [
 		{

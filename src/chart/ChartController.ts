@@ -44,6 +44,8 @@ export class ChartController {
 
 	#initialized = false;
 
+	#lastPlotWidth = 0;
+
 	#isPanning = false;
 
 	#lastMouseX = 0;
@@ -253,6 +255,20 @@ export class ChartController {
 		}
 
 		const { plotWidth, plotHeight, axisYWidth, axisXHeight } = this.#getCanvasLayoutSize();
+
+		/**
+		 * When the plot width changes, shift offsetX by the same delta so the
+		 * rightmost visible candle stays pinned to the right edge.
+		 *
+		 * Derivation: endIndex = (canvasWidth - offsetX) / candleSpacing
+		 * To keep endIndex constant: offsetX_new = offsetX_old + (newWidth - oldWidth)
+		 */
+		if (this.#candleLayer && this.#lastPlotWidth > 0 && plotWidth !== this.#lastPlotWidth) {
+			const delta = plotWidth - this.#lastPlotWidth;
+			this.#candleLayer.panHorizontally(delta);
+		}
+
+		this.#lastPlotWidth = plotWidth;
 
 		this.#setCanvasSize(this.#dom.volumeCanvas, plotWidth, plotHeight);
 		this.#setCanvasSize(this.#dom.candleCanvas, plotWidth, plotHeight);

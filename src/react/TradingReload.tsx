@@ -1,47 +1,55 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { forwardRef, useEffect, useImperativeHandle, useRef } from "react";
 import { ChartController } from "../chart/ChartController";
 import "../styles/chart.css";
-import type { TradingReloadProps } from "./TradingReload.types";
+import type { TradingReloadHandle, TradingReloadProps } from "./TradingReload.types";
 
-export const TradingReload = ({ className, style, ...chartProps }: TradingReloadProps) => {
-	const containerRef = useRef<HTMLDivElement>(null);
-	const controllerRef = useRef<ChartController | null>(null);
-	const chartPropsRef = useRef(chartProps);
+export const TradingReload = forwardRef<TradingReloadHandle, TradingReloadProps>(
+	({ className, style, ...chartProps }, ref) => {
+		const containerRef = useRef<HTMLDivElement>(null);
+		const controllerRef = useRef<ChartController | null>(null);
+		const chartPropsRef = useRef(chartProps);
 
-	chartPropsRef.current = chartProps;
+		chartPropsRef.current = chartProps;
 
-	useEffect(() => {
-		const container = containerRef.current;
+		useImperativeHandle(ref, () => ({
+			resetChartView() {
+				controllerRef.current?.resetChartView();
+			},
+		}));
 
-		if (!container) {
-			return;
-		}
+		useEffect(() => {
+			const container = containerRef.current;
 
-		const controller = new ChartController(container, chartPropsRef.current);
-		controllerRef.current = controller;
+			if (!container) {
+				return;
+			}
 
-		return () => {
-			controller.destroy();
-			controllerRef.current = null;
-		};
-	}, []);
+			const controller = new ChartController(container, chartPropsRef.current);
+			controllerRef.current = controller;
 
-	// biome-ignore lint/correctness/useExhaustiveDependencies: We need multiple updates with the changes in chatProps
-	useEffect(() => {
-		controllerRef.current?.updateProps(chartPropsRef.current);
-	}, [chartProps]);
+			return () => {
+				controller.destroy();
+				controllerRef.current = null;
+			};
+		}, []);
 
-	return (
-		<div
-			ref={containerRef}
-			className={className}
-			style={{
-				width: "100%",
-				height: "100%",
-				...style,
-			}}
-		/>
-	);
-};
+		// biome-ignore lint/correctness/useExhaustiveDependencies: We need multiple updates with the changes in chatProps
+		useEffect(() => {
+			controllerRef.current?.updateProps(chartPropsRef.current);
+		}, [chartProps]);
+
+		return (
+			<div
+				ref={containerRef}
+				className={className}
+				style={{
+					width: "100%",
+					height: "100%",
+					...style,
+				}}
+			/>
+		);
+	},
+);

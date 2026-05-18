@@ -27,4 +27,4 @@ export type { Point2D } from "./models/Point.types";
 export type { BaseTrade, ClosedTrade, OpenTrade, TradeType } from "./models/Trade.types";
 export type { VisibleRange } from "./models/VisibleRange.types";
 export { TradingReload } from "./react/TradingReload";
-export type { TradingReloadProps } from "./react/TradingReload.types";
+export type { TradingReloadHandle, TradingReloadProps } from "./react/TradingReload.types";

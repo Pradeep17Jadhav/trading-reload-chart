@@ -252,6 +252,13 @@ export class ExistingCandlesLayer {
 		this.priceRange = this.getNextVerticalPriceRange(delta);
 	}
 
+	resetView() {
+		this.zoomX = 1;
+		this.offsetX = this.getDefaultOffsetX();
+		this.initializeViewport();
+		this.isFollowingLatest = this.isWithinAutoFollowThreshold();
+	}
+
 	render() {
 		const ctx = this.#ctx;
 		const chartWidth = this.#canvas.width;

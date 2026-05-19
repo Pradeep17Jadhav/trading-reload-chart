@@ -46,12 +46,12 @@ npm run format      # Biome format
 
 ## Build commands
 
-| Script | Purpose |
-|--------|---------|
-| `npm run dev` | Demo app from source (`demo/main.tsx`) |
-| `npm run build` | **Library** build → `dist/` (ESM + `.d.ts`) |
-| `npm run build:demo` | Static **demo** site build |
-| `npm run preview` | Preview last Vite build |
+| Script               | Purpose                                     |
+| -------------------- | ------------------------------------------- |
+| `npm run dev`        | Demo app from source (`demo/main.tsx`)      |
+| `npm run build`      | **Library** build → `dist/` (ESM + `.d.ts`) |
+| `npm run build:demo` | Static **demo** site build                  |
+| `npm run preview`    | Preview last Vite build                     |
 
 ### Production library build
 
@@ -95,6 +95,7 @@ npm run build
 npm pack
 # In your app
 npm install /path/to/trading-reload-chart/trading-reload-chart-0.0.0.tgz
+# Example - npm install D:\Pragramming\Projects\TradingReload\trading-reload-chart\trading-reload-chart-0.0.0.tgz
 ```
 
 Or link during development:
@@ -123,7 +124,9 @@ import {
 export function ChartPanel() {
   const [candles, setCandles] = useState<Candle[]>([]);
   const [shapes, setShapes] = useState<Shape[]>([]);
-  const [activeShapeTool, setActiveShapeTool] = useState<ShapeToolType | null>(null);
+  const [activeShapeTool, setActiveShapeTool] = useState<ShapeToolType | null>(
+    null,
+  );
 
   return (
     <div className="h-full w-full min-h-[400px]">
@@ -171,14 +174,14 @@ export function App() {
 
 Import from the package root:
 
-| Export | Description |
-|--------|-------------|
-| `TradingReload` | Main React component |
-| `TradingReloadProps` | Component props |
-| `Candle`, `OpenTrade`, `ClosedTrade`, … | Domain types |
-| `Shape`, `ShapeToolType`, shape payloads | Drawing types |
-| `ChartConfig`, `CHART_CONFIG`, `DeepPartial` | Configuration |
-| `PastTradeIndicator`, trade handle types | Trade overlay types |
+| Export                                       | Description          |
+| -------------------------------------------- | -------------------- |
+| `TradingReload`                              | Main React component |
+| `TradingReloadProps`                         | Component props      |
+| `Candle`, `OpenTrade`, `ClosedTrade`, …      | Domain types         |
+| `Shape`, `ShapeToolType`, shape payloads     | Drawing types        |
+| `ChartConfig`, `CHART_CONFIG`, `DeepPartial` | Configuration        |
+| `PastTradeIndicator`, trade handle types     | Trade overlay types  |
 
 Controlled props (parent owns state): `candles`, `liveCandle`, `openTrades`, `pastTrades`, `shapes`, `activeShapeTool`, `config`, `activeSymbol`.
 
@@ -225,12 +228,12 @@ Type declarations live in **`*.types.ts`** files next to implementation code (se
 
 ## Interaction
 
-| Action | Result |
-|--------|--------|
-| Drag | Pan chart |
-| Mouse wheel | Horizontal zoom |
-| Ctrl + wheel | Vertical zoom |
-| Move pointer | Crosshair + axis labels |
+| Action                 | Result                                        |
+| ---------------------- | --------------------------------------------- |
+| Drag                   | Pan chart                                     |
+| Mouse wheel            | Horizontal zoom                               |
+| Ctrl + wheel           | Vertical zoom                                 |
+| Move pointer           | Crosshair + axis labels                       |
 | Escape (while drawing) | Cancel tool (`onActiveShapeToolChange(null)`) |
 
 ---

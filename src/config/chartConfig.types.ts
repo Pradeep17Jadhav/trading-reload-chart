@@ -199,6 +199,7 @@ export type AxisYConfig = {
 	tickColor: string;
 	tickWidth: number;
 	tickLength: number;
+	tickGap: number;
 	labelOffsetX: number;
 	crosshairLabel: AxisCrosshairLabelConfig;
 };
@@ -220,7 +221,6 @@ export type AxisXConfig = {
 };
 
 export type AxisConfig = {
-	axisXHeight: number;
 	axisX: AxisXConfig;
 	axisY: AxisYConfig;
 };

@@ -131,8 +131,6 @@ export const CHART_CONFIG: ChartConfig = {
 	},
 
 	axis: {
-		axisXHeight: 30,
-
 		axisX: {
 			height: 30,
 			backgroundColor: COLORS.background,
@@ -168,7 +166,8 @@ export const CHART_CONFIG: ChartConfig = {
 			tickCount: 12,
 			tickColor: COLORS.axisYTick,
 			tickWidth: 1,
-			tickLength: 8,
+			tickLength: 4,
+			tickGap: 64,
 			labelOffsetX: 8,
 			crosshairLabel: {
 				backgroundColor: COLORS.crosshairLabelBackground,

@@ -1,15 +1,15 @@
+import { CHART_CONFIG } from "../../../config/chartConfig";
+
 export const getPriceStep = ({ priceRange, canvasHeight }: { priceRange: number; canvasHeight: number }) => {
 	/**
-	 * Desired vertical spacing
-	 * between price labels.
+	 * Desired vertical spacing between price labels.
 	 */
-	const targetPixelGap = 80;
+	const tickGap = CHART_CONFIG.axis.axisY.tickGap;
 
 	/**
-	 * Approximate visible
-	 * label count.
+	 * Approximate visible  label count.
 	 */
-	const approximateLabelCount = canvasHeight / targetPixelGap;
+	const approximateLabelCount = canvasHeight / tickGap;
 
 	/**
 	 * Raw logical step.

@@ -6,8 +6,10 @@ import { DEMO_ACTIVE_SYMBOL, DEMO_BROKER_TIMEZONE_OFFSET_MS, DEMO_CANDLE_LIMIT, 
 
 export type { TradeModifyRequest } from "./demoApi.types";
 
-export const API_BASE_URL = "https://api-tradingreload.pradeepjadhav.com";
-export const WS_BASE_URL = "wss://api-tradingreload.pradeepjadhav.com";
+export const API_BASE_URL = "http://localhost:5000";
+export const WS_BASE_URL = "ws://localhost:5000";
+// export const API_BASE_URL = "https://api-tradingreload.pradeepjadhav.com";
+// export const WS_BASE_URL = "wss://api-tradingreload.pradeepjadhav.com";
 
 export const normalizeCandleFromApi = (candle: Candle): Candle =>
 	candle.time < 1e12 ? { ...candle, time: candle.time * 1000 - DEMO_BROKER_TIMEZONE_OFFSET_MS } : candle;

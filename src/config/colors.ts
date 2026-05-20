@@ -11,7 +11,7 @@ export const COLORS = {
 	axisBorder: "rgb(89, 89, 89)",
 	axisText: "rgba(255, 255, 255, 0.60)",
 	axisTick: "rgba(255,255,255,0.12)",
-	axisYTick: "rgba(255,255,255,0.06)",
+	axisYTick: "rgba(255, 255, 255, 0.40)",
 	divider: "rgba(255,255,255,0.12)",
 	crosshairLabelBackground: "#494949",
 } as const;

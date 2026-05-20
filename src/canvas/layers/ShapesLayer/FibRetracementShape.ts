@@ -122,7 +122,7 @@ export class FibRetracementShape {
 				ctx.fillStyle = withOpacity(levelConfig.color, levelConfig.opacity);
 				ctx.font = "11px sans-serif";
 				ctx.textBaseline = "middle";
-				ctx.fillText(levelConfig.label, right + 6, y);
+				ctx.fillText(Number(levelConfig.label).toFixed(2).toString(), right + 12, y);
 			}
 		}
 

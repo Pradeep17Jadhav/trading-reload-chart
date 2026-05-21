@@ -104,7 +104,16 @@ export const CHART_CONFIG: ChartConfig = {
 		autoFollowThresholdCandles: 10,
 		rightOffsetCandles: 15,
 
-		livePriceLine: {
+		liveAskPriceLine: {
+			visible: true,
+			width: 1,
+			opacity: 0.7,
+			dash: [4, 4],
+			bullishColor: COLORS.blue,
+			bearishColor: COLORS.blue,
+		},
+
+		liveBidPriceLine: {
 			visible: true,
 			width: 1,
 			opacity: 0.7,

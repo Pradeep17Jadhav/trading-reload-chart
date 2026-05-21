@@ -18,9 +18,9 @@ export type Candle = {
 	volume: number;
 
 	/**
-	 * Current spread during this candle
+	 * Current ask price during this candle
 	 */
-	spread?: number;
+	ask: number;
 
 	/**
 	 * False while realtime candle is forming

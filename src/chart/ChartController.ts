@@ -241,7 +241,10 @@ export class ChartController {
 		target.addEventListener("pointerleave", () => this.#handlePointerLeave(), { signal });
 		target.addEventListener("contextmenu", (event) => this.#handleContextMenu(event), { signal });
 		target.addEventListener("wheel", (event) => this.#handleWheel(event), { passive: false, signal });
-		this.#dom.axisYCanvas.addEventListener("wheel", (event) => this.#handleAxisYWheel(event), { passive: false, signal });
+		this.#dom.axisYCanvas.addEventListener("wheel", (event) => this.#handleAxisYWheel(event), {
+			passive: false,
+			signal,
+		});
 		document.addEventListener("keydown", (event) => this.#handleKeyDown(event), { signal });
 	}
 

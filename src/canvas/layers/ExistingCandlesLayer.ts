@@ -6,7 +6,7 @@ import type { VisibleRange } from "../../models/VisibleRange.types";
 import type {
 	CandleYCoordinates,
 	DrawCandlesOptions,
-	DrawLivePriceLineOptions,
+	DrawPriceLineOptions,
 	DrawSingleCandleOptions,
 	ExistingCandlesLayerOptions,
 } from "./ExistingCandlesLayer.types";
@@ -280,11 +280,13 @@ export class ExistingCandlesLayer {
 			chartHeight,
 		});
 
-		this.drawLivePriceLine({
+		const options = {
 			ctx,
 			chartWidth,
 			chartHeight,
-		});
+		};
+		this.drawAskPriceLine(options);
+		this.drawBidPriceLine(options);
 	}
 
 	drawCandles({ ctx, candles, startIndex, chartHeight }: DrawCandlesOptions) {
@@ -320,22 +322,24 @@ export class ExistingCandlesLayer {
 		ctx.fillRect(candleX, candleBodyY, this.candleWidth, candleBodyHeight);
 	}
 
-	drawLivePriceLine({ ctx, chartWidth, chartHeight }: DrawLivePriceLineOptions) {
-		const latestCandle = this.candles.at(-1);
-
-		if (!latestCandle || !CHART_CONFIG.candles.livePriceLine.visible) {
-			return;
-		}
-
-		const latestPrice = normalizePrice(latestCandle.close);
-		const lineY = this.getPriceY(latestPrice, chartHeight);
-		const lineColor = this.getLivePriceLineColor(latestCandle);
+	private drawPriceLine({
+		ctx,
+		chartWidth,
+		chartHeight,
+		price,
+		color,
+	}: DrawPriceLineOptions & {
+		price: number;
+		color: string;
+	}) {
+		const lineY = this.getPriceY(normalizePrice(price), chartHeight);
 
 		ctx.save();
-		ctx.globalAlpha = CHART_CONFIG.candles.livePriceLine.opacity;
-		ctx.strokeStyle = lineColor;
-		ctx.lineWidth = CHART_CONFIG.candles.livePriceLine.width;
-		ctx.setLineDash([...CHART_CONFIG.candles.livePriceLine.dash]);
+
+		ctx.globalAlpha = CHART_CONFIG.candles.liveBidPriceLine.opacity;
+		ctx.strokeStyle = color;
+		ctx.lineWidth = CHART_CONFIG.candles.liveBidPriceLine.width;
+		ctx.setLineDash([...CHART_CONFIG.candles.liveBidPriceLine.dash]);
 
 		ctx.beginPath();
 		ctx.moveTo(0, lineY);
@@ -343,6 +347,38 @@ export class ExistingCandlesLayer {
 		ctx.stroke();
 
 		ctx.restore();
+	}
+
+	drawBidPriceLine({ ctx, chartWidth, chartHeight }: DrawPriceLineOptions) {
+		const latestCandle = this.candles.at(-1);
+
+		if (!latestCandle || !CHART_CONFIG.candles.liveBidPriceLine.visible) {
+			return;
+		}
+
+		this.drawPriceLine({
+			ctx,
+			chartWidth,
+			chartHeight,
+			price: latestCandle.close,
+			color: this.getBidPriceLineColor(latestCandle),
+		});
+	}
+
+	drawAskPriceLine({ ctx, chartWidth, chartHeight }: DrawPriceLineOptions) {
+		const latestCandle = this.candles.at(-1);
+
+		if (!latestCandle || !CHART_CONFIG.candles.liveAskPriceLine.visible || latestCandle.ask == null) {
+			return;
+		}
+
+		this.drawPriceLine({
+			ctx,
+			chartWidth,
+			chartHeight,
+			price: latestCandle.ask,
+			color: this.getAskPriceLineColor(latestCandle),
+		});
 	}
 
 	private getDefaultOffsetX() {
@@ -509,9 +545,15 @@ export class ExistingCandlesLayer {
 		});
 	}
 
-	private getLivePriceLineColor(candle: Candle) {
+	private getBidPriceLineColor(candle: Candle) {
 		return candle.close >= candle.open
-			? CHART_CONFIG.candles.livePriceLine.bullishColor
-			: CHART_CONFIG.candles.livePriceLine.bearishColor;
+			? CHART_CONFIG.candles.liveBidPriceLine.bullishColor
+			: CHART_CONFIG.candles.liveBidPriceLine.bearishColor;
+	}
+
+	private getAskPriceLineColor(candle: Candle) {
+		return candle.close >= candle.open
+			? CHART_CONFIG.candles.liveAskPriceLine.bullishColor
+			: CHART_CONFIG.candles.liveAskPriceLine.bearishColor;
 	}
 }

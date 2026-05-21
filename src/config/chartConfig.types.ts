@@ -35,7 +35,8 @@ export type CandlesConfig = {
 	autoFollowLatestCandle: boolean;
 	autoFollowThresholdCandles: number;
 	rightOffsetCandles: number;
-	livePriceLine: LivePriceLineConfig;
+	liveBidPriceLine: LivePriceLineConfig;
+	liveAskPriceLine: LivePriceLineConfig;
 };
 
 export type VolumeConfig = {

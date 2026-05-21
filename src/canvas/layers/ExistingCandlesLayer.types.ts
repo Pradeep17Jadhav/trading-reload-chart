@@ -54,7 +54,7 @@ export type DrawSingleCandleOptions = CandleYCoordinates & {
 	candleColor: string;
 };
 
-export type DrawLivePriceLineOptions = {
+export type DrawPriceLineOptions = {
 	ctx: CanvasRenderingContext2D;
 	chartWidth: number;
 	chartHeight: number;

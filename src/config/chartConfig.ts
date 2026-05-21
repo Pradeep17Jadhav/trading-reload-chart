@@ -311,4 +311,18 @@ export const CHART_CONFIG: ChartConfig = {
 	},
 
 	shapes: CHART_SHAPE_CONFIG,
+
+	previousDayHighLow: {
+		line: {
+			color: COLORS.red,
+			width: 1,
+			opacity: 0.7,
+			dash: [4, 4],
+		},
+		text: {
+			color: COLORS.white,
+			font: "11px Arial",
+			paddingX: 6,
+		},
+	},
 };

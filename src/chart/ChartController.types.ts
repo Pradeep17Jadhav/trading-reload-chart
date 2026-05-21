@@ -16,6 +16,11 @@ export type TradeModifyPayload = {
 	tp?: number | null;
 };
 
+export type PreviousDay = {
+	high: number;
+	low: number;
+};
+
 export type ChartControllerProps = {
 	activeSymbol: string;
 	candles: Candle[];
@@ -26,8 +31,10 @@ export type ChartControllerProps = {
 	activeShapeTool: ShapeToolType | null;
 	config?: DeepPartial<ChartConfig>;
 	brokerTimezoneOffsetMs?: number;
+	previousDay?: PreviousDay | null;
 	onShapeAdded?: (payload: ShapeAddedPayload) => void;
 	onShapeModified?: (payload: ShapeModifiedPayload) => void;
 	onActiveShapeToolChange?: (tool: ShapeToolType | null) => void;
 	onTradeModify?: (payload: TradeModifyPayload) => void;
+	onTradeClose?: (payload: { ticket: number }) => void;
 };

@@ -2,6 +2,7 @@ import { AxisLayerX } from "../canvas/layers/AxisLayerX/AxisLayerX";
 import { AxisLayerY } from "../canvas/layers/AxisLayerY/AxisLayerY";
 import { CrosshairLayer } from "../canvas/layers/CrosshairLayer";
 import { ExistingCandlesLayer } from "../canvas/layers/ExistingCandlesLayer";
+import { PdhPdlLayer } from "../canvas/layers/PdhPdlLayer";
 import { ShapesLayer } from "../canvas/layers/ShapesLayer/ShapesLayer";
 import type { ShapeToolType } from "../canvas/layers/ShapesLayer/ShapesLayer.types";
 import { TradeLayer } from "../canvas/layers/TradeLayer/TradeLayer";
@@ -31,6 +32,8 @@ export class ChartController {
 	#candleLayer: ExistingCandlesLayer | null = null;
 
 	#shapesLayer: ShapesLayer | null = null;
+
+	#pdhPdlLayer: PdhPdlLayer | null = null;
 
 	#tradeLayer: TradeLayer | null = null;
 
@@ -82,7 +85,7 @@ export class ChartController {
 
 		if (this.#dom) {
 			this.#dom.root.style.backgroundColor = this.#config.colors.background;
-			this.#dom.stack.style.setProperty("--axis-x-height", `${this.#config.axis.axisX.height}px`);
+			this.#dom.layout.style.setProperty("--axis-x-height", `${this.#config.axis.axisX.height}px`);
 		}
 
 		if (!this.#initialized && props.candles.length > 0) {
@@ -99,6 +102,9 @@ export class ChartController {
 
 		this.#shapesLayer?.setShapes(props.shapes);
 		this.#shapesLayer?.setActiveTool(props.activeShapeTool);
+
+		this.#pdhPdlLayer?.setConfig(this.#config.previousDayHighLow);
+		this.#pdhPdlLayer?.setPreviousDay(props.previousDay);
 
 		this.#tradeLayer?.setPastTrades(props.pastTrades ?? []);
 		this.#syncOpenTradesToLayer();
@@ -122,6 +128,7 @@ export class ChartController {
 		this.#volumeLayer = null;
 		this.#candleLayer = null;
 		this.#shapesLayer = null;
+		this.#pdhPdlLayer = null;
 		this.#tradeLayer = null;
 		this.#tradeLayerEvents = null;
 		this.#axisLayerX = null;
@@ -178,6 +185,15 @@ export class ChartController {
 			},
 		});
 
+		const shapesCtx = this.#dom.shapesCanvas.getContext("2d");
+		if (shapesCtx) {
+			this.#pdhPdlLayer = new PdhPdlLayer({
+				ctx: shapesCtx,
+				config: this.#config.previousDayHighLow,
+			});
+			this.#pdhPdlLayer.setPreviousDay(this.#props.previousDay);
+		}
+
 		this.#tradeLayer = new TradeLayer({
 			canvas: this.#dom.tradesCanvas,
 		});
@@ -202,6 +218,7 @@ export class ChartController {
 			onMissingProtectionDragEnd: (payload) => this.#handleMissingProtectionDragEnd(payload),
 			onMissingProtectionDragCancel: () => this.#handleMissingProtectionDragCancel(),
 			onTradeModified: (payload) => this.#handleTradeModifyCommit(payload),
+			onTradeCloseClicked: (payload) => this.#props.onTradeClose?.(payload),
 		});
 
 		this.#initialized = true;
@@ -313,6 +330,9 @@ export class ChartController {
 		this.#shapesLayer?.setCandles(this.#candleLayer.candles);
 		this.#shapesLayer?.setViewport(this.#candleLayer.viewport);
 		this.#shapesLayer?.render();
+
+		this.#pdhPdlLayer?.setViewport(this.#candleLayer.viewport);
+		this.#pdhPdlLayer?.render();
 
 		this.#tradeLayer?.setCandles(this.#candleLayer.candles);
 		this.#tradeLayer?.setViewport(this.#candleLayer.viewport);

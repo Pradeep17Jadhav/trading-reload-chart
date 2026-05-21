@@ -225,6 +225,24 @@ export type AxisConfig = {
 	axisY: AxisYConfig;
 };
 
+export type PreviousDayHighLowLineConfig = {
+	color: string;
+	width: number;
+	opacity: number;
+	dash: number[];
+};
+
+export type PreviousDayHighLowTextConfig = {
+	color: string;
+	font: string;
+	paddingX: number;
+};
+
+export type PreviousDayHighLowConfig = {
+	line: PreviousDayHighLowLineConfig;
+	text: PreviousDayHighLowTextConfig;
+};
+
 export type ChartConfig = {
 	zoom: ZoomConfig;
 	candles: CandlesConfig;
@@ -235,4 +253,5 @@ export type ChartConfig = {
 	colors: ColorsConfig;
 	axis: AxisConfig;
 	shapes: PartialShapeConfig;
+	previousDayHighLow: PreviousDayHighLowConfig;
 };

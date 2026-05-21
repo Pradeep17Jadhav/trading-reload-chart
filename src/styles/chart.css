@@ -13,6 +13,7 @@
 }
 
 .trading-reload-chart__layout {
+	--axis-x-height: 30px;
 	position: relative;
 	display: flex;
 	width: 100%;
@@ -21,7 +22,6 @@
 }
 
 .trading-reload-chart__stack {
-	--axis-x-height: 30px;
 	position: relative;
 	flex: 1;
 	height: 100%;

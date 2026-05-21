@@ -9,13 +9,13 @@ export type PreviousDay = {
 
 type PdhPdlLayerOptions = {
 	ctx: CanvasRenderingContext2D;
-	config: PreviousDayHighLowConfig;
+	config: PreviousDayHighLowConfig | null;
 };
 
 export class PdhPdlLayer {
 	readonly #ctx: CanvasRenderingContext2D;
 
-	#config: PreviousDayHighLowConfig;
+	#config: PreviousDayHighLowConfig | null;
 	#viewport: ChartViewport | null = null;
 	#previousDay: PreviousDay | null = null;
 
@@ -28,7 +28,7 @@ export class PdhPdlLayer {
 		this.#viewport = viewport;
 	}
 
-	setConfig(config: PreviousDayHighLowConfig) {
+	setConfig(config: PreviousDayHighLowConfig | null) {
 		this.#config = config;
 	}
 
@@ -58,7 +58,7 @@ export class PdhPdlLayer {
 	}
 
 	#drawLine(price: number, label: string) {
-		if (!this.#viewport) {
+		if (!this.#viewport || !this.#config) {
 			return;
 		}
 

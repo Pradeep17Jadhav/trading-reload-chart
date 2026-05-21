@@ -103,7 +103,7 @@ export class ChartController {
 		this.#shapesLayer?.setShapes(props.shapes);
 		this.#shapesLayer?.setActiveTool(props.activeShapeTool);
 
-		this.#pdhPdlLayer?.setConfig(this.#config.shapes.previousDayHighLow);
+		this.#pdhPdlLayer?.setConfig(this.#config.shapes.previousDayHighLow ?? null);
 		this.#pdhPdlLayer?.setPreviousDay(props.previousDay);
 
 		this.#tradeLayer?.setPastTrades(props.pastTrades ?? []);
@@ -189,7 +189,7 @@ export class ChartController {
 		if (shapesCtx) {
 			this.#pdhPdlLayer = new PdhPdlLayer({
 				ctx: shapesCtx,
-				config: this.#config.shapes.previousDayHighLow,
+				config: this.#config.shapes.previousDayHighLow ?? null,
 			});
 			this.#pdhPdlLayer.setPreviousDay(this.#props.previousDay);
 		}

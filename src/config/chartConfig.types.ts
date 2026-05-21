@@ -254,5 +254,4 @@ export type ChartConfig = {
 	colors: ColorsConfig;
 	axis: AxisConfig;
 	shapes: PartialShapeConfig;
-	previousDayHighLow: PreviousDayHighLowConfig;
 };

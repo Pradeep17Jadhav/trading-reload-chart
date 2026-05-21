@@ -108,9 +108,9 @@ export const CHART_CONFIG: ChartConfig = {
 			visible: true,
 			width: 1,
 			opacity: 0.7,
-			dash: [4, 4],
-			bullishColor: COLORS.blue,
-			bearishColor: COLORS.blue,
+			dash: [4, 6],
+			bullishColor: COLORS.purple,
+			bearishColor: COLORS.purple,
 		},
 
 		liveBidPriceLine: {
@@ -320,18 +320,4 @@ export const CHART_CONFIG: ChartConfig = {
 	},
 
 	shapes: CHART_SHAPE_CONFIG,
-
-	previousDayHighLow: {
-		line: {
-			color: COLORS.red,
-			width: 1,
-			opacity: 0.7,
-			dash: [4, 4],
-		},
-		text: {
-			color: COLORS.white,
-			font: "11px Arial",
-			paddingX: 6,
-		},
-	},
 };

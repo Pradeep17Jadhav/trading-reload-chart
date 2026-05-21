@@ -12,7 +12,7 @@ const SHAPE_COLORS = {
 
 const commonPositionConfig: Partial<PositionShapeConfig> = {
 	defaultWidthCandles: 10,
-	defaultStopLossPercent: 0.25,
+	defaultStopLossPercent: 0.1,
 	defaultRiskRewardRatio: 1.5,
 	profitFillColor: SHAPE_COLORS.green,
 	profitFillOpacity: 0.18,
@@ -36,7 +36,7 @@ const commonPositionConfig: Partial<PositionShapeConfig> = {
 
 export const CHART_SHAPE_CONFIG: PartialShapeConfig = {
 	trendline: {
-		lineWidth: 2,
+		lineWidth: 1,
 		lineColor: SHAPE_COLORS.blue,
 		lineOpacity: 1,
 		lineStyle: "solid",
@@ -45,36 +45,36 @@ export const CHART_SHAPE_CONFIG: PartialShapeConfig = {
 		handleColor: SHAPE_COLORS.handleFill,
 		handleBorderColor: SHAPE_COLORS.handleBorder,
 		handleRadius: 5,
-		hoverLineWidth: 3,
-		selectedLineWidth: 3,
+		hoverLineWidth: 1,
+		selectedLineWidth: 1.1,
 	},
 
 	rectangle: {
 		lineWidth: 1,
-		lineColor: SHAPE_COLORS.blue,
-		lineOpacity: 0.9,
+		lineColor: SHAPE_COLORS.purple,
+		lineOpacity: 0.6,
 		lineStyle: "solid",
-		fillColor: SHAPE_COLORS.blue,
-		fillOpacity: 0.08,
+		fillColor: SHAPE_COLORS.purple,
+		fillOpacity: 0.06,
 		handleColor: SHAPE_COLORS.handleFill,
 		handleBorderColor: SHAPE_COLORS.handleBorder,
 		handleRadius: 5,
-		hoverLineWidth: 2,
-		selectedLineWidth: 2,
+		hoverLineWidth: 1,
+		selectedLineWidth: 1.1,
 	},
 
 	path: {
-		lineWidth: 2,
-		lineColor: SHAPE_COLORS.blue,
-		lineOpacity: 1,
+		lineWidth: 1,
+		lineColor: SHAPE_COLORS.yellow,
+		lineOpacity: 0.8,
 		lineStyle: "solid",
-		fillColor: SHAPE_COLORS.blue,
+		fillColor: SHAPE_COLORS.yellow,
 		fillOpacity: 0,
 		handleColor: SHAPE_COLORS.handleFill,
 		handleBorderColor: SHAPE_COLORS.handleBorder,
 		handleRadius: 5,
-		hoverLineWidth: 3,
-		selectedLineWidth: 3,
+		hoverLineWidth: 1,
+		selectedLineWidth: 1.1,
 	},
 
 	fibRetracement: {
@@ -132,4 +132,18 @@ export const CHART_SHAPE_CONFIG: PartialShapeConfig = {
 	longPosition: { ...commonPositionConfig },
 
 	shortPosition: { ...commonPositionConfig },
+
+	previousDayHighLow: {
+		line: {
+			color: COLORS.red,
+			width: 1,
+			opacity: 0.7,
+			dash: [4, 16],
+		},
+		text: {
+			color: COLORS.white,
+			font: "11px Arial",
+			paddingX: 6,
+		},
+	},
 };

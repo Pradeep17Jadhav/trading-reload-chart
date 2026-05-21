@@ -1,3 +1,4 @@
+import type { PreviousDayHighLowConfig } from "../../../config/chartConfig.types";
 import type { Candle } from "../../../models/Candle.types";
 import type { ChartViewport } from "../../../models/ChartViewport.types";
 import type { Point2D } from "../../../models/Point.types";
@@ -179,6 +180,7 @@ export type PartialShapeConfig = Partial<{
 	fibRetracement: Partial<FibRetracementConfig>;
 	shortPosition: Partial<PositionShapeConfig>;
 	longPosition: Partial<PositionShapeConfig>;
+	previousDayHighLow: PreviousDayHighLowConfig;
 }>;
 
 export type ShapeAddedPayload = {

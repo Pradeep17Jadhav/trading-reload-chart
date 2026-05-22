@@ -407,7 +407,7 @@ export class TradeLayerEvents {
 
 	private resetCursorIfIdle() {
 		if (!this.#activeDragHitbox && !this.#activeMissingProtectionHitbox) {
-			document.body.style.cursor = "default";
+			document.body.style.cursor = "crosshair";
 		}
 	}
 

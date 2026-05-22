@@ -92,12 +92,12 @@ export class ShapesLayer {
 			this.draft = null;
 		}
 
-		this.canvas.style.cursor = tool ? "crosshair" : "default";
+		this.canvas.style.cursor = "crosshair";
 	}
 
 	clearHoverState() {
 		this.hoveredShapeId = null;
-		this.canvas.style.cursor = this.activeTool ? "crosshair" : "default";
+		this.canvas.style.cursor = "crosshair";
 	}
 
 	render() {
@@ -259,7 +259,7 @@ export class ShapesLayer {
 
 		this.selectedShapeId = null;
 		this.hoveredShapeId = null;
-		this.canvas.style.cursor = "default";
+		this.canvas.style.cursor = "crosshair";
 
 		return false;
 	}
@@ -305,7 +305,7 @@ export class ShapesLayer {
 
 		if (this.hoveredShapeId !== null) {
 			this.hoveredShapeId = null;
-			this.canvas.style.cursor = "default";
+			this.canvas.style.cursor = "crosshair";
 			return true;
 		}
 

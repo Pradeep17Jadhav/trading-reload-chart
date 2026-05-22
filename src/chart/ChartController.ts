@@ -621,6 +621,8 @@ export class ChartController {
 	}
 
 	#handlePointerEnter(event: PointerEvent) {
+		document.body.style.cursor = "crosshair";
+
 		this.#shapesLayer?.handlePointerEvent(event);
 
 		if (!this.#isShapeToolActive()) {
@@ -630,10 +632,7 @@ export class ChartController {
 
 	#handlePointerLeave() {
 		this.#shapesLayer?.clearHoverState();
-
-		if (!this.#isShapeToolActive()) {
-			document.body.style.cursor = "default";
-		}
+		document.body.style.cursor = "";
 
 		this.#hideCrosshairAndAxisLabels();
 	}

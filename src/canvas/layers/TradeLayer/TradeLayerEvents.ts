@@ -9,6 +9,8 @@ export class TradeLayerEvents {
 
 	readonly #getHandleHitboxes: () => TradeHandleHitbox[];
 
+	readonly #getCurrentPrice: (() => number) | undefined;
+
 	readonly #onDrag: TradeLayerEventsOptions["onDrag"];
 
 	readonly #onMissingProtectionDrag: TradeLayerEventsOptions["onMissingProtectionDrag"];
@@ -27,14 +29,24 @@ export class TradeLayerEvents {
 
 	#hasActiveMissingProtectionMoved = false;
 
+	/**
+	 * Canvas-pixel Y coordinate where the drag started.
+	 * Shared between existing-handle drag and missing-protection drag.
+	 */
 	#dragStartMouseY = 0;
 
-	#lastMouseY = 0;
+	/**
+	 * Price at the moment existing-handle drag began.
+	 * Used for the absolute price calculation to avoid accumulated rounding errors.
+	 */
+	#dragStartPrice = 0;
 
 	constructor(options: TradeLayerEventsOptions) {
 		this.#canvas = options.canvas;
 
 		this.#getHandleHitboxes = options.getHandleHitboxes;
+
+		this.#getCurrentPrice = options.getCurrentPrice;
 
 		this.#onDrag = options.onDrag;
 
@@ -58,7 +70,7 @@ export class TradeLayerEvents {
 		this.#activeMissingProtectionHitbox = null;
 		this.#hasActiveMissingProtectionMoved = false;
 		this.#dragStartMouseY = 0;
-		this.#lastMouseY = 0;
+		this.#dragStartPrice = 0;
 	}
 
 	handlePointerEvent(event: PointerEvent | WheelEvent | MouseEvent) {
@@ -108,12 +120,25 @@ export class TradeLayerEvents {
 		return TRADE_LAYER_EVENT_TYPES_TO_HANDLE.includes(eventType as SupportedPointerEventType);
 	}
 
+	/**
+	 * Converts a pointer event's client coordinates into canvas-pixel space.
+	 *
+	 * The canvas backing-store dimensions (canvas.width / canvas.height) may differ
+	 * from the CSS-rendered size reported by getBoundingClientRect when the browser
+	 * zoom level is not 100 %, when the container has sub-pixel fractional dimensions,
+	 * or when DPR scaling is applied. Without the explicit scale factors the hit-test
+	 * geometry (built in canvas-pixel space via priceToY) and the mouse position
+	 * would live in different coordinate spaces, causing the handle to appear to
+	 * lag or lead the cursor.
+	 */
 	private getCanvasMousePoint(event: PointerEvent | WheelEvent | MouseEvent): CanvasMousePoint {
 		const rect = this.#canvas.getBoundingClientRect();
+		const scaleX = this.#canvas.width / rect.width;
+		const scaleY = this.#canvas.height / rect.height;
 
 		return {
-			x: event.clientX - rect.left,
-			y: event.clientY - rect.top,
+			x: (event.clientX - rect.left) * scaleX,
+			y: (event.clientY - rect.top) * scaleY,
 		};
 	}
 
@@ -122,11 +147,7 @@ export class TradeLayerEvents {
 			return false;
 		}
 
-		const deltaY = mousePoint.y - this.#lastMouseY;
-
-		this.#lastMouseY = mousePoint.y;
-
-		const nextPrice = this.getNextDragPrice(deltaY);
+		const nextPrice = this.getNextDragPrice(mousePoint.y);
 
 		this.#activeDragHitbox.price = nextPrice;
 
@@ -177,14 +198,33 @@ export class TradeLayerEvents {
 		return true;
 	}
 
-	private getNextDragPrice(deltaY: number) {
+	/**
+	 * Converts the current absolute canvas-pixel Y position to a price using the
+	 * viewport captured at drag-start, then applies TP/SL constraints.
+	 *
+	 * Using an absolute calculation (startPrice − totalDeltaY × pricePerPixel)
+	 * instead of an incremental one (price_{n-1} − deltaY_{n} × pricePerPixel)
+	 * avoids the accumulated normalizePrice quantization errors that cause the
+	 * handle to lag the cursor when moving slowly or when heavily zoomed in.
+	 */
+	private getNextDragPrice(mouseY: number) {
 		if (!this.#activeDragHitbox) {
 			return 0;
 		}
 
+		const totalDeltaY = mouseY - this.#dragStartMouseY;
 		const pricePerPixel = this.#activeDragHitbox.viewport.priceRange / this.#canvas.height;
+		const rawPrice = normalizePrice(this.#dragStartPrice - totalDeltaY * pricePerPixel);
 
-		return normalizePrice(this.#activeDragHitbox.price - deltaY * pricePerPixel);
+		if (!this.isProtectionHandleType(this.#activeDragHitbox.type)) {
+			return rawPrice;
+		}
+
+		return this.constrainExistingProtectionPrice({
+			price: rawPrice,
+			hitbox: this.#activeDragHitbox,
+			type: this.#activeDragHitbox.type,
+		});
 	}
 
 	private getNextMissingProtectionPrice(mouseY: number) {
@@ -355,13 +395,13 @@ export class TradeLayerEvents {
 
 	private startDrag(hitbox: TradeHandleHitbox, mouseY: number) {
 		this.#activeDragHitbox = hitbox;
-		this.#lastMouseY = mouseY;
+		this.#dragStartMouseY = mouseY;
+		this.#dragStartPrice = hitbox.price;
 	}
 
 	private startMissingProtectionDrag(hitbox: TradeHandleHitbox, mouseY: number) {
 		this.#activeMissingProtectionHitbox = hitbox;
 		this.#dragStartMouseY = mouseY;
-		this.#lastMouseY = mouseY;
 		this.#hasActiveMissingProtectionMoved = false;
 	}
 
@@ -382,6 +422,49 @@ export class TradeLayerEvents {
 		return type === "stopLoss" || type === "takeProfit";
 	}
 
+	/**
+	 * Constrains a dragged existing TP/SL price to valid levels.
+	 *
+	 * TP rules:
+	 *   - Buy:  price must be ≥ max(openPrice, currentMarketPrice)
+	 *   - Sell: price must be ≤ min(openPrice, currentMarketPrice)
+	 *
+	 * SL rules (trailing SL is permitted — SL may cross the open price):
+	 *   - Buy:  price must be ≤ currentMarketPrice  (cannot reach the profit side)
+	 *   - Sell: price must be ≥ currentMarketPrice
+	 */
+	private constrainExistingProtectionPrice({
+		price,
+		hitbox,
+		type,
+	}: {
+		price: number;
+		hitbox: TradeHandleHitbox;
+		type: TradeProtectionHandleType;
+	}) {
+		const isBuy = this.isBuyTrade(hitbox);
+		const openPrice = hitbox.trade.openPrice;
+		const currentPrice = this.#getCurrentPrice?.() ?? 0;
+
+		if (type === "takeProfit") {
+			return isBuy
+				? normalizePrice(Math.max(price, openPrice, currentPrice))
+				: normalizePrice(Math.min(price, openPrice, currentPrice));
+		}
+
+		// stopLoss — trailing SL may go above openPrice (buy) / below openPrice (sell),
+		// but must not cross the current market price.
+		return isBuy
+			? normalizePrice(Math.min(price, currentPrice))
+			: normalizePrice(Math.max(price, currentPrice));
+	}
+
+	/**
+	 * Constrains a missing-protection handle drag price.
+	 *
+	 * TP: same side-of-market rules as constrainExistingProtectionPrice.
+	 * SL: must not cross currentMarketPrice (trailing SL allowed — no openPrice floor).
+	 */
 	private constrainProtectionPrice({
 		price,
 		hitbox,
@@ -391,23 +474,19 @@ export class TradeLayerEvents {
 		hitbox: TradeHandleHitbox;
 		type: TradeProtectionHandleType;
 	}) {
-		const direction = this.getProtectionDirection({
-			hitbox,
-			type,
-		});
+		const isBuy = this.isBuyTrade(hitbox);
+		const openPrice = hitbox.trade.openPrice;
+		const currentPrice = this.#getCurrentPrice?.() ?? 0;
 
-		if (direction > 0) {
-			return normalizePrice(Math.max(price, hitbox.trade.openPrice));
+		if (type === "takeProfit") {
+			return isBuy
+				? normalizePrice(Math.max(price, openPrice, currentPrice))
+				: normalizePrice(Math.min(price, openPrice, currentPrice));
 		}
 
-		return normalizePrice(Math.min(price, hitbox.trade.openPrice));
-	}
-
-	private getProtectionDirection({ hitbox, type }: { hitbox: TradeHandleHitbox; type: TradeProtectionHandleType }) {
-		const isBuyTrade = this.isBuyTrade(hitbox);
-		const direction = type === "takeProfit" ? 1 : -1;
-
-		return isBuyTrade ? direction : -direction;
+		return isBuy
+			? normalizePrice(Math.min(price, currentPrice))
+			: normalizePrice(Math.max(price, currentPrice));
 	}
 
 	private isBuyTrade(hitbox: TradeHandleHitbox) {

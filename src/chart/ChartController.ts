@@ -213,6 +213,7 @@ export class ChartController {
 		this.#tradeLayerEvents = new TradeLayerEvents({
 			canvas: this.#dom.tradesCanvas,
 			getHandleHitboxes: () => (this.#isShapeToolActive() ? [] : (this.#tradeLayer?.handleHitboxes ?? [])),
+			getCurrentPrice: () => this.#candleLayer?.liveCandle?.close ?? 0,
 			onDrag: (payload) => this.#handleTradeDrag(payload),
 			onMissingProtectionDrag: (payload) => this.#handleMissingProtectionDrag(payload),
 			onMissingProtectionDragEnd: (payload) => this.#handleMissingProtectionDragEnd(payload),

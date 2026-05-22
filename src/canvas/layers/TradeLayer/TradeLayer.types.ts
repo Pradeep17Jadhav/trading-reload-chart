@@ -79,6 +79,11 @@ export type PastTradeIndicator = {
 export type TradeLayerEventsOptions = {
 	canvas: HTMLCanvasElement;
 	getHandleHitboxes: () => TradeHandleHitbox[];
+	/**
+	 * Returns the current market price (latest candle close / live candle close).
+	 * Used to enforce TP/SL constraints during drag.
+	 */
+	getCurrentPrice?: () => number;
 	onDrag?: (payload: { trade: OpenTrade; type: TradeHandleType; price: number }) => void;
 	onMissingProtectionDrag?: (payload: { trade: OpenTrade; type: TradeProtectionHandleType; price: number }) => void;
 	onMissingProtectionDragEnd?: (payload: { trade: OpenTrade; type: TradeProtectionHandleType; price: number }) => void;

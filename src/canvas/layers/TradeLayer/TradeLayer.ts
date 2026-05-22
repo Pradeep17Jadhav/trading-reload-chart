@@ -1184,11 +1184,10 @@ export class TradeLayer {
 		}
 
 		const { trade, type, viewport } = this.temporaryProtectionDrag;
-		const price = this.constrainProtectionPrice({
-			price: this.temporaryProtectionDrag.price,
-			trade,
-			type,
-		});
+		// Price is already constrained by TradeLayerEvents before being stored here.
+		// Re-applying the layer-level constraint (which only knows about openPrice) would
+		// incorrectly clamp trailing-SL positions that legitimately exceed openPrice.
+		const price = normalizePrice(this.temporaryProtectionDrag.price);
 		const y = this.getPriceY(price, viewport);
 		const handleConfig = this.getTemporaryProtectionHandleConfig(type);
 		const lineConfig = this.getTemporaryProtectionLineConfig(type);

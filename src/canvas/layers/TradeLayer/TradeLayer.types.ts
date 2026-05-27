@@ -61,7 +61,7 @@ export type TemporaryTradeProtectionDrag = {
 	viewport: ChartViewport;
 };
 
-export type PastTradeIndicator = {
+export type PastTrade = {
 	symbol: string;
 	type: TradeType;
 	startTime: number;
@@ -146,7 +146,7 @@ export type PastTradeIndicatorPoint = {
 };
 
 export type PastTradeIndicatorRenderState = {
-	trade: PastTradeIndicator;
+	trade: PastTrade;
 	start: PastTradeIndicatorPoint;
 	close: PastTradeIndicatorPoint;
 	arrowWidth: number;

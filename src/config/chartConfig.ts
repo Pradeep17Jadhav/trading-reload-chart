@@ -73,7 +73,7 @@ const commonTemporaryProtectionHandleProperties: TemporaryTradeProtectionHandleR
 	},
 	borderWidth: 1,
 	borderColor: COLORS.white,
-	borderOpacity: 0.45,
+	borderOpacity: 0.4,
 	backgroundColor: COLORS.handleBackground,
 	backgroundOpacity: 0.9,
 	paddingX: 10,

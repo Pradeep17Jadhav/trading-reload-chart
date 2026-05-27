@@ -18,6 +18,7 @@ import type { ChartDomElements } from "./createChartDom.types";
 import { getCanvasPoint } from "./utils/getCanvasPoint";
 import { mergeChartConfig } from "./utils/mergeChartConfig";
 import { normalizeCandleTime } from "./utils/normalizeCandleTime";
+
 export class ChartController {
 	readonly #container: HTMLElement;
 

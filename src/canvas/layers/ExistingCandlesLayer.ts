@@ -12,6 +12,10 @@ import type {
 } from "./ExistingCandlesLayer.types";
 import { priceToY, yToPrice } from "./helpers/LayerHelpers";
 
+const MINUTE_MS = 60 * 1000;
+const HOUR_MS = 60 * MINUTE_MS;
+const DAY_MS = 24 * HOUR_MS;
+
 export class ExistingCandlesLayer {
 	readonly #canvas: HTMLCanvasElement;
 	readonly #ctx: CanvasRenderingContext2D;
@@ -442,12 +446,55 @@ export class ExistingCandlesLayer {
 	}
 
 	private getInitialPriceRange(minPrice: number, maxPrice: number) {
+		const fallbackPercent = this.getInitialFallbackPercent();
 		const rawPriceRange = normalizePrice(maxPrice - minPrice);
-		const fallbackRange = Math.max(Math.abs((minPrice + maxPrice) / 2) * 0.01, 0.00001);
+		const fallbackRange = Math.max(Math.abs((minPrice + maxPrice) / 2) * fallbackPercent, 0.00001);
 		const effectivePriceRange = Math.max(rawPriceRange, fallbackRange);
 		const verticalPadding = effectivePriceRange * 0.2;
 
 		return effectivePriceRange + verticalPadding;
+	}
+
+	private getInitialFallbackPercent() {
+		const timeframeMs = this.detectCandleTimeframeMs();
+
+		if (timeframeMs <= MINUTE_MS) {
+			return 0.0025;
+		}
+
+		if (timeframeMs <= 5 * MINUTE_MS) {
+			return 0.0035;
+		}
+
+		if (timeframeMs <= 15 * MINUTE_MS) {
+			return 0.005;
+		}
+
+		if (timeframeMs <= HOUR_MS) {
+			return 0.0075;
+		}
+
+		if (timeframeMs < DAY_MS) {
+			return 0.01;
+		}
+
+		return 0.01;
+	}
+
+	private detectCandleTimeframeMs() {
+		if (this.candles.length < 2) {
+			return 15 * MINUTE_MS;
+		}
+
+		const diffs: number[] = [];
+
+		for (let i = 1; i < Math.min(this.candles.length, 10); i++) {
+			diffs.push(this.candles[i].time - this.candles[i - 1].time);
+		}
+
+		diffs.sort((a, b) => a - b);
+
+		return diffs[Math.floor(diffs.length / 2)];
 	}
 
 	private applyManualViewportOverrides(options: ExistingCandlesLayerOptions) {

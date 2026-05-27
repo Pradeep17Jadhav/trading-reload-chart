@@ -4,7 +4,7 @@ import type {
 	ShapeModifiedPayload,
 	ShapeToolType,
 } from "../canvas/layers/ShapesLayer/ShapesLayer.types";
-import type { PastTradeIndicator } from "../canvas/layers/TradeLayer/TradeLayer.types";
+import type { PastTrade } from "../canvas/layers/TradeLayer/TradeLayer.types";
 import type { ChartConfig } from "../config/chartConfig.types";
 import type { Candle } from "../models/Candle.types";
 import type { OpenTrade } from "../models/Trade.types";
@@ -26,7 +26,7 @@ export type ChartControllerProps = {
 	candles: Candle[];
 	liveCandle: Candle | null;
 	openTrades: OpenTrade[];
-	pastTrades: PastTradeIndicator[];
+	pastTrades: PastTrade[];
 	shapes: Shape[];
 	activeShapeTool: ShapeToolType | null;
 	config?: DeepPartial<ChartConfig>;

@@ -26,7 +26,7 @@ import type {
 	HandleSection,
 	LineBlockedRange,
 	MissingProtectionHandleRenderState,
-	PastTradeIndicator,
+	PastTrade,
 	PastTradeIndicatorRenderState,
 	TemporaryProtectionRenderState,
 	TemporaryTradeProtectionDrag,
@@ -43,7 +43,7 @@ export class TradeLayer {
 
 	isDragging: boolean;
 	trades: OpenTrade[] = [];
-	pastTrades: PastTradeIndicator[] = [];
+	pastTrades: PastTrade[] = [];
 	candles: Candle[] = [];
 	viewport: ChartViewport | null = null;
 	liveCandle: Candle | null = null;
@@ -67,7 +67,7 @@ export class TradeLayer {
 		this.trades = trades;
 	}
 
-	setPastTrades(pastTrades: PastTradeIndicator[]) {
+	setPastTrades(pastTrades: PastTrade[]) {
 		this.pastTrades = pastTrades;
 	}
 
@@ -503,7 +503,7 @@ export class TradeLayer {
 		}
 	}
 
-	private getPastTradeIndicatorRenderState(trade: PastTradeIndicator): PastTradeIndicatorRenderState | null {
+	private getPastTradeIndicatorRenderState(trade: PastTrade): PastTradeIndicatorRenderState | null {
 		if (!this.viewport) {
 			return null;
 		}

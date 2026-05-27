@@ -1,4 +1,4 @@
-import type { PastTradeIndicator } from "../src/canvas/layers/TradeLayer/TradeLayer.types";
+import type { PastTrade } from "../src/canvas/layers/TradeLayer/TradeLayer.types";
 import type { Candle } from "../src/models/Candle.types";
 import type { OpenTrade } from "../src/models/Trade.types";
 import type { TradeHistoryApiItem, TradeHistoryApiResponse, TradeModifyRequest } from "./demoApi.types";
@@ -32,7 +32,7 @@ const getFiniteNumber = (value: unknown) => {
 	return value;
 };
 
-const normalizePastTradeIndicator = (trade: TradeHistoryApiItem): PastTradeIndicator | null => {
+const normalizePastTradeIndicator = (trade: TradeHistoryApiItem): PastTrade | null => {
 	const startTime = getFiniteNumber(trade.startTime);
 	const closeTime = getFiniteNumber(trade.endTime);
 	const openPrice = getFiniteNumber(trade.startPrice);
@@ -72,7 +72,7 @@ export const fetchHistoricalCandles = async (): Promise<Candle[]> => {
 	return ((data.candles ?? []) as Candle[]).map(normalizeCandleFromApi);
 };
 
-export const fetchPastTrades = async (): Promise<PastTradeIndicator[]> => {
+export const fetchPastTrades = async (): Promise<PastTrade[]> => {
 	const response = await fetch(`${API_BASE_URL}/history`, {
 		cache: "no-store",
 	});
@@ -87,7 +87,7 @@ export const fetchPastTrades = async (): Promise<PastTradeIndicator[]> => {
 
 	const pastTrades = activeSymbolHistory
 		.map(normalizePastTradeIndicator)
-		.filter((trade): trade is PastTradeIndicator => trade !== null);
+		.filter((trade): trade is PastTrade => trade !== null);
 
 	const invalidTradeCount = activeSymbolHistory.length - pastTrades.length;
 

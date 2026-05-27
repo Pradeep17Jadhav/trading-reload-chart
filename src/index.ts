@@ -9,7 +9,7 @@ export type {
 	ShapeVertex,
 } from "./canvas/layers/ShapesLayer/ShapesLayer.types";
 export type {
-	PastTradeIndicator,
+	PastTrade,
 	TradeHandleType,
 	TradeProtectionHandleType,
 } from "./canvas/layers/TradeLayer/TradeLayer.types";

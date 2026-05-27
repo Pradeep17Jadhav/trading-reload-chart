@@ -1,9 +1,9 @@
 import type { ShapeToolType } from "../src/canvas/layers/ShapesLayer/ShapesLayer.types";
 import { CHART_CONFIG } from "../src/config/chartConfig";
 
-export const DEMO_ACTIVE_SYMBOL = "BTCUSD";
+export const DEMO_ACTIVE_SYMBOL = "EURUSD";
 
-export const DEMO_TIMEFRAME = "15m";
+export const DEMO_TIMEFRAME = "1m";
 
 export const DEMO_CANDLE_LIMIT = 500;
 

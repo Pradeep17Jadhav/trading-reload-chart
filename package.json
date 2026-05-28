@@ -1,5 +1,5 @@
 {
-	"name": "trading-reload-chart",
+	"name": "@pradeepjadhav/trading-reload-chart",
 	"version": "1.0.0",
 	"description": "A React canvas-based trading chart library with candles, volume, drawing tools, and trade overlays.",
 	"keywords": [
@@ -27,7 +27,6 @@
 		"dev": "vite",
 		"build": "npm run build:library",
 		"build:library": "tsc && vite build --mode library",
-		"prepare": "npm run build:library",
 		"prepack": "npm run build:library",
 		"build:demo": "tsc && vite build",
 		"preview": "vite preview",

@@ -58,7 +58,7 @@ const commonMissingProtectionHandleProperties: MissingTradeProtectionHandleRectC
 	borderColor: COLORS.white,
 	borderOpacity: 0.5,
 	backgroundColor: COLORS.handleBackground,
-	backgroundOpacity: 0.3,
+	backgroundOpacity: 0.1,
 	textColor: COLORS.white,
 	textOpacity: 0.6,
 	font: FONT.default,

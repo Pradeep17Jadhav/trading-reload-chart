@@ -87,6 +87,12 @@ The chart is **client-only** (canvas + DOM). It does **not** support SSR.
 npm install trading-reload-chart react react-dom
 ```
 
+**Directly from GitHub**:
+
+```bash
+npm install git+https://github.com/Pradeep17Jadhav/trading-reload-chart.git#main
+```
+
 **From this repo** (local path or `npm pack`):
 
 ```bash

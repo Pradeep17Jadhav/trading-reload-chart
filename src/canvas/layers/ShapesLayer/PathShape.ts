@@ -68,10 +68,10 @@ export class PathShape {
 		resetCanvasLineDash(ctx);
 
 		if (points.length >= 2) {
-			PathShape.drawStartArrow({
+			PathShape.drawEndArrow({
 				ctx,
-				startPoint: points[0],
-				nextPoint: points[1],
+				previousPoint: points[points.length - 2],
+				endPoint: points[points.length - 1],
 				color: config.lineColor,
 				opacity: config.lineOpacity,
 				lineWidth: selected
@@ -82,7 +82,7 @@ export class PathShape {
 			});
 		}
 
-		if (selected) {
+		if (selected || hovered) {
 			drawHandles(ctx, PathShape.getHandles(shape, converter, config), {
 				fillColor: config.handleColor,
 				borderColor: config.handleBorderColor,
@@ -189,22 +189,22 @@ export class PathShape {
 		};
 	}
 
-	private static drawStartArrow({
+	private static drawEndArrow({
 		ctx,
-		startPoint,
-		nextPoint,
+		previousPoint,
+		endPoint,
 		color,
 		opacity,
 		lineWidth,
 	}: {
 		ctx: CanvasRenderingContext2D;
-		startPoint: ShapePoint;
-		nextPoint: ShapePoint;
+		previousPoint: ShapePoint;
+		endPoint: ShapePoint;
 		color: string;
 		opacity: number;
 		lineWidth: number;
 	}) {
-		const angle = Math.atan2(nextPoint.y - startPoint.y, nextPoint.x - startPoint.x) + Math.PI;
+		const angle = Math.atan2(endPoint.y - previousPoint.y, endPoint.x - previousPoint.x);
 		const arrowLength = 12;
 		const arrowAngle = Math.PI / 7;
 
@@ -215,14 +215,14 @@ export class PathShape {
 		ctx.lineWidth = lineWidth;
 		ctx.setLineDash([]);
 
-		ctx.moveTo(startPoint.x, startPoint.y);
+		ctx.moveTo(endPoint.x, endPoint.y);
 		ctx.lineTo(
-			startPoint.x - arrowLength * Math.cos(angle - arrowAngle),
-			startPoint.y - arrowLength * Math.sin(angle - arrowAngle),
+			endPoint.x - arrowLength * Math.cos(angle - arrowAngle),
+			endPoint.y - arrowLength * Math.sin(angle - arrowAngle),
 		);
 		ctx.lineTo(
-			startPoint.x - arrowLength * Math.cos(angle + arrowAngle),
-			startPoint.y - arrowLength * Math.sin(angle + arrowAngle),
+			endPoint.x - arrowLength * Math.cos(angle + arrowAngle),
+			endPoint.y - arrowLength * Math.sin(angle + arrowAngle),
 		);
 		ctx.closePath();
 		ctx.fill();

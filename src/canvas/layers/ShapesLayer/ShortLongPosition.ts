@@ -105,7 +105,7 @@ export class ShortLongPosition {
 			config,
 		});
 
-		if (selected) {
+		if (selected || hovered) {
 			drawHandles(ctx, ShortLongPosition.getHandles(shape, converter, config), {
 				fillColor: config.handleColor,
 				borderColor: config.handleBorderColor,

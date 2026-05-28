@@ -128,7 +128,7 @@ export class FibRetracementShape {
 
 		resetCanvasLineDash(ctx);
 
-		if (selected) {
+		if (selected || hovered) {
 			drawHandles(ctx, FibRetracementShape.getHandles(shape, converter, config), {
 				fillColor: config.handleColor,
 				borderColor: config.handleBorderColor,

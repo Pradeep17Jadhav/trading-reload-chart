@@ -59,7 +59,7 @@ export class LineShape {
 
 		resetCanvasLineDash(ctx);
 
-		if (selected) {
+		if (selected || hovered) {
 			drawHandles(ctx, LineShape.getHandles(shape, converter, config), {
 				fillColor: config.handleColor,
 				borderColor: config.handleBorderColor,

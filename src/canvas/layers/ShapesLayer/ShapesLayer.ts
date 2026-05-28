@@ -290,7 +290,7 @@ export class ShapesLayer {
 		const handleHit = this.findHandleAtPoint(point);
 
 		if (handleHit) {
-			this.canvas.style.cursor = handleHit.cursor ?? "grab";
+			this.canvas.style.cursor = "pointer";
 			this.hoveredShapeId = handleHit.shapeId;
 			return true;
 		}
@@ -664,14 +664,22 @@ export class ShapesLayer {
 		}
 
 		const converter = this.getConverter();
+		const handleShapes: Shape[] = [];
 		const selectedShape = this.shapes.find((shape) => shape.id === this.selectedShapeId);
+		const hoveredShape =
+			this.hoveredShapeId && this.hoveredShapeId !== this.selectedShapeId
+				? (this.shapes.find((shape) => shape.id === this.hoveredShapeId) ?? null)
+				: null;
 
-		if (!selectedShape) {
-			this.handleHitboxes = [];
-			return;
+		if (selectedShape) {
+			handleShapes.push(selectedShape);
 		}
 
-		this.handleHitboxes = this.getShapeHandles(selectedShape, converter);
+		if (hoveredShape) {
+			handleShapes.push(hoveredShape);
+		}
+
+		this.handleHitboxes = handleShapes.flatMap((shape) => this.getShapeHandles(shape, converter));
 	}
 
 	private getShapeHandles(shape: Shape, converter: ShapeCoordinateConverter): ShapeHandleHitbox[] {
@@ -699,13 +707,15 @@ export class ShapesLayer {
 	}
 
 	private findHandleAtPoint(point: ShapePoint): ShapeHandleHitbox | null {
-		const selectedShape = this.shapes.find((shape) => shape.id === this.selectedShapeId);
+		for (let index = this.handleHitboxes.length - 1; index >= 0; index -= 1) {
+			const handle = this.handleHitboxes[index];
 
-		if (!selectedShape) {
-			return null;
+			if (isPointInsideHandle(point, handle)) {
+				return handle;
+			}
 		}
 
-		return this.findHandleAtPointForShape(selectedShape, point);
+		return null;
 	}
 
 	private findHandleAtPointForShape(shape: Shape, point: ShapePoint): ShapeHandleHitbox | null {

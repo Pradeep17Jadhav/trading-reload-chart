@@ -4,7 +4,6 @@ import {
 	createHandleHitbox,
 	drawHandles,
 	getBoundingBoxFromVertices,
-	isPointInsideBoundingBox,
 	isPointNearBoundingBoxBorder,
 	resetCanvasLineDash,
 	vertexToPoint,
@@ -63,7 +62,7 @@ export class RectangleShape {
 		ctx.strokeRect(box.left, box.top, box.width, box.height);
 		resetCanvasLineDash(ctx);
 
-		if (selected) {
+		if (selected || hovered) {
 			drawHandles(ctx, RectangleShape.getHandles(shape, converter, config), {
 				fillColor: config.handleColor,
 				borderColor: config.handleBorderColor,
@@ -146,10 +145,7 @@ export class RectangleShape {
 		const [startVertex, endVertex] = shape.vertices;
 		const box = getBoundingBoxFromVertices(startVertex, endVertex, converter);
 
-		return (
-			isPointNearBoundingBoxBorder(point, box, tolerance) ||
-			isPointInsideBoundingBox(point, box, Math.max(0, tolerance / 2))
-		);
+		return isPointNearBoundingBoxBorder(point, box, tolerance);
 	}
 
 	static move(shape: RectangleShapeData, delta: ShapeVertex): RectangleShapeData {

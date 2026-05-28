@@ -26,6 +26,7 @@
 	"scripts": {
 		"dev": "vite",
 		"build": "tsc && vite build --mode library",
+		"prepare": "npm run build",
 		"build:demo": "tsc && vite build",
 		"preview": "vite preview",
 		"lint": "biome check .",

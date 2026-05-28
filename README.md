@@ -94,8 +94,7 @@ npm install trading-reload-chart react react-dom
 npm run build
 npm pack
 # In your app
-npm install /path/to/trading-reload-chart/trading-reload-chart-0.0.0.tgz
-# Example - npm install D:\Pragramming\Projects\TradingReload\trading-reload-chart\trading-reload-chart-0.0.0.tgz
+npm install /path/to/trading-reload-chart/trading-reload-chart-1.0.0.tgz
 ```
 
 Or link during development:

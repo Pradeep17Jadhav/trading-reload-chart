@@ -50,7 +50,7 @@ export type ShapeHandleHitbox = {
 
 export type ShapeLineStyle = "solid" | "dashed" | "dotted";
 
-export type ShapeDrawStyle = {
+export type CommonShapeConfig = {
 	lineWidth: number;
 	lineColor: string;
 	lineOpacity: number;
@@ -165,18 +165,18 @@ export type PositionShapeData = {
 export type Shape = TrendlineShape | RectangleShapeData | PathShapeData | FibRetracementShapeData | PositionShapeData;
 
 export type ShapeConfig = {
-	trendline: ShapeDrawStyle;
-	rectangle: ShapeDrawStyle;
-	path: ShapeDrawStyle;
+	trendline: CommonShapeConfig;
+	rectangle: CommonShapeConfig;
+	path: CommonShapeConfig;
 	fibRetracement: FibRetracementConfig;
 	shortPosition: PositionShapeConfig;
 	longPosition: PositionShapeConfig;
 };
 
 export type PartialShapeConfig = Partial<{
-	trendline: Partial<ShapeDrawStyle>;
-	rectangle: Partial<ShapeDrawStyle>;
-	path: Partial<ShapeDrawStyle>;
+	trendline: Partial<CommonShapeConfig>;
+	rectangle: Partial<CommonShapeConfig>;
+	path: Partial<CommonShapeConfig>;
 	fibRetracement: Partial<FibRetracementConfig>;
 	shortPosition: Partial<PositionShapeConfig>;
 	longPosition: Partial<PositionShapeConfig>;

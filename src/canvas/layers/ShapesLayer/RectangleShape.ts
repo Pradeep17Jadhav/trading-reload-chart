@@ -11,14 +11,14 @@ import {
 import type {
 	RectangleShapeData,
 	ShapeCoordinateConverter,
-	ShapeDrawStyle,
+	CommonShapeConfig,
 	ShapeHandleHitbox,
 	ShapePoint,
 	ShapeVertex,
 } from "./ShapesLayer.types";
 
 export class RectangleShape {
-	static defaultConfig: ShapeDrawStyle = {
+	static defaultConfig: CommonShapeConfig = {
 		lineWidth: 2,
 		lineColor: "#2962ff",
 		lineOpacity: 1,
@@ -44,7 +44,7 @@ export class RectangleShape {
 		ctx: CanvasRenderingContext2D;
 		shape: RectangleShapeData;
 		converter: ShapeCoordinateConverter;
-		config?: ShapeDrawStyle;
+		config?: CommonShapeConfig;
 		selected?: boolean;
 		hovered?: boolean;
 	}) {
@@ -82,7 +82,7 @@ export class RectangleShape {
 		ctx: CanvasRenderingContext2D;
 		vertices: [ShapeVertex, ShapeVertex];
 		converter: ShapeCoordinateConverter;
-		config?: ShapeDrawStyle;
+		config?: CommonShapeConfig;
 	}) {
 		RectangleShape.draw({
 			ctx,
@@ -100,7 +100,7 @@ export class RectangleShape {
 	static getHandles(
 		shape: RectangleShapeData,
 		converter: ShapeCoordinateConverter,
-		config: ShapeDrawStyle = RectangleShape.defaultConfig,
+		config: CommonShapeConfig = RectangleShape.defaultConfig,
 	): ShapeHandleHitbox[] {
 		const [startVertex, endVertex] = shape.vertices;
 		const startPoint = vertexToPoint(startVertex, converter);

@@ -10,14 +10,14 @@ import {
 import type {
 	PathShapeData,
 	ShapeCoordinateConverter,
-	ShapeDrawStyle,
+	CommonShapeConfig,
 	ShapeHandleHitbox,
 	ShapePoint,
 	ShapeVertex,
 } from "./ShapesLayer.types";
 
 export class PathShape {
-	static defaultConfig: ShapeDrawStyle = {
+	static defaultConfig: CommonShapeConfig = {
 		lineWidth: 2,
 		lineColor: "#2962ff",
 		lineOpacity: 1,
@@ -43,7 +43,7 @@ export class PathShape {
 		ctx: CanvasRenderingContext2D;
 		shape: PathShapeData;
 		converter: ShapeCoordinateConverter;
-		config?: ShapeDrawStyle;
+		config?: CommonShapeConfig;
 		selected?: boolean;
 		hovered?: boolean;
 	}) {
@@ -104,7 +104,7 @@ export class PathShape {
 		vertices: ShapeVertex[];
 		previewVertex: ShapeVertex | null;
 		converter: ShapeCoordinateConverter;
-		config?: ShapeDrawStyle;
+		config?: CommonShapeConfig;
 	}) {
 		const draftVertices = previewVertex ? [...vertices, previewVertex] : vertices;
 
@@ -124,7 +124,7 @@ export class PathShape {
 	static getHandles(
 		shape: PathShapeData,
 		converter: ShapeCoordinateConverter,
-		config: ShapeDrawStyle = PathShape.defaultConfig,
+		config: CommonShapeConfig = PathShape.defaultConfig,
 	): ShapeHandleHitbox[] {
 		return shape.vertices.map((vertex, index) =>
 			createHandleHitbox({

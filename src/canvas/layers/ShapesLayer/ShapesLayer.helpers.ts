@@ -5,7 +5,7 @@ import type {
 	Shape,
 	ShapeBoundingBox,
 	ShapeCoordinateConverter,
-	ShapeDrawStyle,
+	CommonShapeConfig,
 	ShapeHandleHitbox,
 	ShapeLineStyle,
 	ShapePoint,
@@ -207,7 +207,7 @@ export const getLineDash = (lineStyle: ShapeLineStyle, lineWidth = 1): number[] 
 
 export const applyStrokeStyle = (
 	ctx: CanvasRenderingContext2D,
-	style: Pick<ShapeDrawStyle, "lineColor" | "lineOpacity" | "lineWidth" | "lineStyle">,
+	style: Pick<CommonShapeConfig, "lineColor" | "lineOpacity" | "lineWidth" | "lineStyle">,
 	lineWidthOverride?: number,
 ) => {
 	ctx.strokeStyle = withOpacity(style.lineColor, style.lineOpacity);

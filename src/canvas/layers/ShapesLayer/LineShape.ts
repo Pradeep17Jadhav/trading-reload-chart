@@ -8,7 +8,7 @@ import {
 } from "./ShapesLayer.helpers";
 import type {
 	ShapeCoordinateConverter,
-	ShapeDrawStyle,
+	CommonShapeConfig,
 	ShapeHandleHitbox,
 	ShapePoint,
 	ShapeVertex,
@@ -16,7 +16,7 @@ import type {
 } from "./ShapesLayer.types";
 
 export class LineShape {
-	static defaultConfig: ShapeDrawStyle = {
+	static defaultConfig: CommonShapeConfig = {
 		lineWidth: 2,
 		lineColor: "#2962ff",
 		lineOpacity: 1,
@@ -40,7 +40,7 @@ export class LineShape {
 		ctx: CanvasRenderingContext2D;
 		shape: TrendlineShape;
 		converter: ShapeCoordinateConverter;
-		config?: ShapeDrawStyle;
+		config?: CommonShapeConfig;
 		selected?: boolean;
 		hovered?: boolean;
 	}) {
@@ -79,7 +79,7 @@ export class LineShape {
 		ctx: CanvasRenderingContext2D;
 		vertices: [ShapeVertex, ShapeVertex];
 		converter: ShapeCoordinateConverter;
-		config?: ShapeDrawStyle;
+		config?: CommonShapeConfig;
 	}) {
 		LineShape.draw({
 			ctx,
@@ -97,7 +97,7 @@ export class LineShape {
 	static getHandles(
 		shape: TrendlineShape,
 		converter: ShapeCoordinateConverter,
-		config: ShapeDrawStyle = LineShape.defaultConfig,
+		config: CommonShapeConfig = LineShape.defaultConfig,
 	): ShapeHandleHitbox[] {
 		const [startVertex, endVertex] = shape.vertices;
 		const startPoint = vertexToPoint(startVertex, converter);

@@ -1,7 +1,27 @@
 {
 	"name": "trading-reload-chart",
-	"private": true,
-	"version": "0.0.0",
+	"version": "1.0.0",
+	"description": "A React canvas-based trading chart library with candles, volume, drawing tools, and trade overlays.",
+	"keywords": [
+		"trading",
+		"chart",
+		"react",
+		"canvas",
+		"candlestick",
+		"technical-analysis",
+		"finance",
+		"tradingview"
+	],
+	"homepage": "https://github.com/Pradeep17Jadhav/trading-reload-chart#readme",
+	"bugs": {
+		"url": "https://github.com/Pradeep17Jadhav/trading-reload-chart/issues"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/Pradeep17Jadhav/trading-reload-chart.git"
+	},
+	"license": "SEE LICENSE IN LICENSE",
+	"author": "Pradeep Jadhav",
 	"type": "module",
 	"scripts": {
 		"dev": "vite",
@@ -39,6 +59,12 @@
 	"files": [
 		"dist"
 	],
+	"publishConfig": {
+		"access": "public"
+	},
+	"engines": {
+		"node": ">=18"
+	},
 	"main": "./dist/trading-reload-chart.js",
 	"module": "./dist/trading-reload-chart.js",
 	"types": "./dist/index.d.ts"

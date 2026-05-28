@@ -246,4 +246,6 @@ Modern evergreen browsers with Canvas 2D (Chrome, Edge, Firefox, Safari).
 
 ## License
 
-MIT
+Commercial, proprietary license. Use of this library requires a paid license,
+subscription, or other written authorization from Pradeep Jadhav. See
+[LICENSE](./LICENSE).

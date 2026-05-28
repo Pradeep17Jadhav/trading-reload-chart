@@ -1,7 +1,11 @@
-import { resolve } from "node:path";
+import { dirname, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 import react from "@vitejs/plugin-react";
 import { defineConfig } from "vite";
 import dts from "vite-plugin-dts";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 export default defineConfig(({ mode }) => {
 	const isLibraryBuild = mode === "library";
@@ -12,6 +16,7 @@ export default defineConfig(({ mode }) => {
 				react(),
 				dts({
 					entryRoot: "src",
+					include: ["src"],
 					tsconfigPath: "./tsconfig.json",
 				}),
 			],
@@ -25,7 +30,7 @@ export default defineConfig(({ mode }) => {
 				rollupOptions: {
 					external: ["react", "react-dom", "react/jsx-runtime"],
 				},
-				sourcemap: true,
+				sourcemap: false,
 				minify: "esbuild",
 			},
 		};

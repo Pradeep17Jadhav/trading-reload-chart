@@ -9,8 +9,18 @@ import type {
 import type { ChartViewport } from "../../../models/ChartViewport.types";
 import type { OpenTrade, TradeType } from "../../../models/Trade.types";
 
+/**
+ * Type of existing trade handle shown on open positions.
+ *
+ * @example `"stopLoss"`
+ */
 export type TradeHandleType = "startPrice" | "stopLoss" | "takeProfit";
 
+/**
+ * Type of protection handle used when a trade is missing SL or TP.
+ *
+ * @example `"takeProfit"`
+ */
 export type TradeProtectionHandleType = "stopLoss" | "takeProfit";
 
 export type TradeHitboxKind = "existingHandle" | "missingProtectionHandle";
@@ -61,6 +71,27 @@ export type TemporaryTradeProtectionDrag = {
 	viewport: ChartViewport;
 };
 
+/**
+ * Historical trade marker rendered on the chart after a position is closed.
+ *
+ * @example
+ * ```ts
+ * const trade: PastTrade = {
+ *   symbol: "EURUSD",
+ *   type: "sell",
+ *   startTime: 1716796800000,
+ *   closeTime: 1716800400000,
+ *   openPrice: 1.089,
+ *   closePrice: 1.086,
+ *   volume: 1,
+ *   sl: 1.091,
+ *   tp: 1.086,
+ *   commission: 0,
+ *   swap: 0,
+ *   pnl: 30,
+ * };
+ * ```
+ */
 export type PastTrade = {
 	symbol: string;
 	type: TradeType;

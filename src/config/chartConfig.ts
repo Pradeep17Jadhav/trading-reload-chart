@@ -82,6 +82,24 @@ const commonTemporaryProtectionHandleProperties: TemporaryTradeProtectionHandleR
 	font: FONT.default,
 };
 
+/**
+ * Default chart configuration used when the consumer does not provide a custom
+ * `config` prop.
+ *
+ * Pass a partial override through `TradingReload` to change only the keys you
+ * care about.
+ *
+ * @example
+ * ```ts
+ * <TradingReload
+ *   {...props}
+ *   config={{
+ *     colors: { background: "#0d1117" },
+ *     candles: { defaultWidth: 10 },
+ *   }}
+ * />
+ * ```
+ */
 export const CHART_CONFIG: ChartConfig = {
 	zoom: {
 		x: {

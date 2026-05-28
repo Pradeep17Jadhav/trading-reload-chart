@@ -18,6 +18,22 @@ export default defineConfig(({ mode }) => {
 					entryRoot: "src",
 					include: ["src"],
 					tsconfigPath: "./tsconfig.json",
+					beforeWriteFile: (filePath, content) => {
+						const normalizedPath = filePath.replaceAll("\\", "/");
+						const distSrcPrefix = `${resolve(__dirname, "dist", "src").replaceAll("\\", "/")}/`;
+
+						if (!normalizedPath.startsWith(distSrcPrefix)) {
+							return {
+								filePath,
+								content,
+							};
+						}
+
+						return {
+							filePath: normalizedPath.replace(distSrcPrefix, `${resolve(__dirname, "dist").replaceAll("\\", "/")}/`),
+							content,
+						};
+					},
 				}),
 			],
 			build: {

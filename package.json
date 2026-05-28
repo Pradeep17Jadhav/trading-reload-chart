@@ -1,6 +1,6 @@
 {
 	"name": "@pradeepjadhav/trading-reload-chart",
-	"version": "1.0.2",
+	"version": "1.0.3",
 	"description": "A React canvas-based trading chart library with candles, volume, drawing tools, and trade overlays.",
 	"keywords": [
 		"trading",

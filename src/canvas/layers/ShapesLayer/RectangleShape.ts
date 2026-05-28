@@ -11,14 +11,14 @@ import {
 import type {
 	RectangleShapeData,
 	ShapeCoordinateConverter,
-	CommonShapeConfig,
 	ShapeHandleHitbox,
 	ShapePoint,
 	ShapeVertex,
+	RectangleShapeConfig,
 } from "./ShapesLayer.types";
 
 export class RectangleShape {
-	static defaultConfig: CommonShapeConfig = {
+	static defaultConfig: RectangleShapeConfig = {
 		lineWidth: 2,
 		lineColor: "#2962ff",
 		lineOpacity: 1,
@@ -31,6 +31,10 @@ export class RectangleShape {
 		handleRadius: 5,
 		hoverLineWidth: 3,
 		selectedLineWidth: 3,
+		textColor: "#ffffff",
+		textOpacity: 1,
+		textFontFamily: "Arial",
+		textFontSize: 20,
 	};
 
 	static draw({
@@ -44,7 +48,7 @@ export class RectangleShape {
 		ctx: CanvasRenderingContext2D;
 		shape: RectangleShapeData;
 		converter: ShapeCoordinateConverter;
-		config?: CommonShapeConfig;
+		config?: RectangleShapeConfig;
 		selected?: boolean;
 		hovered?: boolean;
 	}) {
@@ -61,6 +65,7 @@ export class RectangleShape {
 
 		ctx.strokeRect(box.left, box.top, box.width, box.height);
 		resetCanvasLineDash(ctx);
+		RectangleShape.drawText(ctx, box, shape.text, config);
 
 		if (selected || hovered) {
 			drawHandles(ctx, RectangleShape.getHandles(shape, converter, config), {
@@ -82,7 +87,7 @@ export class RectangleShape {
 		ctx: CanvasRenderingContext2D;
 		vertices: [ShapeVertex, ShapeVertex];
 		converter: ShapeCoordinateConverter;
-		config?: CommonShapeConfig;
+		config?: RectangleShapeConfig;
 	}) {
 		RectangleShape.draw({
 			ctx,
@@ -100,7 +105,7 @@ export class RectangleShape {
 	static getHandles(
 		shape: RectangleShapeData,
 		converter: ShapeCoordinateConverter,
-		config: CommonShapeConfig = RectangleShape.defaultConfig,
+		config: RectangleShapeConfig = RectangleShape.defaultConfig,
 	): ShapeHandleHitbox[] {
 		const [startVertex, endVertex] = shape.vertices;
 		const startPoint = vertexToPoint(startVertex, converter);
@@ -184,5 +189,30 @@ export class RectangleShape {
 		}
 
 		return shape;
+	}
+
+	private static drawText(
+		ctx: CanvasRenderingContext2D,
+		box: { left: number; top: number; width: number; height: number },
+		text: string | undefined,
+		config: RectangleShapeConfig,
+	) {
+		const label = text?.trim();
+
+		if (!label) {
+			return;
+		}
+
+		ctx.save();
+		ctx.beginPath();
+		ctx.rect(box.left, box.top, box.width, box.height);
+		ctx.clip();
+		ctx.font = `${config.textFontSize}px ${config.textFontFamily}`;
+		ctx.globalAlpha = config.textOpacity;
+		ctx.fillStyle = config.textColor;
+		ctx.textAlign = "center";
+		ctx.textBaseline = "middle";
+		ctx.fillText(label, box.left + box.width / 2, box.top + box.height / 2);
+		ctx.restore();
 	}
 }

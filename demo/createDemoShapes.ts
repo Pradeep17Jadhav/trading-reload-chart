@@ -40,8 +40,9 @@ export const createDemoShapes = (candles: Candle[]): Shape[] => {
 				{ time: rectangleStart.time, price: priceAt(rectangleStart, 0.85) },
 				{ time: rectangleEnd.time, price: priceAt(rectangleEnd, 0.15) },
 			],
+			text: "15M GR",
 			config: {
-				fillColor: "#ff0000"
+				fillColor: "#ff0000",
 			}
 		},
 		{

@@ -61,6 +61,10 @@ export const CHART_SHAPE_CONFIG: PartialShapeConfig = {
 		handleRadius: 5,
 		hoverLineWidth: 1,
 		selectedLineWidth: 1.1,
+		textColor: COLORS.white,
+		textOpacity: 1,
+		textFontFamily: "Arial",
+		textFontSize: 20,
 	},
 
 	path: {

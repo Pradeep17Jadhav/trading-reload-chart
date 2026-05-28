@@ -65,6 +65,13 @@ export type CommonShapeConfig = {
 	selectedLineWidth?: number;
 };
 
+export type RectangleShapeConfig = CommonShapeConfig & {
+	textColor: string;
+	textOpacity: number;
+	textFontFamily: string;
+	textFontSize: number;
+};
+
 export type FibLevelValue = 1 | 0.72 | 0.618 | 0.5 | 0;
 
 export type FibLevelConfig = {
@@ -123,6 +130,7 @@ export type RectangleShapeData = {
 	id: ShapeId;
 	type: "rectangle";
 	vertices: [ShapeVertex, ShapeVertex];
+	text?: string;
 	config?: Partial<ShapeConfig["rectangle"]>;
 };
 
@@ -172,7 +180,7 @@ export type Shape = TrendlineShape | RectangleShapeData | PathShapeData | FibRet
 
 export type ShapeConfig = {
 	trendline: CommonShapeConfig;
-	rectangle: CommonShapeConfig;
+	rectangle: RectangleShapeConfig;
 	path: CommonShapeConfig;
 	fibRetracement: FibRetracementConfig;
 	shortPosition: PositionShapeConfig;
@@ -181,7 +189,7 @@ export type ShapeConfig = {
 
 export type PartialShapeConfig = Partial<{
 	trendline: Partial<CommonShapeConfig>;
-	rectangle: Partial<CommonShapeConfig>;
+	rectangle: Partial<RectangleShapeConfig>;
 	path: Partial<CommonShapeConfig>;
 	fibRetracement: Partial<FibRetracementConfig>;
 	shortPosition: Partial<PositionShapeConfig>;

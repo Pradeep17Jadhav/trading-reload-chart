@@ -40,7 +40,7 @@ export type TradingReloadHandle = {
  *   candles={candles}
  *   liveCandle={liveCandle}
  *   openTrades={openTrades}
- *   pastTrades={pastTrades}
+ *   closedTrades={closedTrades}
  *   shapes={shapes}
  *   activeShapeTool={activeShapeTool}
  *   onShapeAdded={({ shape }) => setShapes((prev) => [...prev, shape])}

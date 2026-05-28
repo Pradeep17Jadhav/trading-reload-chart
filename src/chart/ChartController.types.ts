@@ -54,6 +54,13 @@ export type TradeModifyPayload = {
  * ```
  */
 export type PreviousDay = {
+	/**
+	 * Trading symbol for the previous day data.
+	 *
+	 * @example `"EURUSD"`
+	 */
+	symbol: string;
+
 	/** Previous day high price.
 	 *
 	 * @example `1.0924`
@@ -78,7 +85,7 @@ export type PreviousDay = {
  *   candles,
  *   liveCandle,
  *   openTrades,
- *   pastTrades,
+ *   closedTrades,
  *   shapes,
  *   activeShapeTool,
  *   onShapeAdded: ({ shape }) => setShapes((prev) => [...prev, shape]),
@@ -132,10 +139,10 @@ export type ChartControllerProps = {
 	 *
 	 * @example
 	 * ```ts
-	 * pastTrades: [{ ticket: 101245, symbol: "EURUSD", type: "sell", openTime: 1716796800000, openPrice: 1.089, closeTime: 1716800400000, closePrice: 1.086, volume: 1, sl: 1.091, tp: 1.086, commission: 0, swap: 0, pnl: 30, status: "closed" }]
+	 * closedTrades: [{ ticket: 101245, symbol: "EURUSD", type: "sell", openTime: 1716796800000, openPrice: 1.089, closeTime: 1716800400000, closePrice: 1.086, volume: 1, sl: 1.091, tp: 1.086, commission: 0, swap: 0, pnl: 30, status: "closed" }]
 	 * ```
 	 */
-	pastTrades: ClosedTrade[];
+	closedTrades: ClosedTrade[];
 
 	/**
 	 * Parent-owned shapes rendered and edited by the chart.

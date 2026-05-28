@@ -1,6 +1,6 @@
 import type {
 	MissingTradeProtectionHandleRectConfig,
-	PastTradeIndicatorArrowConfig,
+	ClosedTradeIndicatorArrowConfig as ClosedTradeIndicatorArrowConfig,
 	TemporaryTradeProtectionHandleRectConfig,
 	TradeHandleLineConfig,
 	TradeHandleRectConfig,
@@ -133,17 +133,17 @@ export type TemporaryProtectionRenderState = {
 	handleHeight: number;
 };
 
-export type PastTradeIndicatorPoint = {
+export type ClosedTradeIndicatorPoint = {
 	x: number;
 	y: number;
 	price: number;
 	time: number;
 };
 
-export type PastTradeIndicatorRenderState = {
+export type ClosedTradeIndicatorRenderState = {
 	trade: ClosedTrade;
-	start: PastTradeIndicatorPoint;
-	close: PastTradeIndicatorPoint;
+	start: ClosedTradeIndicatorPoint;
+	close: ClosedTradeIndicatorPoint;
 	arrowWidth: number;
 	arrowHeight: number;
 };
@@ -223,13 +223,13 @@ export type DrawHandleSectionsOptions = {
 	y: number;
 };
 
-export type DrawPastTradeArrowOptions = {
+export type DrawClosedTradeArrowOptions = {
 	x: number;
 	y: number;
 	type: TradeDirection;
 	width: number;
 	height: number;
-	config: PastTradeIndicatorArrowConfig;
+	config: ClosedTradeIndicatorArrowConfig;
 };
 
 export type HandleSection = {

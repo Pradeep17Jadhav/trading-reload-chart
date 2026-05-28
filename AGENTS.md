@@ -6,7 +6,7 @@ Authoritative guide for humans and AI agents working on this repository. Follow 
 
 ## 1. Project purpose
 
-Trading Reload Chart is a **standalone React chart library** (canvas-based) for trading UIs. It renders candles, volume, axes, crosshair, drawing shapes, and open/past trade overlays.
+Trading Reload Chart is a **standalone React chart library** (canvas-based) for trading UIs. It renders candles, volume, axes, crosshair, drawing shapes, and open/closed trade overlays.
 
 - **In scope**: Presentation, interaction, and callbacks. Data comes from the parent.
 - **Out of scope**: REST/WebSocket fetching, authentication, routing, SSR, non-React hosts.
@@ -65,7 +65,7 @@ All data props are **controlled**. The parent is the single source of truth.
 | `candles` | `Candle[]` | yes | Historical series; times in **milliseconds UTC** unless `brokerTimezoneOffsetMs` is set. |
 | `liveCandle` | `Candle \| null` | no | Forming candle; when omitted, treat as no live update. |
 | `openTrades` | `OpenTrade[]` | no | Open positions overlay. |
-| `pastTrades` | `PastTradeIndicator[]` | no | Historical trade markers. |
+| `closedTrades` | `ClosedTradeIndicator[]` | no | Historical trade markers. |
 | `shapes` | `Shape[]` | yes | Parent-owned list; may be `[]`. |
 | `activeShapeTool` | `ShapeToolType \| null` | yes | `null` = no new shape drawing. |
 | `config` | `DeepPartial<ChartConfig>` | no | Deep-merged over defaults from `src/config/chartConfig.ts`. |
@@ -257,7 +257,7 @@ When the user says to start refactoring:
 - [ ] Pan (drag), horizontal wheel zoom, Ctrl+wheel vertical zoom
 - [ ] Crosshair + axis labels on move; hidden on leave
 - [ ] Live candle updates (demo WebSocket)
-- [ ] Open trades overlay + past trade markers (demo)
+- [ ] Open trades overlay + closed trade markers (demo)
 - [ ] Shape tools: draw each tool type; edit handles; Escape cancels tool
 - [ ] `onShapeAdded` / `onShapeModified` / `onActiveShapeToolChange` fire correctly
 - [ ] Trade SL/TP drag preview and `onTradeModify` on release

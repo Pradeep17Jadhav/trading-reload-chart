@@ -307,7 +307,7 @@ export const CHART_CONFIG: ChartConfig = {
 		},
 	},
 
-	pastTradeIndicators: {
+	closedTradeIndicators: {
 		visible: true,
 
 		arrow: {

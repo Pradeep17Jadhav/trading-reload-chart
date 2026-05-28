@@ -19,7 +19,7 @@ import type { TradingReloadHandle, TradingReloadProps } from "./TradingReload.ty
  *     candles={candles}
  *     liveCandle={liveCandle}
  *     openTrades={openTrades}
- *     pastTrades={pastTrades}
+ *     closedTrades={closedTrades}
  *     shapes={shapes}
  *     activeShapeTool={activeShapeTool}
  *     onShapeAdded={({ shape }) => setShapes((prev) => [...prev, shape])}

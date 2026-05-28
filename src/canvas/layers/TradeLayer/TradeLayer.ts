@@ -20,13 +20,13 @@ import type {
 	DrawHandleRectOptions,
 	DrawHandleSectionsOptions,
 	DrawMissingProtectionHandleRectOptions,
-	DrawPastTradeArrowOptions,
+	DrawClosedTradeArrowOptions,
 	DrawTemporaryProtectionHandleRectOptions,
 	DrawTradeHandleOptions,
 	HandleSection,
 	LineBlockedRange,
 	MissingProtectionHandleRenderState,
-	PastTradeIndicatorRenderState,
+	ClosedTradeIndicatorRenderState,
 	TemporaryProtectionRenderState,
 	TemporaryTradeProtectionDrag,
 	TradeHandleHitbox,
@@ -42,7 +42,7 @@ export class TradeLayer {
 
 	isDragging: boolean;
 	trades: OpenTrade[] = [];
-	pastTrades: ClosedTrade[] = [];
+	closedTrades: ClosedTrade[] = [];
 	candles: Candle[] = [];
 	viewport: ChartViewport | null = null;
 	liveCandle: Candle | null = null;
@@ -66,8 +66,8 @@ export class TradeLayer {
 		this.trades = trades;
 	}
 
-	setPastTrades(pastTrades: ClosedTrade[]) {
-		this.pastTrades = pastTrades;
+	setClosedTrades(closedTrades: ClosedTrade[]) {
+		this.closedTrades = closedTrades;
 	}
 
 	setCandles(candles: Candle[]) {
@@ -104,7 +104,7 @@ export class TradeLayer {
 		this.clearCanvas();
 		this.resetHitboxes();
 
-		this.drawPastTradeIndicators();
+		this.drawClosedTradeIndicators();
 
 		for (const trade of this.trades) {
 			this.drawTrade({
@@ -483,26 +483,26 @@ export class TradeLayer {
 		this.handleHitboxes = [];
 	}
 
-	private drawPastTradeIndicators() {
-		const config = CHART_CONFIG.pastTradeIndicators;
+	private drawClosedTradeIndicators() {
+		const config = CHART_CONFIG.closedTradeIndicators;
 
 		if (!config.visible || !this.viewport || this.candles.length === 0) {
 			return;
 		}
 
-		for (const trade of this.pastTrades) {
-			const renderState = this.getPastTradeIndicatorRenderState(trade);
+		for (const trade of this.closedTrades) {
+			const renderState = this.getClosedTradeIndicatorRenderState(trade);
 
 			if (!renderState) {
 				continue;
 			}
 
-			this.drawPastTradeConnector(renderState);
-			this.drawPastTradeArrows(renderState);
+			this.drawClosedTradeConnector(renderState);
+			this.drawClosedTradeArrows(renderState);
 		}
 	}
 
-	private getPastTradeIndicatorRenderState(trade: ClosedTrade): PastTradeIndicatorRenderState | null {
+	private getClosedTradeIndicatorRenderState(trade: ClosedTrade): ClosedTradeIndicatorRenderState | null {
 		if (!this.viewport) {
 			return null;
 		}
@@ -516,7 +516,7 @@ export class TradeLayer {
 
 		const startY = this.getPriceY(trade.openPrice, this.viewport);
 		const closeY = this.getPriceY(trade.closePrice, this.viewport);
-		const arrowConfig = CHART_CONFIG.pastTradeIndicators.arrow;
+		const arrowConfig = CHART_CONFIG.closedTradeIndicators.arrow;
 		const arrowWidth = arrowConfig.width;
 		const arrowHeight = arrowConfig.height;
 
@@ -539,8 +539,8 @@ export class TradeLayer {
 		};
 	}
 
-	private drawPastTradeConnector({ start, close }: PastTradeIndicatorRenderState) {
-		const config = CHART_CONFIG.pastTradeIndicators.connectorLine;
+	private drawClosedTradeConnector({ start, close }: ClosedTradeIndicatorRenderState) {
+		const config = CHART_CONFIG.closedTradeIndicators.connectorLine;
 
 		this.drawConnectorLine({
 			x1: start.x,
@@ -551,8 +551,8 @@ export class TradeLayer {
 		});
 	}
 
-	private drawPastTradeArrows({ trade, start, close, arrowWidth, arrowHeight }: PastTradeIndicatorRenderState) {
-		const config = CHART_CONFIG.pastTradeIndicators.arrow;
+	private drawClosedTradeArrows({ trade, start, close, arrowWidth, arrowHeight }: ClosedTradeIndicatorRenderState) {
+		const config = CHART_CONFIG.closedTradeIndicators.arrow;
 
 		if (!config.visible) {
 			return;
@@ -560,7 +560,7 @@ export class TradeLayer {
 
 		const closeType = trade.type === "buy" ? "sell" : "buy";
 
-		this.drawPastTradeArrow({
+		this.drawClosedTradeArrow({
 			x: start.x,
 			y: start.y,
 			type: trade.type,
@@ -569,7 +569,7 @@ export class TradeLayer {
 			config,
 		});
 
-		this.drawPastTradeArrow({
+		this.drawClosedTradeArrow({
 			x: close.x,
 			y: close.y,
 			type: closeType,
@@ -579,7 +579,7 @@ export class TradeLayer {
 		});
 	}
 
-	private drawPastTradeArrow({ x, y, type, width, height, config }: DrawPastTradeArrowOptions) {
+	private drawClosedTradeArrow({ x, y, type, width, height, config }: DrawClosedTradeArrowOptions) {
 		if (width <= 0 || height <= 0) {
 			return;
 		}

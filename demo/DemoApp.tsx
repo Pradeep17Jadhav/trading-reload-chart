@@ -7,7 +7,7 @@ import { TradingReload } from "../src/react/TradingReload";
 import { createDemoShapes } from "./createDemoShapes";
 import {
 	fetchHistoricalCandles,
-	fetchPastTrades,
+	fetchClosedTrades,
 	getModifiedTradeFromResponse,
 	modifyTrade,
 	subscribeLiveCandles,
@@ -55,7 +55,7 @@ export const DemoApp = () => {
 	const [candles, setCandles] = useState<Candle[]>([]);
 	const [liveCandle, setLiveCandle] = useState<Candle | null>(null);
 	const [openTrades, setOpenTrades] = useState<OpenTrade[]>([]);
-	const [pastTrades, setPastTrades] = useState<ClosedTrade[]>([]);
+	const [closedTrades, setClosedTrades] = useState<ClosedTrade[]>([]);
 	const [shapes, setShapes] = useState<Shape[]>([]);
 	const [activeShapeTool, setActiveShapeTool] = useState<ShapeToolType | null>(DEMO_INITIAL_SHAPE_TOOL);
 	const [loadError, setLoadError] = useState<string | null>(null);
@@ -72,14 +72,14 @@ export const DemoApp = () => {
 
 		const load = async () => {
 			try {
-				const [historicalCandles, history] = await Promise.all([fetchHistoricalCandles(), fetchPastTrades()]);
+				const [historicalCandles, history] = await Promise.all([fetchHistoricalCandles(), fetchClosedTrades()]);
 
 				if (isCancelled) {
 					return;
 				}
 
 				setCandles(historicalCandles);
-				setPastTrades(history);
+				setClosedTrades(history);
 				setShapes(createDemoShapes(historicalCandles));
 			} catch (error) {
 				if (!isCancelled) {
@@ -178,7 +178,7 @@ export const DemoApp = () => {
 			candles={candles}
 			liveCandle={liveCandle}
 			openTrades={openTrades}
-			pastTrades={pastTrades}
+			closedTrades={closedTrades}
 			shapes={shapes}
 			activeShapeTool={activeShapeTool}
 			config={DEMO_CHART_CONFIG}

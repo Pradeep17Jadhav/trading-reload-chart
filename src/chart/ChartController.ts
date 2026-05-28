@@ -108,7 +108,7 @@ export class ChartController {
 		this.#pdhPdlLayer?.setConfig(this.#config.shapes.previousDayHighLow ?? null);
 		this.#pdhPdlLayer?.setPreviousDay(props.previousDay);
 
-		this.#tradeLayer?.setPastTrades(props.pastTrades ?? []);
+		this.#tradeLayer?.setClosedTrades(props.closedTrades ?? []);
 		this.#syncOpenTradesToLayer();
 
 		this.#applyLiveCandleUpdate();
@@ -203,7 +203,7 @@ export class ChartController {
 			canvas: this.#dom.tradesCanvas,
 		});
 		this.#tradeLayer.setCandles(normalizedCandles);
-		this.#tradeLayer.setPastTrades(this.#props.pastTrades ?? []);
+		this.#tradeLayer.setClosedTrades(this.#props.closedTrades ?? []);
 		this.#syncOpenTradesToLayer();
 
 		this.#axisLayerX = new AxisLayerX({

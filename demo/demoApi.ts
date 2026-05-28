@@ -31,7 +31,7 @@ const getFiniteNumber = (value: unknown) => {
 	return value;
 };
 
-const normalizePastTradeIndicator = (trade: TradeHistoryApiItem): ClosedTrade | null => {
+const normalizeClosedTradeIndicator = (trade: TradeHistoryApiItem): ClosedTrade | null => {
 	const openTime = getFiniteNumber(trade.startTime);
 	const closeTime = getFiniteNumber(trade.endTime);
 	const openPrice = getFiniteNumber(trade.startPrice);
@@ -73,7 +73,7 @@ export const fetchHistoricalCandles = async (): Promise<Candle[]> => {
 	return ((data.candles ?? []) as Candle[]).map(normalizeCandleFromApi);
 };
 
-export const fetchPastTrades = async (): Promise<ClosedTrade[]> => {
+export const fetchClosedTrades = async (): Promise<ClosedTrade[]> => {
 	const response = await fetch(`${API_BASE_URL}/history`, {
 		cache: "no-store",
 	});
@@ -86,11 +86,11 @@ export const fetchPastTrades = async (): Promise<ClosedTrade[]> => {
 	const history = Array.isArray(data.history) ? data.history : [];
 	const activeSymbolHistory = history.filter((trade) => isTradeForActiveSymbol(trade.symbol));
 
-	const pastTrades = activeSymbolHistory
-		.map(normalizePastTradeIndicator)
+	const closedTrades = activeSymbolHistory
+		.map(normalizeClosedTradeIndicator)
 		.filter((trade): trade is ClosedTrade => trade !== null);
 
-	const invalidTradeCount = activeSymbolHistory.length - pastTrades.length;
+	const invalidTradeCount = activeSymbolHistory.length - closedTrades.length;
 
 	if (invalidTradeCount > 0) {
 		console.warn(
@@ -98,7 +98,7 @@ export const fetchPastTrades = async (): Promise<ClosedTrade[]> => {
 		);
 	}
 
-	return pastTrades;
+	return closedTrades;
 };
 
 export const subscribeOpenTrades = (onPositions: (positions: OpenTrade[]) => void) => {

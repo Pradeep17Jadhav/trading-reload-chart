@@ -1,6 +1,6 @@
 # Trading Chart Library by Pradeep
 
-A **React chart library** (HTML Canvas) for trading UIs: candlesticks, volume, axes, crosshair, drawing tools, and open/past trade overlays. Data and state are **controlled by the parent** via props and callbacks.
+A **React chart library** (HTML Canvas) for trading UIs: candlesticks, volume, axes, crosshair, drawing tools, and open/closed trade overlays. Data and state are **controlled by the parent** via props and callbacks.
 
 The repo includes a **demo app** under `demo/` (Vite dev server) that loads live/historical data from an API. That harness is not published in the npm package.
 
@@ -186,9 +186,9 @@ Import from the package root:
 | `Candle`, `OpenTrade`, `ClosedTrade`, …      | Domain types         |
 | `Shape`, `ShapeToolType`, shape payloads     | Drawing types        |
 | `ChartConfig`, `CHART_CONFIG`, `DeepPartial` | Configuration        |
-| `PastTradeIndicator`, trade handle types     | Trade overlay types  |
+| `ClosedTradeIndicator`, trade handle types   | Trade overlay types  |
 
-Controlled props (parent owns state): `candles`, `liveCandle`, `openTrades`, `pastTrades`, `shapes`, `activeShapeTool`, `config`, `activeSymbol`.
+Controlled props (parent owns state): `candles`, `liveCandle`, `openTrades`, `closedTrades`, `shapes`, `activeShapeTool`, `config`, `activeSymbol`.
 
 Callbacks: `onShapeAdded`, `onShapeModified`, `onActiveShapeToolChange`, `onTradeModify`.
 
@@ -226,7 +226,7 @@ Type declarations live in **`*.types.ts`** files next to implementation code (se
 - Pan, horizontal wheel zoom, Ctrl+wheel vertical zoom
 - Drawing tools (trendline, rectangle, path, fib, long/short position)
 - Open trade SL/TP drag with `onTradeModify` on release
-- Past trade markers
+- Closed trade markers
 - Deep-merge chart `config` over defaults
 
 ---

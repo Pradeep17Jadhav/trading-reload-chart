@@ -2,6 +2,7 @@ import type {
 	Shape,
 	ShapeAddedPayload,
 	ShapeModifiedPayload,
+	ShapeSelectedPayload,
 	ShapeToolType,
 } from "../canvas/layers/ShapesLayer/ShapesLayer.types";
 import type { PastTrade } from "../canvas/layers/TradeLayer/TradeLayer.types";
@@ -34,6 +35,7 @@ export type ChartControllerProps = {
 	previousDay?: PreviousDay | null;
 	onShapeAdded?: (payload: ShapeAddedPayload) => void;
 	onShapeModified?: (payload: ShapeModifiedPayload) => void;
+	onShapeSelected?: (payload: ShapeSelectedPayload | null) => void;
 	onActiveShapeToolChange?: (tool: ShapeToolType | null) => void;
 	onTradeModify?: (payload: TradeModifyPayload) => void;
 	onTradeClose?: (payload: { ticket: number }) => void;

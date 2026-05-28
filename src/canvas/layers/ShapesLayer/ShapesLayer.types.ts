@@ -116,24 +116,28 @@ export type TrendlineShape = {
 	id: ShapeId;
 	type: "trendline";
 	vertices: [ShapeVertex, ShapeVertex];
+	config?: Partial<ShapeConfig["trendline"]>;
 };
 
 export type RectangleShapeData = {
 	id: ShapeId;
 	type: "rectangle";
 	vertices: [ShapeVertex, ShapeVertex];
+	config?: Partial<ShapeConfig["rectangle"]>;
 };
 
 export type PathShapeData = {
 	id: ShapeId;
 	type: "path";
 	vertices: ShapeVertex[];
+	config?: Partial<ShapeConfig["path"]>;
 };
 
 export type FibRetracementShapeData = {
 	id: ShapeId;
 	type: "fibRetracement";
 	vertices: [ShapeVertex, ShapeVertex];
+	config?: Partial<ShapeConfig["fibRetracement"]>;
 };
 
 export type PositionShapeData = {
@@ -160,6 +164,8 @@ export type PositionShapeData = {
 	 * Example: 0.375 means 0.375%.
 	 */
 	takeProfitPercent: number;
+
+	config?: Partial<ShapeConfig["shortPosition"]> | Partial<ShapeConfig["longPosition"]>;
 };
 
 export type Shape = TrendlineShape | RectangleShapeData | PathShapeData | FibRetracementShapeData | PositionShapeData;
@@ -194,6 +200,38 @@ export type ShapeModifiedPayload = {
 	type: ShapeType;
 	shape: Shape;
 };
+
+export type ShapeSelectedPayload =
+	| {
+			shapeId: ShapeId;
+			type: "trendline";
+			config: ShapeConfig["trendline"];
+	  }
+	| {
+			shapeId: ShapeId;
+			type: "rectangle";
+			config: ShapeConfig["rectangle"];
+	  }
+	| {
+			shapeId: ShapeId;
+			type: "path";
+			config: ShapeConfig["path"];
+	  }
+	| {
+			shapeId: ShapeId;
+			type: "fibRetracement";
+			config: ShapeConfig["fibRetracement"];
+	  }
+	| {
+			shapeId: ShapeId;
+			type: "shortPosition";
+			config: ShapeConfig["shortPosition"];
+	  }
+	| {
+			shapeId: ShapeId;
+			type: "longPosition";
+			config: ShapeConfig["longPosition"];
+	  };
 
 /**
  * Adapter around ExistingCandlesLayer viewport/candle conversion behavior.
@@ -274,6 +312,7 @@ export type ShapesLayerOptions = {
 	config?: PartialShapeConfig;
 	onShapeAdded?: (payload: ShapeAddedPayload) => void;
 	onShapeModified?: (payload: ShapeModifiedPayload) => void;
+	onShapeSelected?: (payload: ShapeSelectedPayload | null) => void;
 	onToolChange?: (tool: ShapeToolType | null) => void;
 };
 

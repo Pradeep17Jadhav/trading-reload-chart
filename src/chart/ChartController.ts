@@ -101,6 +101,7 @@ export class ChartController {
 			this.#applyActiveShapeTool(props.activeShapeTool);
 		}
 
+		this.#shapesLayer?.setConfig(this.#config.shapes);
 		this.#shapesLayer?.setShapes(props.shapes);
 		this.#shapesLayer?.setActiveTool(props.activeShapeTool);
 
@@ -180,6 +181,9 @@ export class ChartController {
 			},
 			onShapeModified: (payload) => {
 				this.#props.onShapeModified?.(payload);
+			},
+			onShapeSelected: (payload) => {
+				this.#props.onShapeSelected?.(payload);
 			},
 			onToolChange: (tool) => {
 				this.#props.onActiveShapeToolChange?.(tool);

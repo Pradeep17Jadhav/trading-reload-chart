@@ -4,6 +4,7 @@ export type {
 	ShapeAddedPayload,
 	ShapeId,
 	ShapeModifiedPayload,
+	ShapeSelectedPayload,
 	ShapeToolType,
 	ShapeType,
 	ShapeVertex,

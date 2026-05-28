@@ -27,6 +27,7 @@ import type {
 	ShapeHandleType,
 	ShapeModifiedPayload,
 	ShapePoint,
+	ShapeSelectedPayload,
 	ShapesLayerOptions,
 	ShapeToolType,
 	ShapeVertex,
@@ -50,6 +51,7 @@ export class ShapesLayer {
 	private dragState: InternalDragState | null = null;
 	private onShapeAdded?: (payload: ShapeAddedPayload) => void;
 	private onShapeModified?: (payload: ShapeModifiedPayload) => void;
+	private onShapeSelected?: (payload: ShapeSelectedPayload | null) => void;
 	private onToolChange?: (tool: ShapeToolType | null) => void;
 
 	constructor(options: ShapesLayerOptions) {
@@ -69,6 +71,7 @@ export class ShapesLayer {
 		this.config = this.mergeConfig(options.config);
 		this.onShapeAdded = options.onShapeAdded;
 		this.onShapeModified = options.onShapeModified;
+		this.onShapeSelected = options.onShapeSelected;
 		this.onToolChange = options.onToolChange;
 	}
 
@@ -82,7 +85,16 @@ export class ShapesLayer {
 
 	setShapes(shapes: Shape[]) {
 		this.shapes = shapes;
+
+		if (this.selectedShapeId && !this.shapes.some((shape) => shape.id === this.selectedShapeId)) {
+			this.setSelectedShapeId(null);
+		}
+
 		this.rebuildHandleHitboxes();
+	}
+
+	setConfig(config?: PartialShapeConfig) {
+		this.config = this.mergeConfig(config);
 	}
 
 	setActiveTool(tool: ShapeToolType | null) {
@@ -159,7 +171,7 @@ export class ShapesLayer {
 		}
 
 		if (event.key === "Escape" && this.selectedShapeId) {
-			this.selectedShapeId = null;
+			this.setSelectedShapeId(null);
 			return true;
 		}
 
@@ -197,7 +209,7 @@ export class ShapesLayer {
 				return false;
 			}
 
-			this.selectedShapeId = shape.id;
+			this.setSelectedShapeId(shape.id);
 			this.dragState = {
 				edit: {
 					mode: "resize",
@@ -224,7 +236,7 @@ export class ShapesLayer {
 			const handleOnHitShape = this.findHandleAtPointForShape(hitShape, point);
 
 			if (handleOnHitShape) {
-				this.selectedShapeId = hitShape.id;
+				this.setSelectedShapeId(hitShape.id);
 				this.dragState = {
 					edit: {
 						mode: "resize",
@@ -241,7 +253,7 @@ export class ShapesLayer {
 				return true;
 			}
 
-			this.selectedShapeId = hitShape.id;
+			this.setSelectedShapeId(hitShape.id);
 			this.hoveredShapeId = hitShape.id;
 			this.dragState = {
 				edit: {
@@ -257,7 +269,7 @@ export class ShapesLayer {
 			return true;
 		}
 
-		this.selectedShapeId = null;
+		this.setSelectedShapeId(null);
 		this.hoveredShapeId = null;
 		this.canvas.style.cursor = "crosshair";
 
@@ -319,7 +331,7 @@ export class ShapesLayer {
 
 		const modifiedShape = this.dragState.lastModifiedShape;
 		this.dragState = null;
-		this.selectedShapeId = modifiedShape.id;
+		this.setSelectedShapeId(modifiedShape.id);
 		this.emitShapeModified(modifiedShape);
 
 		return true;
@@ -460,7 +472,7 @@ export class ShapesLayer {
 	}
 
 	private addShape(shape: Shape) {
-		this.selectedShapeId = shape.id;
+		this.setSelectedShapeId(shape.id);
 
 		this.onShapeAdded?.({
 			type: shape.type,
@@ -553,11 +565,13 @@ export class ShapesLayer {
 		hovered: boolean;
 	}) {
 		if (shape.type === "trendline") {
+			const config = this.getTrendlineConfig(shape);
+
 			LineShape.draw({
 				ctx: this.ctx,
 				shape,
 				converter,
-				config: this.config.trendline,
+				config,
 				selected,
 				hovered,
 			});
@@ -565,11 +579,13 @@ export class ShapesLayer {
 		}
 
 		if (shape.type === "rectangle") {
+			const config = this.getRectangleConfig(shape);
+
 			RectangleShape.draw({
 				ctx: this.ctx,
 				shape,
 				converter,
-				config: this.config.rectangle,
+				config,
 				selected,
 				hovered,
 			});
@@ -577,11 +593,13 @@ export class ShapesLayer {
 		}
 
 		if (shape.type === "path") {
+			const config = this.getPathConfig(shape);
+
 			PathShape.draw({
 				ctx: this.ctx,
 				shape,
 				converter,
-				config: this.config.path,
+				config,
 				selected,
 				hovered,
 			});
@@ -589,23 +607,27 @@ export class ShapesLayer {
 		}
 
 		if (shape.type === "fibRetracement") {
+			const config = this.getFibRetracementConfig(shape);
+
 			FibRetracementShape.draw({
 				ctx: this.ctx,
 				shape,
 				converter,
-				config: this.config.fibRetracement,
+				config,
 				selected,
 				hovered,
 			});
 			return;
 		}
 
+		const config = this.getPositionConfig(shape);
+
 		ShortLongPosition.draw({
 			ctx: this.ctx,
 			activeSymbol: this.activeSymbol,
 			shape,
 			converter,
-			config: shape.type === "longPosition" ? this.config.longPosition : this.config.shortPosition,
+			config,
 			selected,
 			hovered,
 		});
@@ -684,26 +706,22 @@ export class ShapesLayer {
 
 	private getShapeHandles(shape: Shape, converter: ShapeCoordinateConverter): ShapeHandleHitbox[] {
 		if (shape.type === "trendline") {
-			return LineShape.getHandles(shape, converter, this.config.trendline);
+			return LineShape.getHandles(shape, converter, this.getTrendlineConfig(shape));
 		}
 
 		if (shape.type === "rectangle") {
-			return RectangleShape.getHandles(shape, converter, this.config.rectangle);
+			return RectangleShape.getHandles(shape, converter, this.getRectangleConfig(shape));
 		}
 
 		if (shape.type === "path") {
-			return PathShape.getHandles(shape, converter, this.config.path);
+			return PathShape.getHandles(shape, converter, this.getPathConfig(shape));
 		}
 
 		if (shape.type === "fibRetracement") {
-			return FibRetracementShape.getHandles(shape, converter, this.config.fibRetracement);
+			return FibRetracementShape.getHandles(shape, converter, this.getFibRetracementConfig(shape));
 		}
 
-		return ShortLongPosition.getHandles(
-			shape,
-			converter,
-			shape.type === "longPosition" ? this.config.longPosition : this.config.shortPosition,
-		);
+		return ShortLongPosition.getHandles(shape, converter, this.getPositionConfig(shape));
 	}
 
 	private findHandleAtPoint(point: ShapePoint): ShapeHandleHitbox | null {
@@ -775,7 +793,7 @@ export class ShapesLayer {
 				point,
 				shape,
 				converter,
-				config: this.config.fibRetracement,
+				config: this.getFibRetracementConfig(shape),
 			});
 		}
 
@@ -783,8 +801,110 @@ export class ShapesLayer {
 			point,
 			shape,
 			converter,
-			config: shape.type === "longPosition" ? this.config.longPosition : this.config.shortPosition,
+			config: this.getPositionConfig(shape),
 		});
+	}
+
+	private setSelectedShapeId(shapeId: string | null) {
+		if (this.selectedShapeId === shapeId) {
+			return;
+		}
+
+		this.selectedShapeId = shapeId;
+
+		if (!shapeId) {
+			this.onShapeSelected?.(null);
+			return;
+		}
+
+		const shape = this.shapes.find((candidate) => candidate.id === shapeId);
+
+		if (!shape) {
+			this.onShapeSelected?.(null);
+			return;
+		}
+
+		this.onShapeSelected?.(this.createShapeSelectedPayload(shape));
+	}
+
+	private createShapeSelectedPayload(shape: Shape): ShapeSelectedPayload {
+		if (shape.type === "trendline") {
+			return {
+				shapeId: shape.id,
+				type: shape.type,
+				config: this.getTrendlineConfig(shape),
+			};
+		}
+
+		if (shape.type === "rectangle") {
+			return {
+				shapeId: shape.id,
+				type: shape.type,
+				config: this.getRectangleConfig(shape),
+			};
+		}
+
+		if (shape.type === "path") {
+			return {
+				shapeId: shape.id,
+				type: shape.type,
+				config: this.getPathConfig(shape),
+			};
+		}
+
+		if (shape.type === "fibRetracement") {
+			return {
+				shapeId: shape.id,
+				type: shape.type,
+				config: this.getFibRetracementConfig(shape),
+			};
+		}
+
+		return {
+			shapeId: shape.id,
+			type: shape.type,
+			config: this.getPositionConfig(shape),
+		};
+	}
+
+	private getTrendlineConfig(shape: Extract<Shape, { type: "trendline" }>): ShapeConfig["trendline"] {
+		return {
+			...this.config.trendline,
+			...(shape.config ?? {}),
+		};
+	}
+
+	private getRectangleConfig(shape: Extract<Shape, { type: "rectangle" }>): ShapeConfig["rectangle"] {
+		return {
+			...this.config.rectangle,
+			...(shape.config ?? {}),
+		};
+	}
+
+	private getPathConfig(shape: Extract<Shape, { type: "path" }>): ShapeConfig["path"] {
+		return {
+			...this.config.path,
+			...(shape.config ?? {}),
+		};
+	}
+
+	private getFibRetracementConfig(shape: Extract<Shape, { type: "fibRetracement" }>): ShapeConfig["fibRetracement"] {
+		return {
+			...this.config.fibRetracement,
+			...(shape.config ?? {}),
+			levels: shape.config?.levels ?? this.config.fibRetracement.levels,
+		};
+	}
+
+	private getPositionConfig(
+		shape: Extract<Shape, { type: "shortPosition" | "longPosition" }>,
+	): ShapeConfig["shortPosition"] | ShapeConfig["longPosition"] {
+		const baseConfig = shape.type === "longPosition" ? this.config.longPosition : this.config.shortPosition;
+
+		return {
+			...baseConfig,
+			...(shape.config ?? {}),
+		};
 	}
 
 	private setActiveToolAndEmit(tool: ShapeToolType | null) {

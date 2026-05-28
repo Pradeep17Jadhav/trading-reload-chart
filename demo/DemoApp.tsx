@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useState } from "react";
-import type { Shape, ShapeToolType } from "../src/canvas/layers/ShapesLayer/ShapesLayer.types";
+import { useCallback, useEffect, useRef, useState } from "react";
+import type { Shape, ShapeSelectedPayload, ShapeToolType } from "../src/canvas/layers/ShapesLayer/ShapesLayer.types";
 import type { PastTrade } from "../src/canvas/layers/TradeLayer/TradeLayer.types";
 import type { TradeModifyPayload } from "../src/chart/ChartController.types";
 import type { Candle } from "../src/models/Candle.types";
@@ -60,6 +60,13 @@ export const DemoApp = () => {
 	const [shapes, setShapes] = useState<Shape[]>([]);
 	const [activeShapeTool, setActiveShapeTool] = useState<ShapeToolType | null>(DEMO_INITIAL_SHAPE_TOOL);
 	const [loadError, setLoadError] = useState<string | null>(null);
+	const candlesRef = useRef(candles);
+
+	candlesRef.current = candles;
+
+	const handleShapeSelected = useCallback((payload: ShapeSelectedPayload | null) => {
+		console.log("Shape selected", payload);
+	}, []);
 
 	useEffect(() => {
 		let isCancelled = false;
@@ -107,6 +114,20 @@ export const DemoApp = () => {
 			setLiveCandle(candle);
 		});
 	}, [candles.length]);
+
+	useEffect(() => {
+		if (!import.meta.hot) {
+			return;
+		}
+
+		import.meta.hot.accept("./createDemoShapes", (module) => {
+			if (!module) {
+				return;
+			}
+
+			setShapes(module.createDemoShapes(candlesRef.current));
+		});
+	}, []);
 
 	useEffect(() => {
 		window.setActiveShapeTool = (tool: ShapeToolType | null) => {
@@ -174,6 +195,7 @@ export const DemoApp = () => {
 					currentShapes.map((shape) => (shape.id === payload.shape.id ? payload.shape : shape)),
 				);
 			}}
+			onShapeSelected={handleShapeSelected}
 			onActiveShapeToolChange={setActiveShapeTool}
 			onTradeModify={handleTradeModify}
 		/>

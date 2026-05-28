@@ -10,7 +10,6 @@ export type {
 	ShapeVertex,
 } from "./canvas/layers/ShapesLayer/ShapesLayer.types";
 export type {
-	PastTrade,
 	TradeHandleType,
 	TradeProtectionHandleType,
 } from "./canvas/layers/TradeLayer/TradeLayer.types";
@@ -26,7 +25,7 @@ export type { ChartConfig, PreviousDayHighLowConfig } from "./config/chartConfig
 export type { Candle } from "./models/Candle.types";
 export type { ChartViewport } from "./models/ChartViewport.types";
 export type { Point2D } from "./models/Point.types";
-export type { BaseTrade, ClosedTrade, OpenTrade, TradeType } from "./models/Trade.types";
+export type { BaseTrade, ClosedTrade, OpenTrade, TradeDirection } from "./models/Trade.types";
 export type { VisibleRange } from "./models/VisibleRange.types";
 export { TradingReload } from "./react/TradingReload";
 export type { TradingReloadHandle, TradingReloadProps } from "./react/TradingReload.types";

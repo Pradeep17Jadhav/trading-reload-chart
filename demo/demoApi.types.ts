@@ -1,4 +1,4 @@
-import type { TradeType } from "../src/models/Trade.types";
+import type { TradeDirection } from "../src/models/Trade.types";
 
 export type TradeHistoryApiItem = {
 	commission: number;
@@ -11,7 +11,7 @@ export type TradeHistoryApiItem = {
 	swap: number;
 	symbol: string;
 	tp: number | null;
-	type: TradeType;
+	type: TradeDirection;
 	volume: number;
 };
 

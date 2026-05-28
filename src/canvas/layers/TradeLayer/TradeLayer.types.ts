@@ -7,7 +7,7 @@ import type {
 	TradeHandleStyleConfig,
 } from "../../../config/chartConfig.types";
 import type { ChartViewport } from "../../../models/ChartViewport.types";
-import type { OpenTrade, TradeType } from "../../../models/Trade.types";
+import type { ClosedTrade, OpenTrade, TradeDirection } from "../../../models/Trade.types";
 
 /**
  * Type of existing trade handle shown on open positions.
@@ -69,42 +69,6 @@ export type TemporaryTradeProtectionDrag = {
 	type: TradeProtectionHandleType;
 	price: number;
 	viewport: ChartViewport;
-};
-
-/**
- * Historical trade marker rendered on the chart after a position is closed.
- *
- * @example
- * ```ts
- * const trade: PastTrade = {
- *   symbol: "EURUSD",
- *   type: "sell",
- *   startTime: 1716796800000,
- *   closeTime: 1716800400000,
- *   openPrice: 1.089,
- *   closePrice: 1.086,
- *   volume: 1,
- *   sl: 1.091,
- *   tp: 1.086,
- *   commission: 0,
- *   swap: 0,
- *   pnl: 30,
- * };
- * ```
- */
-export type PastTrade = {
-	symbol: string;
-	type: TradeType;
-	startTime: number;
-	closeTime: number;
-	openPrice: number;
-	closePrice: number;
-	volume: number;
-	sl: number | null;
-	tp: number | null;
-	commission: number;
-	swap: number;
-	pnl: number;
 };
 
 export type TradeLayerEventsOptions = {
@@ -177,7 +141,7 @@ export type PastTradeIndicatorPoint = {
 };
 
 export type PastTradeIndicatorRenderState = {
-	trade: PastTrade;
+	trade: ClosedTrade;
 	start: PastTradeIndicatorPoint;
 	close: PastTradeIndicatorPoint;
 	arrowWidth: number;
@@ -262,7 +226,7 @@ export type DrawHandleSectionsOptions = {
 export type DrawPastTradeArrowOptions = {
 	x: number;
 	y: number;
-	type: TradeType;
+	type: TradeDirection;
 	width: number;
 	height: number;
 	config: PastTradeIndicatorArrowConfig;

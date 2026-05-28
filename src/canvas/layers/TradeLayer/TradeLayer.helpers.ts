@@ -1,5 +1,5 @@
 import { COMMODITY_PAIRS, CRYPTO_PAIRS, JPY_PAIRS } from "../../../config/pairs";
-import type { TradeType } from "../../../models/Trade.types";
+import type { TradeDirection } from "../../../models/Trade.types";
 
 export const getPipSize = (symbol: string): number => {
 	if (JPY_PAIRS.some((p) => symbol.includes(p.slice(3)))) return 0.01;
@@ -16,7 +16,7 @@ const getApproxPipValue = (symbol: string, volume: number): number => {
 };
 
 export const calculatePotentialPnlUsd = (
-	type: TradeType,
+	type: TradeDirection,
 	entryPrice: number,
 	targetPrice: number,
 	volume: number,

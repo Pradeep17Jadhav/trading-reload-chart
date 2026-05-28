@@ -5,10 +5,9 @@ import type {
 	ShapeSelectedPayload,
 	ShapeToolType,
 } from "../canvas/layers/ShapesLayer/ShapesLayer.types";
-import type { PastTrade } from "../canvas/layers/TradeLayer/TradeLayer.types";
 import type { ChartConfig } from "../config/chartConfig.types";
 import type { Candle } from "../models/Candle.types";
-import type { OpenTrade } from "../models/Trade.types";
+import type { ClosedTrade, OpenTrade } from "../models/Trade.types";
 import type { DeepPartial } from "./utils/deepPartial.types";
 
 /**
@@ -133,10 +132,10 @@ export type ChartControllerProps = {
 	 *
 	 * @example
 	 * ```ts
-	 * pastTrades: [{ symbol: "EURUSD", type: "sell", startTime: 1716796800000, closeTime: 1716800400000, openPrice: 1.089, closePrice: 1.086, volume: 1, sl: 1.091, tp: 1.086, commission: 0, swap: 0, pnl: 30 }]
+	 * pastTrades: [{ ticket: 101245, symbol: "EURUSD", type: "sell", openTime: 1716796800000, openPrice: 1.089, closeTime: 1716800400000, closePrice: 1.086, volume: 1, sl: 1.091, tp: 1.086, commission: 0, swap: 0, pnl: 30, status: "closed" }]
 	 * ```
 	 */
-	pastTrades: PastTrade[];
+	pastTrades: ClosedTrade[];
 
 	/**
 	 * Parent-owned shapes rendered and edited by the chart.

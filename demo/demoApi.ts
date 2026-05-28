@@ -1,6 +1,5 @@
-import type { PastTrade } from "../src/canvas/layers/TradeLayer/TradeLayer.types";
 import type { Candle } from "../src/models/Candle.types";
-import type { OpenTrade } from "../src/models/Trade.types";
+import type { ClosedTrade, OpenTrade } from "../src/models/Trade.types";
 import type { TradeHistoryApiItem, TradeHistoryApiResponse, TradeModifyRequest } from "./demoApi.types";
 import { DEMO_ACTIVE_SYMBOL, DEMO_BROKER_TIMEZONE_OFFSET_MS, DEMO_CANDLE_LIMIT, DEMO_TIMEFRAME } from "./demoDefaults";
 
@@ -32,22 +31,23 @@ const getFiniteNumber = (value: unknown) => {
 	return value;
 };
 
-const normalizePastTradeIndicator = (trade: TradeHistoryApiItem): PastTrade | null => {
-	const startTime = getFiniteNumber(trade.startTime);
+const normalizePastTradeIndicator = (trade: TradeHistoryApiItem): ClosedTrade | null => {
+	const openTime = getFiniteNumber(trade.startTime);
 	const closeTime = getFiniteNumber(trade.endTime);
 	const openPrice = getFiniteNumber(trade.startPrice);
 	const closePrice = getFiniteNumber(trade.endPrice);
 
-	if (startTime === null || closeTime === null || openPrice === null || closePrice === null) {
+	if (openTime === null || closeTime === null || openPrice === null || closePrice === null) {
 		return null;
 	}
 
 	return {
+		ticket: 0,
 		symbol: trade.symbol,
 		type: trade.type,
-		startTime,
-		closeTime,
+		openTime,
 		openPrice,
+		closeTime,
 		closePrice,
 		volume: trade.volume,
 		commission: trade.commission,
@@ -55,6 +55,7 @@ const normalizePastTradeIndicator = (trade: TradeHistoryApiItem): PastTrade | nu
 		pnl: trade.pnl,
 		sl: trade.sl,
 		tp: trade.tp,
+		status: "closed",
 	};
 };
 
@@ -72,7 +73,7 @@ export const fetchHistoricalCandles = async (): Promise<Candle[]> => {
 	return ((data.candles ?? []) as Candle[]).map(normalizeCandleFromApi);
 };
 
-export const fetchPastTrades = async (): Promise<PastTrade[]> => {
+export const fetchPastTrades = async (): Promise<ClosedTrade[]> => {
 	const response = await fetch(`${API_BASE_URL}/history`, {
 		cache: "no-store",
 	});
@@ -87,7 +88,7 @@ export const fetchPastTrades = async (): Promise<PastTrade[]> => {
 
 	const pastTrades = activeSymbolHistory
 		.map(normalizePastTradeIndicator)
-		.filter((trade): trade is PastTrade => trade !== null);
+		.filter((trade): trade is ClosedTrade => trade !== null);
 
 	const invalidTradeCount = activeSymbolHistory.length - pastTrades.length;
 

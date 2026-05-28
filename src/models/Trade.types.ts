@@ -3,7 +3,7 @@
  *
  * @example `"buy"`
  */
-export type TradeType = "buy" | "sell";
+export type TradeDirection = "buy" | "sell";
 
 /**
  * Shared trade fields used by open and closed trade records.
@@ -55,7 +55,7 @@ export type BaseTrade = {
 	 *
 	 * @example `"buy"`
 	 */
-	type: TradeType;
+	type: TradeDirection;
 	/** Trade open time in milliseconds UTC.
 	 *
 	 * @example `1716883200000`

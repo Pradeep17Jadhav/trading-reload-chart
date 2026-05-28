@@ -9,7 +9,7 @@ import type {
 import { normalizePrice } from "../../../helpers/math";
 import type { Candle } from "../../../models/Candle.types";
 import type { ChartViewport } from "../../../models/ChartViewport.types";
-import type { OpenTrade } from "../../../models/Trade.types";
+import type { ClosedTrade, OpenTrade } from "../../../models/Trade.types";
 import { priceToY } from "../helpers/LayerHelpers";
 import { calculatePotentialPnlUsd } from "./TradeLayer.helpers";
 import type {
@@ -26,7 +26,6 @@ import type {
 	HandleSection,
 	LineBlockedRange,
 	MissingProtectionHandleRenderState,
-	PastTrade,
 	PastTradeIndicatorRenderState,
 	TemporaryProtectionRenderState,
 	TemporaryTradeProtectionDrag,
@@ -43,7 +42,7 @@ export class TradeLayer {
 
 	isDragging: boolean;
 	trades: OpenTrade[] = [];
-	pastTrades: PastTrade[] = [];
+	pastTrades: ClosedTrade[] = [];
 	candles: Candle[] = [];
 	viewport: ChartViewport | null = null;
 	liveCandle: Candle | null = null;
@@ -67,7 +66,7 @@ export class TradeLayer {
 		this.trades = trades;
 	}
 
-	setPastTrades(pastTrades: PastTrade[]) {
+	setPastTrades(pastTrades: ClosedTrade[]) {
 		this.pastTrades = pastTrades;
 	}
 
@@ -503,12 +502,12 @@ export class TradeLayer {
 		}
 	}
 
-	private getPastTradeIndicatorRenderState(trade: PastTrade): PastTradeIndicatorRenderState | null {
+	private getPastTradeIndicatorRenderState(trade: ClosedTrade): PastTradeIndicatorRenderState | null {
 		if (!this.viewport) {
 			return null;
 		}
 
-		const startX = this.getTimeX(trade.startTime);
+		const startX = this.getTimeX(trade.openTime);
 		const closeX = this.getTimeX(trade.closeTime);
 
 		if (startX === null || closeX === null) {
@@ -526,7 +525,7 @@ export class TradeLayer {
 			start: {
 				x: startX,
 				y: startY,
-				time: trade.startTime,
+				time: trade.openTime,
 				price: trade.openPrice,
 			},
 			close: {

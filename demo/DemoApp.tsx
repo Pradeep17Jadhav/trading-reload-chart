@@ -1,9 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { Shape, ShapeSelectedPayload, ShapeToolType } from "../src/canvas/layers/ShapesLayer/ShapesLayer.types";
-import type { PastTrade } from "../src/canvas/layers/TradeLayer/TradeLayer.types";
 import type { TradeModifyPayload } from "../src/chart/ChartController.types";
 import type { Candle } from "../src/models/Candle.types";
-import type { OpenTrade } from "../src/models/Trade.types";
+import type { ClosedTrade, OpenTrade } from "../src/models/Trade.types";
 import { TradingReload } from "../src/react/TradingReload";
 import { createDemoShapes } from "./createDemoShapes";
 import {
@@ -56,7 +55,7 @@ export const DemoApp = () => {
 	const [candles, setCandles] = useState<Candle[]>([]);
 	const [liveCandle, setLiveCandle] = useState<Candle | null>(null);
 	const [openTrades, setOpenTrades] = useState<OpenTrade[]>([]);
-	const [pastTrades, setPastTrades] = useState<PastTrade[]>([]);
+	const [pastTrades, setPastTrades] = useState<ClosedTrade[]>([]);
 	const [shapes, setShapes] = useState<Shape[]>([]);
 	const [activeShapeTool, setActiveShapeTool] = useState<ShapeToolType | null>(DEMO_INITIAL_SHAPE_TOOL);
 	const [loadError, setLoadError] = useState<string | null>(null);

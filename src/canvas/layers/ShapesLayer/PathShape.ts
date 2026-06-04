@@ -28,8 +28,6 @@ export class PathShape {
 		handleBorderColor: "#2962ff",
 		handleBorderThickness: 1.5,
 		handleRadius: 5,
-		hoverLineWidth: 3,
-		selectedLineWidth: 3,
 	};
 
 	static draw({
@@ -55,7 +53,7 @@ export class PathShape {
 
 		ctx.save();
 
-		applyStrokeStyle(ctx, config, selected ? config.selectedLineWidth : hovered ? config.hoverLineWidth : undefined);
+		applyStrokeStyle(ctx, config);
 
 		ctx.beginPath();
 		ctx.moveTo(points[0].x, points[0].y);
@@ -74,11 +72,7 @@ export class PathShape {
 				endPoint: points[points.length - 1],
 				color: config.lineColor,
 				opacity: config.lineOpacity,
-				lineWidth: selected
-					? (config.selectedLineWidth ?? config.lineWidth)
-					: hovered
-						? (config.hoverLineWidth ?? config.lineWidth)
-						: config.lineWidth,
+				lineWidth: config.lineWidth,
 			});
 		}
 

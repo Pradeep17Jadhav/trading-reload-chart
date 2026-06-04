@@ -68,8 +68,6 @@ export class FibRetracementShape {
 		handleBorderColor: "#2962ff",
 		handleBorderThickness: 1.5,
 		handleRadius: 5,
-		hoverLineWidth: 2,
-		selectedLineWidth: 2,
 	};
 
 	static draw({
@@ -103,11 +101,7 @@ export class FibRetracementShape {
 		for (const levelConfig of config.levels) {
 			const price = getFibLevelPrice(startVertex.price, endVertex.price, levelConfig.level);
 			const y = converter.getYForPrice(price);
-			const lineWidth = selected
-				? Math.max(levelConfig.lineWidth, config.selectedLineWidth)
-				: hovered
-					? Math.max(levelConfig.lineWidth, config.hoverLineWidth)
-					: levelConfig.lineWidth;
+			const lineWidth = levelConfig.lineWidth;
 
 			ctx.beginPath();
 			ctx.strokeStyle = withOpacity(levelConfig.color, levelConfig.opacity);

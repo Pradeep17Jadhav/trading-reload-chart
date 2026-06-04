@@ -41,8 +41,6 @@ export class ShortLongPosition {
 		handleBorderColor: "#2962ff",
 		handleBorderThickness: 1.5,
 		handleRadius: 5,
-		hoverLineWidth: 2,
-		selectedLineWidth: 2,
 	};
 
 	static defaultShortConfig: PositionShapeConfig = {
@@ -76,11 +74,7 @@ export class ShortLongPosition {
 		ctx.fillStyle = withOpacity(config.lossFillColor, config.lossFillOpacity);
 		ctx.fillRect(geometry.lossBox.left, geometry.lossBox.top, geometry.lossBox.width, geometry.lossBox.height);
 
-		const borderWidth = selected
-			? Math.max(config.borderWidth, config.selectedLineWidth)
-			: hovered
-				? Math.max(config.borderWidth, config.hoverLineWidth)
-				: config.borderWidth;
+		const borderWidth = config.borderWidth;
 
 		ctx.strokeStyle = withOpacity(config.borderColor, config.borderOpacity);
 		ctx.lineWidth = borderWidth;

@@ -30,8 +30,6 @@ const commonPositionConfig: Partial<PositionShapeConfig> = {
 	handleBorderColor: SHAPE_COLORS.handleBorder,
 	handleBorderThickness: 1.5,
 	handleRadius: 5,
-	hoverLineWidth: 2,
-	selectedLineWidth: 2,
 };
 
 export const CHART_SHAPE_CONFIG: PartialShapeConfig = {
@@ -45,8 +43,6 @@ export const CHART_SHAPE_CONFIG: PartialShapeConfig = {
 		handleColor: SHAPE_COLORS.handleFill,
 		handleBorderColor: SHAPE_COLORS.handleBorder,
 		handleRadius: 5,
-		hoverLineWidth: 1,
-		selectedLineWidth: 1.1,
 	},
 
 	rectangle: {
@@ -59,8 +55,6 @@ export const CHART_SHAPE_CONFIG: PartialShapeConfig = {
 		handleColor: SHAPE_COLORS.handleFill,
 		handleBorderColor: SHAPE_COLORS.handleBorder,
 		handleRadius: 5,
-		hoverLineWidth: 1,
-		selectedLineWidth: 1.1,
 		textColor: COLORS.white,
 		textOpacity: 1,
 		textFontFamily: "Arial",
@@ -77,8 +71,6 @@ export const CHART_SHAPE_CONFIG: PartialShapeConfig = {
 		handleColor: SHAPE_COLORS.handleFill,
 		handleBorderColor: SHAPE_COLORS.handleBorder,
 		handleRadius: 5,
-		hoverLineWidth: 1,
-		selectedLineWidth: 1.1,
 	},
 
 	fibRetracement: {
@@ -129,8 +121,6 @@ export const CHART_SHAPE_CONFIG: PartialShapeConfig = {
 		handleColor: SHAPE_COLORS.handleFill,
 		handleBorderColor: SHAPE_COLORS.handleBorder,
 		handleRadius: 5,
-		hoverLineWidth: 1,
-		selectedLineWidth: 1,
 	},
 
 	longPosition: { ...commonPositionConfig },

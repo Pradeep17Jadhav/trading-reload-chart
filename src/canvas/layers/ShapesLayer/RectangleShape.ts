@@ -29,8 +29,6 @@ export class RectangleShape {
 		handleBorderColor: "#2962ff",
 		handleBorderThickness: 1.5,
 		handleRadius: 5,
-		hoverLineWidth: 3,
-		selectedLineWidth: 3,
 		textColor: "#ffffff",
 		textOpacity: 1,
 		textFontFamily: "Arial",
@@ -61,7 +59,7 @@ export class RectangleShape {
 			ctx.fillRect(box.left, box.top, box.width, box.height);
 		}
 
-		applyStrokeStyle(ctx, config, selected ? config.selectedLineWidth : hovered ? config.hoverLineWidth : undefined);
+		applyStrokeStyle(ctx, config);
 
 		ctx.strokeRect(box.left, box.top, box.width, box.height);
 		resetCanvasLineDash(ctx);

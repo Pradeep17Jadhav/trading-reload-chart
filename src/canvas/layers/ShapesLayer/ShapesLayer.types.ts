@@ -111,8 +111,6 @@ export type CommonShapeConfig = {
 	handleBorderColor: string;
 	handleBorderThickness: number;
 	handleRadius: number;
-	hoverLineWidth?: number;
-	selectedLineWidth?: number;
 };
 
 export type RectangleShapeConfig = CommonShapeConfig & {
@@ -141,8 +139,6 @@ export type FibRetracementConfig = {
 	handleBorderColor: string;
 	handleBorderThickness: number;
 	handleRadius: number;
-	hoverLineWidth: number;
-	selectedLineWidth: number;
 };
 
 export type PositionShapeConfig = {
@@ -165,8 +161,6 @@ export type PositionShapeConfig = {
 	handleBorderColor: string;
 	handleBorderThickness: number;
 	handleRadius: number;
-	hoverLineWidth: number;
-	selectedLineWidth: number;
 };
 
 /**
@@ -333,9 +327,9 @@ export type Shape = TrendlineShape | RectangleShapeData | PathShapeData | FibRet
  *   trendline: { lineWidth: 2, lineColor: "#4ade80", lineOpacity: 1, lineStyle: "solid", handleColor: "#fff", handleBorderColor: "#111827", handleBorderThickness: 1, handleRadius: 4 },
  *   rectangle: { lineWidth: 2, lineColor: "#60a5fa", lineOpacity: 1, lineStyle: "solid", handleColor: "#fff", handleBorderColor: "#111827", handleBorderThickness: 1, handleRadius: 4, textColor: "#fff", textOpacity: 1, textFontFamily: "Arial", textFontSize: 12 },
  *   path: { lineWidth: 2, lineColor: "#f59e0b", lineOpacity: 1, lineStyle: "solid", handleColor: "#fff", handleBorderColor: "#111827", handleBorderThickness: 1, handleRadius: 4 },
- *   fibRetracement: { levels: [], handleColor: "#fff", handleBorderColor: "#111827", handleBorderThickness: 1, handleRadius: 4, hoverLineWidth: 3, selectedLineWidth: 3 },
- *   shortPosition: { defaultWidthCandles: 20, defaultStopLossPercent: 0.25, defaultRiskRewardRatio: 2, profitFillColor: "#16a34a", profitFillOpacity: 0.2, lossFillColor: "#dc2626", lossFillOpacity: 0.2, borderColor: "#fff", borderOpacity: 1, borderWidth: 1, borderStyle: "solid", midLineColor: "#fff", midLineOpacity: 0.8, midLineWidth: 1, midLineStyle: "dashed", handleColor: "#fff", handleBorderColor: "#111827", handleBorderThickness: 1, handleRadius: 4, hoverLineWidth: 2, selectedLineWidth: 2 },
- *   longPosition: { defaultWidthCandles: 20, defaultStopLossPercent: 0.25, defaultRiskRewardRatio: 2, profitFillColor: "#16a34a", profitFillOpacity: 0.2, lossFillColor: "#dc2626", lossFillOpacity: 0.2, borderColor: "#fff", borderOpacity: 1, borderWidth: 1, borderStyle: "solid", midLineColor: "#fff", midLineOpacity: 0.8, midLineWidth: 1, midLineStyle: "dashed", handleColor: "#fff", handleBorderColor: "#111827", handleBorderThickness: 1, handleRadius: 4, hoverLineWidth: 2, selectedLineWidth: 2 },
+ *   fibRetracement: { levels: [], handleColor: "#fff", handleBorderColor: "#111827", handleBorderThickness: 1, handleRadius: 4 },
+ *   shortPosition: { defaultWidthCandles: 20, defaultStopLossPercent: 0.25, defaultRiskRewardRatio: 2, profitFillColor: "#16a34a", profitFillOpacity: 0.2, lossFillColor: "#dc2626", lossFillOpacity: 0.2, borderColor: "#fff", borderOpacity: 1, borderWidth: 1, borderStyle: "solid", midLineColor: "#fff", midLineOpacity: 0.8, midLineWidth: 1, midLineStyle: "dashed", handleColor: "#fff", handleBorderColor: "#111827", handleBorderThickness: 1, handleRadius: 4 },
+ *   longPosition: { defaultWidthCandles: 20, defaultStopLossPercent: 0.25, defaultRiskRewardRatio: 2, profitFillColor: "#16a34a", profitFillOpacity: 0.2, lossFillColor: "#dc2626", lossFillOpacity: 0.2, borderColor: "#fff", borderOpacity: 1, borderWidth: 1, borderStyle: "solid", midLineColor: "#fff", midLineOpacity: 0.8, midLineWidth: 1, midLineStyle: "dashed", handleColor: "#fff", handleBorderColor: "#111827", handleBorderThickness: 1, handleRadius: 4 },
  * };
  * ```
  */

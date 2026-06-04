@@ -25,8 +25,6 @@ export class LineShape {
 		handleBorderColor: "#2962ff",
 		handleBorderThickness: 1.5,
 		handleRadius: 5,
-		hoverLineWidth: 3,
-		selectedLineWidth: 3,
 	};
 
 	static draw({
@@ -50,7 +48,7 @@ export class LineShape {
 
 		ctx.save();
 
-		applyStrokeStyle(ctx, config, selected ? config.selectedLineWidth : hovered ? config.hoverLineWidth : undefined);
+		applyStrokeStyle(ctx, config);
 
 		ctx.beginPath();
 		ctx.moveTo(startPoint.x, startPoint.y);

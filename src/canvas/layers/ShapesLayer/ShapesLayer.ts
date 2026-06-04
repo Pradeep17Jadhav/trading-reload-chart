@@ -183,7 +183,45 @@ export class ShapesLayer {
 			return true;
 		}
 
+		if (this.selectedShapeId && !this.draft && !this.activeTool) {
+			const isArrowKey = event.key === "ArrowLeft" || event.key === "ArrowRight" || event.key === "ArrowUp" || event.key === "ArrowDown";
+
+			if (isArrowKey) {
+				const shape = this.shapes.find((s) => s.id === this.selectedShapeId);
+
+				if (shape) {
+					const delta = this.getArrowKeyDelta(event.key);
+					const updatedShape = this.moveShape(shape, delta);
+					this.emitShapeModified(updatedShape);
+					return true;
+				}
+			}
+		}
+
 		return false;
+	}
+
+	private getArrowKeyDelta(key: string): ShapeVertex {
+		const timeStep = getAverageCandleTimeStep(this.candles);
+
+		if (key === "ArrowLeft") {
+			return { time: -timeStep, price: 0 };
+		}
+
+		if (key === "ArrowRight") {
+			return { time: timeStep, price: 0 };
+		}
+
+		// Convert a fixed pixel step to price. priceRange / canvas.height gives price-per-pixel;
+		// up on screen means higher price (positive delta), down means lower price (negative delta).
+		const PIXEL_STEP = 10;
+		const priceStep = this.viewport ? (this.viewport.priceRange / this.canvas.height) * PIXEL_STEP : 0;
+
+		if (key === "ArrowUp") {
+			return { time: 0, price: priceStep };
+		}
+
+		return { time: 0, price: -priceStep };
 	}
 
 	private handlePointerDown(event: PointerEvent | MouseEvent): boolean {

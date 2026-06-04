@@ -49,9 +49,12 @@ export class ShapesLayer {
 
 	private draft: ActiveShapeDraft | null = null;
 	private dragState: InternalDragState | null = null;
+	private lastTapTime = 0;
+	private lastTapShapeId: string | null = null;
 	private onShapeAdded?: (payload: ShapeAddedPayload) => void;
 	private onShapeModified?: (payload: ShapeModifiedPayload) => void;
 	private onShapeSelected?: (payload: ShapeSelectedPayload | null) => void;
+	private onShapeDoubleClicked?: (payload: ShapeSelectedPayload) => void;
 	private onToolChange?: (tool: ShapeToolType | null) => void;
 
 	constructor(options: ShapesLayerOptions) {
@@ -72,6 +75,7 @@ export class ShapesLayer {
 		this.onShapeAdded = options.onShapeAdded;
 		this.onShapeModified = options.onShapeModified;
 		this.onShapeSelected = options.onShapeSelected;
+		this.onShapeDoubleClicked = options.onShapeDoubleClicked;
 		this.onToolChange = options.onToolChange;
 	}
 
@@ -155,6 +159,10 @@ export class ShapesLayer {
 			return this.handlePointerUp();
 		}
 
+		if (event.type === "dblclick") {
+			return this.handleDoubleClick(event);
+		}
+
 		return false;
 	}
 
@@ -210,6 +218,7 @@ export class ShapesLayer {
 			}
 
 			this.setSelectedShapeId(shape.id);
+			this.checkTouchDoubleTap(shape, event);
 			this.dragState = {
 				edit: {
 					mode: "resize",
@@ -237,6 +246,7 @@ export class ShapesLayer {
 
 			if (handleOnHitShape) {
 				this.setSelectedShapeId(hitShape.id);
+				this.checkTouchDoubleTap(hitShape, event);
 				this.dragState = {
 					edit: {
 						mode: "resize",
@@ -254,6 +264,7 @@ export class ShapesLayer {
 			}
 
 			this.setSelectedShapeId(hitShape.id);
+			this.checkTouchDoubleTap(hitShape, event);
 			this.hoveredShapeId = hitShape.id;
 			this.dragState = {
 				edit: {
@@ -335,6 +346,43 @@ export class ShapesLayer {
 		this.emitShapeModified(modifiedShape);
 
 		return true;
+	}
+
+	private handleDoubleClick(event: MouseEvent): boolean {
+		if (!this.onShapeDoubleClicked) {
+			return false;
+		}
+
+		const point = getCanvasPoint(this.canvas, event);
+		const hitShape = this.findShapeAtPoint(point);
+
+		if (!hitShape) {
+			return false;
+		}
+
+		this.onShapeDoubleClicked(this.createShapeSelectedPayload(hitShape));
+
+		return true;
+	}
+
+	/**
+	 * Tracks touch taps and fires `onShapeDoubleClicked` on a double-tap.
+	 * Only runs for touch pointer events; mouse/stylus use the `dblclick` DOM
+	 * event path instead to avoid firing twice.
+	 */
+	private checkTouchDoubleTap(shape: Shape, event: PointerEvent | MouseEvent): void {
+		if (!(event instanceof PointerEvent) || event.pointerType !== "touch") {
+			return;
+		}
+
+		const now = Date.now();
+
+		if (shape.id === this.lastTapShapeId && now - this.lastTapTime < 300) {
+			this.onShapeDoubleClicked?.(this.createShapeSelectedPayload(shape));
+		}
+
+		this.lastTapTime = now;
+		this.lastTapShapeId = shape.id;
 	}
 
 	private handleContextMenu(): boolean {

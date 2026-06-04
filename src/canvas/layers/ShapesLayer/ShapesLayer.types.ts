@@ -521,6 +521,7 @@ export type ShapesLayerOptions = {
 	onShapeAdded?: (payload: ShapeAddedPayload) => void;
 	onShapeModified?: (payload: ShapeModifiedPayload) => void;
 	onShapeSelected?: (payload: ShapeSelectedPayload | null) => void;
+	onShapeDoubleClicked?: (payload: ShapeSelectedPayload) => void;
 	onToolChange?: (tool: ShapeToolType | null) => void;
 };
 

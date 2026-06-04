@@ -220,6 +220,19 @@ export type ChartControllerProps = {
 	onShapeSelected?: (payload: ShapeSelectedPayload | null) => void;
 
 	/**
+	 * Called when the user double-clicks on a shape.
+	 *
+	 * Fires with the same payload as {@link onShapeSelected} but only on a
+	 * double-click gesture. Does not affect shape selection state.
+	 *
+	 * @example
+	 * ```ts
+	 * onShapeDoubleClicked: (payload) => openShapeEditor(payload.shapeId)
+	 * ```
+	 */
+	onShapeDoubleClicked?: (payload: ShapeSelectedPayload) => void;
+
+	/**
 	 * Called when the chart wants the parent to change the active drawing tool.
 	 *
 	 * The chart sends `null` after a completed draw or Escape/cancel path.

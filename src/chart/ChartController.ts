@@ -185,6 +185,9 @@ export class ChartController {
 			onShapeSelected: (payload) => {
 				this.#props.onShapeSelected?.(payload);
 			},
+			onShapeDoubleClicked: (payload) => {
+				this.#props.onShapeDoubleClicked?.(payload);
+			},
 			onToolChange: (tool) => {
 				this.#props.onActiveShapeToolChange?.(tool);
 			},
@@ -246,6 +249,7 @@ export class ChartController {
 		target.addEventListener("pointerenter", (event) => this.#handlePointerEnter(event), { signal });
 		target.addEventListener("pointerleave", () => this.#handlePointerLeave(), { signal });
 		target.addEventListener("contextmenu", (event) => this.#handleContextMenu(event), { signal });
+		target.addEventListener("dblclick", (event) => this.#handleDoubleClick(event), { signal });
 		target.addEventListener("wheel", (event) => this.#handleWheel(event), { passive: false, signal });
 		this.#dom.axisYCanvas.addEventListener("wheel", (event) => this.#handleAxisYWheel(event), {
 			passive: false,
@@ -650,6 +654,10 @@ export class ChartController {
 			event.stopPropagation();
 			this.#renderAllLayers();
 		}
+	}
+
+	#handleDoubleClick(event: MouseEvent) {
+		this.#shapesLayer?.handlePointerEvent(event);
 	}
 
 	#handleKeyDown(event: KeyboardEvent) {

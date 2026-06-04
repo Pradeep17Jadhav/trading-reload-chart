@@ -18,7 +18,7 @@ For architecture, conventions, and agent guidelines, see [AGENTS.md](./AGENTS.md
 
 ## Quick start (local development)
 
-1. **Clone and install**
+### 1. Clone and install
 
 ```bash
 git clone <repository-url>
@@ -26,7 +26,9 @@ cd trading-reload-chart
 npm install
 ```
 
-2. **Run the demo** (hot reload, port **8999** by default)
+### 2. Run the demo
+
+Hot reload, port **8999** by default.
 
 ```bash
 npm run dev
@@ -34,12 +36,12 @@ npm run dev
 
 Open the URL Vite prints (typically `http://localhost:8999`). The demo mounts `TradingReload` with sample API/WebSocket wiring in `demo/`.
 
-3. **Optional checks**
+### 3. Optional checks
 
 ```bash
-npm run typecheck   # TypeScript
-npm run lint        # Biome
-npm run format      # Biome format
+npm run typecheck
+npm run lint
+npm run format
 ```
 
 ---
@@ -75,16 +77,111 @@ npm run preview
 
 ---
 
+## Publishing to npm
+
+### 1. Login to npm
+
+```bash
+npm login
+```
+
+Verify the active account:
+
+```bash
+npm whoami
+```
+
+The username should match the npm account that owns the package scope.
+
+### 2. Authenticate in your browser
+
+If npm prompts for browser-based authentication:
+
+1. Open the URL shown in the terminal.
+2. Sign in to npm.
+3. Complete the verification flow.
+4. Return to the terminal.
+
+Verify authentication:
+
+```bash
+npm whoami
+```
+
+### 3. Build the package
+
+```bash
+npm run build
+```
+
+### 4. Verify package contents
+
+```bash
+npm pack --dry-run
+```
+
+Ensure only the intended files are included.
+
+### 5. Publish
+
+For a public scoped package:
+
+```bash
+npm publish --access public
+```
+
+### Publishing a new version
+
+Update the version:
+
+```bash
+npm version patch
+```
+
+or
+
+```bash
+npm version minor
+```
+
+or
+
+```bash
+npm version major
+```
+
+Then publish:
+
+```bash
+npm publish --access public
+```
+
+### Useful commands
+
+Check the currently authenticated npm user:
+
+```bash
+npm whoami
+```
+
+View package information:
+
+```bash
+npm view @pradeepjadhav/trading-reload-chart
+```
+
+---
+
 ## Using the library in React / Next.js
 
 The chart is **client-only** (canvas + DOM). It does **not** support SSR.
 
 ### 1. Install the package
 
-**From npm** (after publish):
+**From npm**:
 
 ```bash
-npm install trading-reload-chart react react-dom
+npm install @pradeepjadhav/trading-reload-chart react react-dom
 ```
 
 **Directly from GitHub**:
@@ -99,6 +196,7 @@ npm install git+https://github.com/Pradeep17Jadhav/trading-reload-chart.git#main
 # In trading-reload-chart repo
 npm run build
 npm pack
+
 # In your app
 npm install /path/to/trading-reload-chart/trading-reload-chart-1.0.0.tgz
 ```
@@ -107,7 +205,7 @@ Or link during development:
 
 ```bash
 cd trading-reload-chart && npm run build && npm link
-cd your-app && npm link trading-reload-chart
+cd your-app && npm link @pradeepjadhav/trading-reload-chart
 ```
 
 ### 2. Next.js App Router
@@ -124,7 +222,7 @@ import {
   type Shape,
   type ShapeToolType,
   type OpenTrade,
-} from "trading-reload-chart";
+} from "@pradeepjadhav/trading-reload-chart";
 
 export function ChartPanel() {
   const [candles, setCandles] = useState<Candle[]>([]);
@@ -151,15 +249,17 @@ export function ChartPanel() {
 }
 ```
 
-- Give the parent a **defined height** (flex child, `h-full`, or fixed `min-height`). `TradingReload` fills **100%** of that container.
+- Give the parent a **defined height** (flex child, `h-full`, or fixed `min-height`).
+- `TradingReload` fills **100%** of that container.
 - Do **not** import chart CSS manually; styles ship with the component (`src/styles/chart.css`).
 
 ### 3. Vite / Create React App
 
-Same import; wrap the chart in a sized container:
-
 ```tsx
-import { TradingReload, type Candle } from "trading-reload-chart";
+import {
+  TradingReload,
+  type Candle,
+} from "@pradeepjadhav/trading-reload-chart";
 
 export function App() {
   return (
@@ -188,9 +288,23 @@ Import from the package root:
 | `ChartConfig`, `CHART_CONFIG`, `DeepPartial` | Configuration        |
 | `ClosedTradeIndicator`, trade handle types   | Trade overlay types  |
 
-Controlled props (parent owns state): `candles`, `liveCandle`, `openTrades`, `closedTrades`, `shapes`, `activeShapeTool`, `config`, `activeSymbol`.
+Controlled props (parent owns state):
 
-Callbacks: `onShapeAdded`, `onShapeModified`, `onActiveShapeToolChange`, `onTradeModify`.
+- `candles`
+- `liveCandle`
+- `openTrades`
+- `closedTrades`
+- `shapes`
+- `activeShapeTool`
+- `config`
+- `activeSymbol`
+
+Callbacks:
+
+- `onShapeAdded`
+- `onShapeModified`
+- `onActiveShapeToolChange`
+- `onTradeModify`
 
 See [AGENTS.md](./AGENTS.md) for the full props contract.
 
@@ -213,10 +327,10 @@ trading-reload-chart/
 │   └── styles/           # chart.css
 ├── dist/                 # Library build output
 ├── AGENTS.md
-└── vite.config.ts        # `dev` = demo; `build --mode library` = package
+└── vite.config.ts        # dev = demo; build --mode library = package
 ```
 
-Type declarations live in **`*.types.ts`** files next to implementation code (see AGENTS.md).
+Type declarations live in `*.types.ts` files next to implementation code (see AGENTS.md).
 
 ---
 
@@ -251,6 +365,6 @@ Modern evergreen browsers with Canvas 2D (Chrome, Edge, Firefox, Safari).
 
 ## License
 
-Commercial, proprietary license. Use of this library requires a paid license,
-subscription, or other written authorization from Pradeep Jadhav. See
-[LICENSE](./LICENSE).
+Commercial, proprietary license. Use of this library requires a paid license, subscription, or other written authorization from Pradeep Jadhav.
+
+See [LICENSE](./LICENSE).

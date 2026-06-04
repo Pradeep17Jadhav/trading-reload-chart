@@ -9,6 +9,7 @@ import {
 	vertexToPoint,
 	withOpacity,
 } from "./ShapesLayer.helpers";
+import { SHAPE_HANDLE_CONFIG } from "./ShapesLayer.constants";
 import type {
 	FibRetracementConfig,
 	FibRetracementShapeData,
@@ -64,10 +65,6 @@ export class FibRetracementShape {
 		],
 		fillColor: "#808080",
 		fillOpacity: 0.04,
-		handleColor: "#ffffff",
-		handleBorderColor: "#2962ff",
-		handleBorderThickness: 1.5,
-		handleRadius: 5,
 	};
 
 	static draw({
@@ -123,10 +120,10 @@ export class FibRetracementShape {
 		resetCanvasLineDash(ctx);
 
 		if (selected || hovered) {
-			drawHandles(ctx, FibRetracementShape.getHandles(shape, converter, config), {
-				fillColor: config.handleColor,
-				borderColor: config.handleBorderColor,
-				borderThickness: config.handleBorderThickness,
+			drawHandles(ctx, FibRetracementShape.getHandles(shape, converter), {
+				fillColor: SHAPE_HANDLE_CONFIG.handleColor,
+				borderColor: SHAPE_HANDLE_CONFIG.handleBorderColor,
+				borderThickness: SHAPE_HANDLE_CONFIG.handleBorderThickness,
 			});
 		}
 
@@ -157,11 +154,7 @@ export class FibRetracementShape {
 		});
 	}
 
-	static getHandles(
-		shape: FibRetracementShapeData,
-		converter: ShapeCoordinateConverter,
-		config: FibRetracementConfig = FibRetracementShape.defaultConfig,
-	): ShapeHandleHitbox[] {
+	static getHandles(shape: FibRetracementShapeData, converter: ShapeCoordinateConverter): ShapeHandleHitbox[] {
 		const [startVertex, endVertex] = shape.vertices;
 		const startPoint = vertexToPoint(startVertex, converter);
 		const endPoint = vertexToPoint(endVertex, converter);
@@ -171,14 +164,14 @@ export class FibRetracementShape {
 				shapeId: shape.id,
 				type: "start",
 				point: startPoint,
-				radius: config.handleRadius,
+				radius: SHAPE_HANDLE_CONFIG.handleRadius,
 				cursor: "grab",
 			}),
 			createHandleHitbox({
 				shapeId: shape.id,
 				type: "end",
 				point: endPoint,
-				radius: config.handleRadius,
+				radius: SHAPE_HANDLE_CONFIG.handleRadius,
 				cursor: "grab",
 			}),
 		];

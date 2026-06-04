@@ -7,6 +7,7 @@ import {
 	vertexToPoint,
 	withOpacity,
 } from "./ShapesLayer.helpers";
+import { SHAPE_HANDLE_CONFIG } from "./ShapesLayer.constants";
 import type {
 	PathShapeData,
 	ShapeCoordinateConverter,
@@ -24,10 +25,6 @@ export class PathShape {
 		lineStyle: "solid",
 		fillColor: "#2962ff",
 		fillOpacity: 0,
-		handleColor: "#ffffff",
-		handleBorderColor: "#2962ff",
-		handleBorderThickness: 1.5,
-		handleRadius: 5,
 	};
 
 	static draw({
@@ -77,10 +74,10 @@ export class PathShape {
 		}
 
 		if (selected || hovered) {
-			drawHandles(ctx, PathShape.getHandles(shape, converter, config), {
-				fillColor: config.handleColor,
-				borderColor: config.handleBorderColor,
-				borderThickness: config.handleBorderThickness,
+			drawHandles(ctx, PathShape.getHandles(shape, converter), {
+				fillColor: SHAPE_HANDLE_CONFIG.handleColor,
+				borderColor: SHAPE_HANDLE_CONFIG.handleBorderColor,
+				borderThickness: SHAPE_HANDLE_CONFIG.handleBorderThickness,
 			});
 		}
 
@@ -115,17 +112,13 @@ export class PathShape {
 		});
 	}
 
-	static getHandles(
-		shape: PathShapeData,
-		converter: ShapeCoordinateConverter,
-		config: CommonShapeConfig = PathShape.defaultConfig,
-	): ShapeHandleHitbox[] {
+	static getHandles(shape: PathShapeData, converter: ShapeCoordinateConverter): ShapeHandleHitbox[] {
 		return shape.vertices.map((vertex, index) =>
 			createHandleHitbox({
 				shapeId: shape.id,
 				type: index === 0 ? "start" : index === shape.vertices.length - 1 ? "end" : "move",
 				point: vertexToPoint(vertex, converter),
-				radius: config.handleRadius,
+				radius: SHAPE_HANDLE_CONFIG.handleRadius,
 				cursor: "grab",
 				index,
 			}),

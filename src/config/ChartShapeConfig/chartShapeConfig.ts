@@ -6,8 +6,6 @@ const SHAPE_COLORS = {
 	gray: "#808080",
 	orange: "#ff9500",
 	purple: "#af52de",
-	handleBorder: COLORS.blue,
-	handleFill: COLORS.background,
 } as const;
 
 const commonPositionConfig: Partial<PositionShapeConfig> = {
@@ -26,10 +24,6 @@ const commonPositionConfig: Partial<PositionShapeConfig> = {
 	midLineOpacity: 0.9,
 	midLineWidth: 0.5,
 	midLineStyle: "solid" as const,
-	handleColor: SHAPE_COLORS.handleFill,
-	handleBorderColor: SHAPE_COLORS.handleBorder,
-	handleBorderThickness: 1.5,
-	handleRadius: 5,
 };
 
 export const CHART_SHAPE_CONFIG: PartialShapeConfig = {
@@ -40,9 +34,6 @@ export const CHART_SHAPE_CONFIG: PartialShapeConfig = {
 		lineStyle: "solid",
 		fillColor: SHAPE_COLORS.blue,
 		fillOpacity: 0,
-		handleColor: SHAPE_COLORS.handleFill,
-		handleBorderColor: SHAPE_COLORS.handleBorder,
-		handleRadius: 5,
 	},
 
 	rectangle: {
@@ -52,9 +43,6 @@ export const CHART_SHAPE_CONFIG: PartialShapeConfig = {
 		lineStyle: "solid",
 		fillColor: SHAPE_COLORS.purple,
 		fillOpacity: 0.06,
-		handleColor: SHAPE_COLORS.handleFill,
-		handleBorderColor: SHAPE_COLORS.handleBorder,
-		handleRadius: 5,
 		textColor: COLORS.white,
 		textOpacity: 1,
 		textFontFamily: "Arial",
@@ -68,9 +56,6 @@ export const CHART_SHAPE_CONFIG: PartialShapeConfig = {
 		lineStyle: "solid",
 		fillColor: SHAPE_COLORS.yellow,
 		fillOpacity: 0,
-		handleColor: SHAPE_COLORS.handleFill,
-		handleBorderColor: SHAPE_COLORS.handleBorder,
-		handleRadius: 5,
 	},
 
 	fibRetracement: {
@@ -118,9 +103,6 @@ export const CHART_SHAPE_CONFIG: PartialShapeConfig = {
 		],
 		fillColor: SHAPE_COLORS.gray,
 		fillOpacity: 0,
-		handleColor: SHAPE_COLORS.handleFill,
-		handleBorderColor: SHAPE_COLORS.handleBorder,
-		handleRadius: 5,
 	},
 
 	longPosition: { ...commonPositionConfig },

@@ -754,22 +754,22 @@ export class ShapesLayer {
 
 	private getShapeHandles(shape: Shape, converter: ShapeCoordinateConverter): ShapeHandleHitbox[] {
 		if (shape.type === "trendline") {
-			return LineShape.getHandles(shape, converter, this.getTrendlineConfig(shape));
+			return LineShape.getHandles(shape, converter);
 		}
 
 		if (shape.type === "rectangle") {
-			return RectangleShape.getHandles(shape, converter, this.getRectangleConfig(shape));
+			return RectangleShape.getHandles(shape, converter);
 		}
 
 		if (shape.type === "path") {
-			return PathShape.getHandles(shape, converter, this.getPathConfig(shape));
+			return PathShape.getHandles(shape, converter);
 		}
 
 		if (shape.type === "fibRetracement") {
-			return FibRetracementShape.getHandles(shape, converter, this.getFibRetracementConfig(shape));
+			return FibRetracementShape.getHandles(shape, converter);
 		}
 
-		return ShortLongPosition.getHandles(shape, converter, this.getPositionConfig(shape));
+		return ShortLongPosition.getHandles(shape, converter);
 	}
 
 	private findHandleAtPoint(point: ShapePoint): ShapeHandleHitbox | null {
@@ -849,7 +849,6 @@ export class ShapesLayer {
 			point,
 			shape,
 			converter,
-			config: this.getPositionConfig(shape),
 		});
 	}
 

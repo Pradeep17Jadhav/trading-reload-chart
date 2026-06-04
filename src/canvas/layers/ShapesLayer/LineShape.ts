@@ -6,6 +6,7 @@ import {
 	resetCanvasLineDash,
 	vertexToPoint,
 } from "./ShapesLayer.helpers";
+import { SHAPE_HANDLE_CONFIG } from "./ShapesLayer.constants";
 import type {
 	ShapeCoordinateConverter,
 	CommonShapeConfig,
@@ -21,10 +22,6 @@ export class LineShape {
 		lineColor: "#2962ff",
 		lineOpacity: 1,
 		lineStyle: "solid",
-		handleColor: "#ffffff",
-		handleBorderColor: "#2962ff",
-		handleBorderThickness: 1.5,
-		handleRadius: 5,
 	};
 
 	static draw({
@@ -58,10 +55,10 @@ export class LineShape {
 		resetCanvasLineDash(ctx);
 
 		if (selected || hovered) {
-			drawHandles(ctx, LineShape.getHandles(shape, converter, config), {
-				fillColor: config.handleColor,
-				borderColor: config.handleBorderColor,
-				borderThickness: config.handleBorderThickness,
+			drawHandles(ctx, LineShape.getHandles(shape, converter), {
+				fillColor: SHAPE_HANDLE_CONFIG.handleColor,
+				borderColor: SHAPE_HANDLE_CONFIG.handleBorderColor,
+				borderThickness: SHAPE_HANDLE_CONFIG.handleBorderThickness,
 			});
 		}
 
@@ -92,11 +89,7 @@ export class LineShape {
 		});
 	}
 
-	static getHandles(
-		shape: TrendlineShape,
-		converter: ShapeCoordinateConverter,
-		config: CommonShapeConfig = LineShape.defaultConfig,
-	): ShapeHandleHitbox[] {
+	static getHandles(shape: TrendlineShape, converter: ShapeCoordinateConverter): ShapeHandleHitbox[] {
 		const [startVertex, endVertex] = shape.vertices;
 		const startPoint = vertexToPoint(startVertex, converter);
 		const endPoint = vertexToPoint(endVertex, converter);
@@ -106,14 +99,14 @@ export class LineShape {
 				shapeId: shape.id,
 				type: "start",
 				point: startPoint,
-				radius: config.handleRadius,
+				radius: SHAPE_HANDLE_CONFIG.handleRadius,
 				cursor: "grab",
 			}),
 			createHandleHitbox({
 				shapeId: shape.id,
 				type: "end",
 				point: endPoint,
-				radius: config.handleRadius,
+				radius: SHAPE_HANDLE_CONFIG.handleRadius,
 				cursor: "grab",
 			}),
 		];

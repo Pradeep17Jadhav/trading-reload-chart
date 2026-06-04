@@ -93,10 +93,6 @@ export type ShapeLineStyle = "solid" | "dashed" | "dotted";
  *   lineColor: "#4ade80",
  *   lineOpacity: 1,
  *   lineStyle: "solid",
- *   handleColor: "#ffffff",
- *   handleBorderColor: "#111827",
- *   handleBorderThickness: 1,
- *   handleRadius: 4,
  * };
  * ```
  */
@@ -107,10 +103,6 @@ export type CommonShapeConfig = {
 	lineStyle: ShapeLineStyle;
 	fillColor?: string;
 	fillOpacity?: number;
-	handleColor: string;
-	handleBorderColor: string;
-	handleBorderThickness: number;
-	handleRadius: number;
 };
 
 export type RectangleShapeConfig = CommonShapeConfig & {
@@ -135,10 +127,6 @@ export type FibRetracementConfig = {
 	levels: FibLevelConfig[];
 	fillColor?: string;
 	fillOpacity?: number;
-	handleColor: string;
-	handleBorderColor: string;
-	handleBorderThickness: number;
-	handleRadius: number;
 };
 
 export type PositionShapeConfig = {
@@ -157,10 +145,6 @@ export type PositionShapeConfig = {
 	midLineOpacity: number;
 	midLineWidth: number;
 	midLineStyle: ShapeLineStyle;
-	handleColor: string;
-	handleBorderColor: string;
-	handleBorderThickness: number;
-	handleRadius: number;
 };
 
 /**
@@ -324,12 +308,12 @@ export type Shape = TrendlineShape | RectangleShapeData | PathShapeData | FibRet
  * @example
  * ```ts
  * const config: ShapeConfig = {
- *   trendline: { lineWidth: 2, lineColor: "#4ade80", lineOpacity: 1, lineStyle: "solid", handleColor: "#fff", handleBorderColor: "#111827", handleBorderThickness: 1, handleRadius: 4 },
- *   rectangle: { lineWidth: 2, lineColor: "#60a5fa", lineOpacity: 1, lineStyle: "solid", handleColor: "#fff", handleBorderColor: "#111827", handleBorderThickness: 1, handleRadius: 4, textColor: "#fff", textOpacity: 1, textFontFamily: "Arial", textFontSize: 12 },
- *   path: { lineWidth: 2, lineColor: "#f59e0b", lineOpacity: 1, lineStyle: "solid", handleColor: "#fff", handleBorderColor: "#111827", handleBorderThickness: 1, handleRadius: 4 },
- *   fibRetracement: { levels: [], handleColor: "#fff", handleBorderColor: "#111827", handleBorderThickness: 1, handleRadius: 4 },
- *   shortPosition: { defaultWidthCandles: 20, defaultStopLossPercent: 0.25, defaultRiskRewardRatio: 2, profitFillColor: "#16a34a", profitFillOpacity: 0.2, lossFillColor: "#dc2626", lossFillOpacity: 0.2, borderColor: "#fff", borderOpacity: 1, borderWidth: 1, borderStyle: "solid", midLineColor: "#fff", midLineOpacity: 0.8, midLineWidth: 1, midLineStyle: "dashed", handleColor: "#fff", handleBorderColor: "#111827", handleBorderThickness: 1, handleRadius: 4 },
- *   longPosition: { defaultWidthCandles: 20, defaultStopLossPercent: 0.25, defaultRiskRewardRatio: 2, profitFillColor: "#16a34a", profitFillOpacity: 0.2, lossFillColor: "#dc2626", lossFillOpacity: 0.2, borderColor: "#fff", borderOpacity: 1, borderWidth: 1, borderStyle: "solid", midLineColor: "#fff", midLineOpacity: 0.8, midLineWidth: 1, midLineStyle: "dashed", handleColor: "#fff", handleBorderColor: "#111827", handleBorderThickness: 1, handleRadius: 4 },
+ *   trendline: { lineWidth: 2, lineColor: "#4ade80", lineOpacity: 1, lineStyle: "solid" },
+ *   rectangle: { lineWidth: 2, lineColor: "#60a5fa", lineOpacity: 1, lineStyle: "solid", textColor: "#fff", textOpacity: 1, textFontFamily: "Arial", textFontSize: 12 },
+ *   path: { lineWidth: 2, lineColor: "#f59e0b", lineOpacity: 1, lineStyle: "solid" },
+ *   fibRetracement: { levels: [] },
+ *   shortPosition: { defaultWidthCandles: 20, defaultStopLossPercent: 0.25, defaultRiskRewardRatio: 2, profitFillColor: "#16a34a", profitFillOpacity: 0.2, lossFillColor: "#dc2626", lossFillOpacity: 0.2, borderColor: "#fff", borderOpacity: 1, borderWidth: 1, borderStyle: "solid", midLineColor: "#fff", midLineOpacity: 0.8, midLineWidth: 1, midLineStyle: "dashed" },
+ *   longPosition: { defaultWidthCandles: 20, defaultStopLossPercent: 0.25, defaultRiskRewardRatio: 2, profitFillColor: "#16a34a", profitFillOpacity: 0.2, lossFillColor: "#dc2626", lossFillOpacity: 0.2, borderColor: "#fff", borderOpacity: 1, borderWidth: 1, borderStyle: "solid", midLineColor: "#fff", midLineOpacity: 0.8, midLineWidth: 1, midLineStyle: "dashed" },
  * };
  * ```
  */

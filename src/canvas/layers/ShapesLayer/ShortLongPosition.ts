@@ -9,6 +9,7 @@ import {
 	vertexToPoint,
 	withOpacity,
 } from "./ShapesLayer.helpers";
+import { SHAPE_HANDLE_CONFIG } from "./ShapesLayer.constants";
 import type {
 	PositionShapeConfig,
 	PositionShapeData,
@@ -37,10 +38,6 @@ export class ShortLongPosition {
 		midLineOpacity: 0.9,
 		midLineWidth: 1,
 		midLineStyle: "dashed",
-		handleColor: "#ffffff",
-		handleBorderColor: "#2962ff",
-		handleBorderThickness: 1.5,
-		handleRadius: 5,
 	};
 
 	static defaultShortConfig: PositionShapeConfig = {
@@ -100,10 +97,10 @@ export class ShortLongPosition {
 		});
 
 		if (selected || hovered) {
-			drawHandles(ctx, ShortLongPosition.getHandles(shape, converter, config), {
-				fillColor: config.handleColor,
-				borderColor: config.handleBorderColor,
-				borderThickness: config.handleBorderThickness,
+			drawHandles(ctx, ShortLongPosition.getHandles(shape, converter), {
+				fillColor: SHAPE_HANDLE_CONFIG.handleColor,
+				borderColor: SHAPE_HANDLE_CONFIG.handleBorderColor,
+				borderThickness: SHAPE_HANDLE_CONFIG.handleBorderThickness,
 			});
 		}
 
@@ -194,14 +191,7 @@ export class ShortLongPosition {
 		};
 	}
 
-	static getHandles(
-		shape: PositionShapeData,
-		converter: ShapeCoordinateConverter,
-		config?: PositionShapeConfig,
-	): ShapeHandleHitbox[] {
-		const resolvedConfig =
-			config ??
-			(shape.type === "longPosition" ? ShortLongPosition.defaultLongConfig : ShortLongPosition.defaultShortConfig);
+	static getHandles(shape: PositionShapeData, converter: ShapeCoordinateConverter): ShapeHandleHitbox[] {
 		const geometry = ShortLongPosition.getGeometry(shape, converter);
 
 		return [
@@ -212,7 +202,7 @@ export class ShortLongPosition {
 					x: geometry.box.left,
 					y: geometry.box.top,
 				},
-				radius: resolvedConfig.handleRadius,
+				radius: SHAPE_HANDLE_CONFIG.handleRadius,
 				cursor: "ns-resize",
 			}),
 			createHandleHitbox({
@@ -222,7 +212,7 @@ export class ShortLongPosition {
 					x: geometry.box.left,
 					y: geometry.box.bottom,
 				},
-				radius: resolvedConfig.handleRadius,
+				radius: SHAPE_HANDLE_CONFIG.handleRadius,
 				cursor: "ns-resize",
 			}),
 			createHandleHitbox({
@@ -232,7 +222,7 @@ export class ShortLongPosition {
 					x: geometry.entryPoint.x,
 					y: geometry.entryY,
 				},
-				radius: resolvedConfig.handleRadius,
+				radius: SHAPE_HANDLE_CONFIG.handleRadius,
 				cursor: "ns-resize",
 			}),
 			createHandleHitbox({
@@ -242,7 +232,7 @@ export class ShortLongPosition {
 					x: geometry.endX,
 					y: geometry.entryY,
 				},
-				radius: resolvedConfig.handleRadius,
+				radius: SHAPE_HANDLE_CONFIG.handleRadius,
 				cursor: "ew-resize",
 			}),
 		];
@@ -252,14 +242,12 @@ export class ShortLongPosition {
 		point,
 		shape,
 		converter,
-		config,
 	}: {
 		point: ShapePoint;
 		shape: PositionShapeData;
 		converter: ShapeCoordinateConverter;
-		config?: PositionShapeConfig;
 	}) {
-		const handles = ShortLongPosition.getHandles(shape, converter, config);
+		const handles = ShortLongPosition.getHandles(shape, converter);
 
 		if (handles.some((handle) => isPointInsideHandle(point, handle))) {
 			return true;

@@ -562,6 +562,10 @@ export class ChartController {
 	}
 
 	#handlePointerDown(event: PointerEvent) {
+		if (!this.#isShapeToolActive() && this.#tradeLayerEvents?.handlePointerEvent(event)) {
+			return;
+		}
+
 		const shapeEventHandled = this.#shapesLayer?.handlePointerEvent(event) ?? false;
 
 		if (shapeEventHandled) {
@@ -570,10 +574,6 @@ export class ChartController {
 		}
 
 		if (this.#isShapeToolActive()) {
-			return;
-		}
-
-		if (this.#tradeLayerEvents?.handlePointerEvent(event)) {
 			return;
 		}
 

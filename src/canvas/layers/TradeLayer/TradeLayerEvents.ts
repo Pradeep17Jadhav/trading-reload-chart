@@ -362,13 +362,11 @@ export class TradeLayerEvents {
 
 	private handleCloseButtonHover(event: PointerEvent | WheelEvent | MouseEvent, hitbox: TradeHandleHitbox) {
 		document.body.style.cursor = "pointer";
-
-		if (event.type !== "pointerdown") {
-			return hitbox.type !== "startPrice";
-		}
-
-		this.handleCloseButtonClick(hitbox);
 		this.consumeEvent(event);
+
+		if (event.type === "pointerdown") {
+			this.handleCloseButtonClick(hitbox);
+		}
 
 		return true;
 	}
@@ -454,9 +452,7 @@ export class TradeLayerEvents {
 
 		// stopLoss — trailing SL may go above openPrice (buy) / below openPrice (sell),
 		// but must not cross the current market price.
-		return isBuy
-			? normalizePrice(Math.min(price, currentPrice))
-			: normalizePrice(Math.max(price, currentPrice));
+		return isBuy ? normalizePrice(Math.min(price, currentPrice)) : normalizePrice(Math.max(price, currentPrice));
 	}
 
 	/**
@@ -484,9 +480,7 @@ export class TradeLayerEvents {
 				: normalizePrice(Math.min(price, openPrice, currentPrice));
 		}
 
-		return isBuy
-			? normalizePrice(Math.min(price, currentPrice))
-			: normalizePrice(Math.max(price, currentPrice));
+		return isBuy ? normalizePrice(Math.min(price, currentPrice)) : normalizePrice(Math.max(price, currentPrice));
 	}
 
 	private isBuyTrade(hitbox: TradeHandleHitbox) {

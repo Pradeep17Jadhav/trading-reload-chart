@@ -639,7 +639,7 @@ export class ChartController {
 			return;
 		}
 
-		const zoomDelta = (axis === "x" ? movement : -movement) / AXIS_DRAG_ZOOM_PIXELS;
+		const zoomDelta = -movement / AXIS_DRAG_ZOOM_PIXELS;
 		if (axis === "x") {
 			this.#candleLayer.zoomHorizontally(zoomDelta);
 		} else {

@@ -19,6 +19,14 @@ import { getCanvasPoint } from "./utils/getCanvasPoint";
 import { mergeChartConfig } from "./utils/mergeChartConfig";
 import { normalizeCandleTime } from "./utils/normalizeCandleTime";
 
+type AxisDrag = {
+	axis: "x" | "y";
+	lastClientPosition: number;
+	pointerId: number;
+};
+
+const AXIS_DRAG_ZOOM_PIXELS = 12;
+
 export class ChartController {
 	readonly #container: HTMLElement;
 
@@ -55,6 +63,8 @@ export class ChartController {
 	#lastMouseX = 0;
 
 	#lastMouseY = 0;
+
+	#axisDrag: AxisDrag | null = null;
 
 	#dragTradePreview: TradeModifyPayload | null = null;
 
@@ -136,6 +146,7 @@ export class ChartController {
 		this.#axisLayerX = null;
 		this.#axisLayerY = null;
 		this.#crosshairLayer = null;
+		this.#axisDrag = null;
 		this.#initialized = false;
 	}
 
@@ -251,6 +262,32 @@ export class ChartController {
 		target.addEventListener("contextmenu", (event) => this.#handleContextMenu(event), { signal });
 		target.addEventListener("dblclick", (event) => this.#handleDoubleClick(event), { signal });
 		target.addEventListener("wheel", (event) => this.#handleWheel(event), { passive: false, signal });
+		this.#dom.axisXCanvas.addEventListener("pointerenter", (event) => this.#handleAxisPointerEnter(event), {
+			signal,
+		});
+		this.#dom.axisXCanvas.addEventListener("pointerdown", (event) => this.#handleAxisPointerDown(event, "x"), {
+			signal,
+		});
+		this.#dom.axisXCanvas.addEventListener("pointermove", (event) => this.#handleAxisPointerMove(event), {
+			signal,
+		});
+		this.#dom.axisXCanvas.addEventListener("pointerup", (event) => this.#handleAxisPointerUp(event), { signal });
+		this.#dom.axisXCanvas.addEventListener("pointercancel", (event) => this.#handleAxisPointerUp(event), {
+			signal,
+		});
+		this.#dom.axisYCanvas.addEventListener("pointerenter", (event) => this.#handleAxisPointerEnter(event), {
+			signal,
+		});
+		this.#dom.axisYCanvas.addEventListener("pointerdown", (event) => this.#handleAxisPointerDown(event, "y"), {
+			signal,
+		});
+		this.#dom.axisYCanvas.addEventListener("pointermove", (event) => this.#handleAxisPointerMove(event), {
+			signal,
+		});
+		this.#dom.axisYCanvas.addEventListener("pointerup", (event) => this.#handleAxisPointerUp(event), { signal });
+		this.#dom.axisYCanvas.addEventListener("pointercancel", (event) => this.#handleAxisPointerUp(event), {
+			signal,
+		});
 		this.#dom.axisYCanvas.addEventListener("wheel", (event) => this.#handleAxisYWheel(event), {
 			passive: false,
 			signal,
@@ -559,6 +596,74 @@ export class ChartController {
 		const zoomDelta = event.deltaY < 0 ? 1 : -1;
 		this.#candleLayer.zoomVertically(zoomDelta);
 		this.#renderAllLayers();
+	}
+
+	#handleAxisPointerEnter(event: PointerEvent) {
+		const canvas = event.currentTarget as HTMLCanvasElement;
+		canvas.style.cursor = canvas === this.#dom?.axisXCanvas ? "ew-resize" : "ns-resize";
+	}
+
+	#handleAxisPointerDown(event: PointerEvent, axis: AxisDrag["axis"]) {
+		event.stopPropagation();
+
+		if (event.button !== 0) {
+			return;
+		}
+
+		const canvas = event.currentTarget as HTMLCanvasElement;
+		canvas.setPointerCapture(event.pointerId);
+		this.#axisDrag = {
+			axis,
+			lastClientPosition: axis === "x" ? event.clientX : event.clientY,
+			pointerId: event.pointerId,
+		};
+		event.preventDefault();
+	}
+
+	#handleAxisPointerMove(event: PointerEvent) {
+		event.stopPropagation();
+
+		const canvas = event.currentTarget as HTMLCanvasElement;
+		const axis = canvas === this.#dom?.axisXCanvas ? "x" : "y";
+		canvas.style.cursor = axis === "x" ? "ew-resize" : "ns-resize";
+
+		if (!this.#axisDrag || this.#axisDrag.pointerId !== event.pointerId || this.#axisDrag.axis !== axis) {
+			return;
+		}
+
+		const clientPosition = axis === "x" ? event.clientX : event.clientY;
+		const movement = clientPosition - this.#axisDrag.lastClientPosition;
+		this.#axisDrag.lastClientPosition = clientPosition;
+
+		if (!this.#candleLayer || movement === 0) {
+			return;
+		}
+
+		const zoomDelta = (axis === "x" ? movement : -movement) / AXIS_DRAG_ZOOM_PIXELS;
+		if (axis === "x") {
+			this.#candleLayer.zoomHorizontally(zoomDelta);
+		} else {
+			this.#candleLayer.zoomVertically(zoomDelta);
+		}
+
+		event.preventDefault();
+		this.#renderAllLayers();
+	}
+
+	#handleAxisPointerUp(event: PointerEvent) {
+		event.stopPropagation();
+
+		if (this.#axisDrag?.pointerId !== event.pointerId) {
+			return;
+		}
+
+		const canvas = event.currentTarget as HTMLCanvasElement;
+		if (canvas.hasPointerCapture(event.pointerId)) {
+			canvas.releasePointerCapture(event.pointerId);
+		}
+
+		this.#axisDrag = null;
+		event.preventDefault();
 	}
 
 	#handlePointerDown(event: PointerEvent) {

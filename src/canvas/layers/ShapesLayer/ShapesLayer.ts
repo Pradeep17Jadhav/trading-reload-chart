@@ -55,6 +55,7 @@ export class ShapesLayer {
 	private onShapeModified?: (payload: ShapeModifiedPayload) => void;
 	private onShapeSelected?: (payload: ShapeSelectedPayload | null) => void;
 	private onShapeDoubleClicked?: (payload: ShapeSelectedPayload) => void;
+	private onShapeDeleteRequested?: (shapeId: string) => void;
 	private onToolChange?: (tool: ShapeToolType | null) => void;
 
 	constructor(options: ShapesLayerOptions) {
@@ -76,6 +77,7 @@ export class ShapesLayer {
 		this.onShapeModified = options.onShapeModified;
 		this.onShapeSelected = options.onShapeSelected;
 		this.onShapeDoubleClicked = options.onShapeDoubleClicked;
+		this.onShapeDeleteRequested = options.onShapeDeleteRequested;
 		this.onToolChange = options.onToolChange;
 	}
 
@@ -180,6 +182,16 @@ export class ShapesLayer {
 
 		if (event.key === "Escape" && this.selectedShapeId) {
 			this.setSelectedShapeId(null);
+			return true;
+		}
+
+		if (
+			(event.key === "Delete" || event.key === "Backspace") &&
+			this.selectedShapeId &&
+			!this.draft &&
+			this.onShapeDeleteRequested
+		) {
+			this.onShapeDeleteRequested(this.selectedShapeId);
 			return true;
 		}
 

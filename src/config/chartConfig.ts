@@ -312,8 +312,8 @@ export const CHART_CONFIG: ChartConfig = {
 
 		arrow: {
 			visible: true,
-			width: 60,
-			height: 30,
+			width: 20,
+			height: 10,
 			headHeightRatio: 0.45,
 			shaftWidthRatio: 6,
 			buyColor: COLORS.green,

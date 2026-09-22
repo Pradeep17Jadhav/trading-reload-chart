@@ -199,6 +199,9 @@ export class ChartController {
 			onShapeDoubleClicked: (payload) => {
 				this.#props.onShapeDoubleClicked?.(payload);
 			},
+			onShapeDeleteRequested: (shapeId) => {
+				this.#props.onShapeDeleteRequested?.(shapeId);
+			},
 			onToolChange: (tool) => {
 				this.#props.onActiveShapeToolChange?.(tool);
 			},
@@ -766,11 +769,24 @@ export class ChartController {
 	}
 
 	#handleKeyDown(event: KeyboardEvent) {
+		if (this.#isEditableKeyboardTarget(event.target)) {
+			return;
+		}
+
 		const shapeEventHandled = this.#shapesLayer?.handleKeyboardEvent(event) ?? false;
 
 		if (shapeEventHandled) {
 			event.preventDefault();
 			this.#renderAllLayers();
 		}
+	}
+
+	#isEditableKeyboardTarget(target: EventTarget | null) {
+		return (
+			target instanceof HTMLInputElement ||
+			target instanceof HTMLTextAreaElement ||
+			target instanceof HTMLSelectElement ||
+			(target instanceof HTMLElement && target.isContentEditable)
+		);
 	}
 }

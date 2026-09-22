@@ -233,6 +233,18 @@ export type ChartControllerProps = {
 	onShapeDoubleClicked?: (payload: ShapeSelectedPayload) => void;
 
 	/**
+	 * Called when the user presses Delete (or Backspace) while a shape is selected.
+	 *
+	 * The parent owns the shape list and must remove the requested shape.
+	 *
+	 * @example
+	 * ```ts
+	 * onShapeDeleteRequested: (shapeId) => removeShape(shapeId)
+	 * ```
+	 */
+	onShapeDeleteRequested?: (shapeId: string) => void;
+
+	/**
 	 * Called when the chart wants the parent to change the active drawing tool.
 	 *
 	 * The chart sends `null` after a completed draw or Escape/cancel path.

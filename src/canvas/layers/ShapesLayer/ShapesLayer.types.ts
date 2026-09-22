@@ -500,6 +500,7 @@ export type ShapesLayerOptions = {
 	onShapeModified?: (payload: ShapeModifiedPayload) => void;
 	onShapeSelected?: (payload: ShapeSelectedPayload | null) => void;
 	onShapeDoubleClicked?: (payload: ShapeSelectedPayload) => void;
+	onShapeDeleteRequested?: (shapeId: ShapeId) => void;
 	onToolChange?: (tool: ShapeToolType | null) => void;
 };
 

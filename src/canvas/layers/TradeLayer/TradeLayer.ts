@@ -603,30 +603,29 @@ export class TradeLayer {
 		 * - tail extends above price point
 		 */
 		const tailDirection = isBuy ? 1 : -1;
-
-		const tipX = x;
-		const tipY = y;
-
-		const tailX = x;
-		const tailY = y + tailDirection * height;
-
-		const headLength = height / 2;
-		const headOffsetX = headLength / Math.SQRT2;
-		const headOffsetY = headLength / Math.SQRT2;
-
-		const leftHeadX = tipX - headOffsetX;
-		const rightHeadX = tipX + headOffsetX;
-		const headBaseY = tipY + tailDirection * headOffsetY;
-
-		const innerLineWidth = Math.max(1, config.shaftWidthRatio);
+		const innerLineWidth = Math.max(1, width / config.shaftWidthRatio);
 		const outerLineWidth = innerLineWidth + config.borderWidth * 2;
+
+		/**
+		 * Offset the path point by half the outside stroke width so the visible
+		 * tip, including its border, lands exactly on the execution price.
+		 */
+		const tipX = x;
+		const tipY = y + tailDirection * (outerLineWidth / 2);
+		const tailX = x;
+		const tailY = tipY + tailDirection * height;
+		const headHeight = height * config.headHeightRatio;
+		const headHalfWidth = width / 2;
+		const leftHeadX = tipX - headHalfWidth;
+		const rightHeadX = tipX + headHalfWidth;
+		const headBaseY = tipY + tailDirection * headHeight;
 
 		const drawArrowPath = () => {
 			ctx.beginPath();
 
-			// Shaft: tail -> tip
+			// Shaft: tail -> head base. The head itself owns the execution-price tip.
 			ctx.moveTo(tailX, tailY);
-			ctx.lineTo(tipX, tipY);
+			ctx.lineTo(tipX, headBaseY);
 
 			// Left head line: tip -> base
 			ctx.moveTo(tipX, tipY);

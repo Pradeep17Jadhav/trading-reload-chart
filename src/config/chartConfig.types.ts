@@ -400,8 +400,8 @@ export type TradeHandlesConfig = {
  * ```ts
  * const arrow: ClosedTradeIndicatorArrowConfig = {
  *   visible: true,
- *   width: 60,
- *   height: 30,
+ *   width: 20,
+ *   height: 10,
  *   headHeightRatio: 0.45,
  *   shaftWidthRatio: 6,
  *   buyColor: "#22c55e",
@@ -434,7 +434,7 @@ export type ClosedTradeIndicatorArrowConfig = {
  * ```ts
  * const closedTrades: ClosedTradeIndicatorsConfig = {
  *   visible: true,
- *   arrow: { visible: true, width: 60, height: 30, headHeightRatio: 0.45, shaftWidthRatio: 6, buyColor: "#22c55e", sellColor: "#ef4444", buyBorderColor: "#ffffff", sellBorderColor: "#ffffff", borderWidth: 1, opacity: 1 },
+ *   arrow: { visible: true, width: 20, height: 10, headHeightRatio: 0.45, shaftWidthRatio: 6, buyColor: "#22c55e", sellColor: "#ef4444", buyBorderColor: "#ffffff", sellBorderColor: "#ffffff", borderWidth: 1, opacity: 1 },
  *   connectorLine: { width: 1, color: "#ffffff", opacity: 0.65, style: "dotted", dash: [2, 4] },
  * };
  * ```
@@ -651,7 +651,7 @@ export type PreviousDayHighLowConfig = {
  *   volume: { visible: true, bullishColor: "#22c55e", bearishColor: "#ef4444", opacity: 0.35, height: 200, bottomOffset: 0, minBarHeight: 1 },
  *   crosshair: { color: "rgba(255,255,255,0.35)", thickness: 1, style: "dashed" },
  *   tradeHandles: {} as TradeHandlesConfig,
- *   closedTradeIndicators: { visible: true, arrow: { visible: true, width: 60, height: 30, headHeightRatio: 0.45, shaftWidthRatio: 6, buyColor: "#22c55e", sellColor: "#ef4444", buyBorderColor: "#ffffff", sellBorderColor: "#ffffff", borderWidth: 1, opacity: 1 }, connectorLine: { width: 1, color: "#ffffff", opacity: 0.65, style: "dotted", dash: [2, 4] } },
+ *   closedTradeIndicators: { visible: true, arrow: { visible: true, width: 20, height: 10, headHeightRatio: 0.45, shaftWidthRatio: 6, buyColor: "#22c55e", sellColor: "#ef4444", buyBorderColor: "#ffffff", sellBorderColor: "#ffffff", borderWidth: 1, opacity: 1 }, connectorLine: { width: 1, color: "#ffffff", opacity: 0.65, style: "dotted", dash: [2, 4] } },
  *   colors: { bullish: "#22c55e", bearish: "#ef4444", background: "#0b1220" },
  *   axis: { axisX: { height: 30, backgroundColor: "#0b1220", borderColor: "#1f2937", borderWidth: 1, textColor: "#cbd5e1", font: "12px Arial", textAlign: "center", tickColor: "#334155", tickWidth: 1, tickLength: 4, labelOffsetY: 16, minLabelGap: 16, crosshairLabel: { backgroundColor: "#111827", borderColor: "#111827", borderWidth: 1, textColor: "#ffffff", font: "12px Arial", paddingX: 8, height: 26 } }, axisY: { width: 80, backgroundColor: "#0b1220", borderColor: "#1f2937", borderWidth: 1, textColor: "#cbd5e1", font: "12px Arial", textAlign: "left", tickCount: 12, tickColor: "#334155", tickWidth: 1, tickLength: 4, tickGap: 64, labelOffsetX: 8, crosshairLabel: { backgroundColor: "#111827", borderColor: "#111827", borderWidth: 1, textColor: "#ffffff", font: "12px Arial", paddingX: 8, height: 20 } } },
  *   shapes: { trendline: { lineColor: "#22c55e" } },

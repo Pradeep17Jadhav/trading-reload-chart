@@ -11,6 +11,7 @@ import { TradeLayerEvents } from "../canvas/layers/TradeLayer/TradeLayerEvents";
 import { VolumeLayer } from "../canvas/layers/VolumeLayer/VolumeLayer";
 import type { ChartConfig } from "../config/chartConfig.types";
 import type { Candle } from "../models/Candle.types";
+import type { ChartCursorState, ChartViewState } from "../models/ChartSync.types";
 import type { OpenTrade } from "../models/Trade.types";
 import type { ChartControllerProps, TradeModifyPayload } from "./ChartController.types";
 import { createChartDom } from "./createChartDom";
@@ -72,6 +73,14 @@ export class ChartController {
 
 	#abortController: AbortController | null = null;
 
+	#isApplyingExternalView = false;
+
+	#isApplyingExternalCursor = false;
+
+	#lastViewState: ChartViewState | null = null;
+
+	#lastCursorState: ChartCursorState | null = null;
+
 	constructor(container: HTMLElement, props: ChartControllerProps) {
 		this.#container = container;
 		this.#props = props;
@@ -123,11 +132,69 @@ export class ChartController {
 
 		this.#applyLiveCandleUpdate();
 		this.#renderAllLayers();
+		this.#notifyViewChange();
 	}
 
 	resetChartView() {
 		this.#candleLayer?.resetView();
 		this.#renderAllLayers();
+		this.#notifyViewChange();
+	}
+
+	setView(view: ChartViewState) {
+		if (!this.#candleLayer) {
+			return;
+		}
+
+		this.#isApplyingExternalView = true;
+		this.#candleLayer.setViewState(view);
+		this.#isApplyingExternalView = false;
+		this.#lastViewState = this.#candleLayer.getViewState();
+		this.#renderAllLayers();
+	}
+
+	getView(): ChartViewState | null {
+		return this.#candleLayer?.getViewState() ?? null;
+	}
+
+	setCursor(cursor: ChartCursorState | null) {
+		if (!cursor) {
+			this.#isApplyingExternalCursor = true;
+			this.#hideCrosshairAndAxisLabels();
+			this.#isApplyingExternalCursor = false;
+			this.#lastCursorState = null;
+			return;
+		}
+
+		if (!this.#candleLayer || !this.#crosshairLayer || !this.#dom) {
+			return;
+		}
+
+		const point = this.#candleLayer.setCursorState(cursor);
+		if (!point) {
+			return;
+		}
+
+		this.#isApplyingExternalCursor = true;
+		this.#crosshairLayer.setPosition(point.x, point.y);
+		this.#axisLayerX?.setCrosshair({
+			visible: true,
+			x: point.x,
+			candle: point.candle,
+		});
+		this.#axisLayerY?.setCrosshair({
+			visible: true,
+			y: point.y,
+			price: cursor.price,
+		});
+		this.#renderAxisLayers();
+		this.#crosshairLayer.render();
+		this.#isApplyingExternalCursor = false;
+		this.#lastCursorState = { ...cursor, time: point.candle.time };
+	}
+
+	hideCursor() {
+		this.setCursor(null);
 	}
 
 	destroy() {
@@ -302,6 +369,7 @@ export class ChartController {
 		this.#resizeObserver = new ResizeObserver(() => {
 			this.#resizeCanvases();
 			this.#renderAllLayers();
+			this.#notifyViewChange();
 		});
 		this.#resizeObserver.observe(this.#container);
 	}
@@ -402,6 +470,58 @@ export class ChartController {
 
 	#isShapeToolActive() {
 		return this.#props.activeShapeTool !== null;
+	}
+
+	#notifyViewChange() {
+		if (this.#isApplyingExternalView) {
+			return;
+		}
+
+		const nextView = this.#candleLayer?.getViewState() ?? null;
+		if (!nextView || this.#areViewsEqual(this.#lastViewState, nextView)) {
+			return;
+		}
+
+		this.#lastViewState = nextView;
+		this.#props.onViewChange?.(nextView);
+	}
+
+	#notifyCursorMove(cursor: ChartCursorState | null) {
+		if (this.#isApplyingExternalCursor) {
+			return;
+		}
+
+		if (!cursor) {
+			if (this.#lastCursorState === null) {
+				return;
+			}
+
+			this.#lastCursorState = null;
+			this.#props.onCursorMove?.(null);
+			return;
+		}
+
+		const isSameAsLast =
+			this.#lastCursorState !== null &&
+			this.#lastCursorState.time === cursor.time &&
+			this.#lastCursorState.price === cursor.price;
+
+		if (isSameAsLast) {
+			return;
+		}
+
+		this.#lastCursorState = cursor;
+		this.#props.onCursorMove?.(cursor);
+	}
+
+	#areViewsEqual(first: ChartViewState | null, second: ChartViewState) {
+		return (
+			first !== null &&
+			Math.abs(first.rightmostVisibleTime - second.rightmostVisibleTime) < 0.5 &&
+			Math.abs(first.rightmostVisibleX - second.rightmostVisibleX) < 0.0001 &&
+			Math.abs(first.rightEdgeTime - second.rightEdgeTime) < 0.5 &&
+			Math.abs(first.visibleDurationMs - second.visibleDurationMs) < 0.5
+		);
 	}
 
 	#applyActiveShapeTool(tool: ShapeToolType | null) {
@@ -522,15 +642,15 @@ export class ChartController {
 		this.#tradeLayer?.render();
 	}
 
-	#updateCrosshairAndAxisLabels(event: PointerEvent | MouseEvent) {
+	#updateCrosshairAndAxisLabels(event: PointerEvent | MouseEvent): ChartCursorState | null {
 		if (!this.#crosshairLayer || !this.#dom) {
-			return;
+			return null;
 		}
 
 		if (!this.#candleLayer) {
 			this.#crosshairLayer.updateMousePosition(event.clientX, event.clientY);
 			this.#crosshairLayer.render();
-			return;
+			return null;
 		}
 
 		const pointer = getCanvasPoint(this.#dom.overlayCanvas, event);
@@ -556,6 +676,8 @@ export class ChartController {
 
 		this.#renderAxisLayers();
 		this.#crosshairLayer.render();
+
+		return nearestCandle ? { time: nearestCandle.time, price: crosshairPrice } : null;
 	}
 
 	#hideCrosshairAndAxisLabels() {
@@ -586,6 +708,7 @@ export class ChartController {
 		}
 
 		this.#renderAllLayers();
+		this.#notifyViewChange();
 	}
 
 	#handleAxisYWheel(event: WheelEvent) {
@@ -599,6 +722,7 @@ export class ChartController {
 		const zoomDelta = event.deltaY < 0 ? 1 : -1;
 		this.#candleLayer.zoomVertically(zoomDelta);
 		this.#renderAllLayers();
+		this.#notifyViewChange();
 	}
 
 	#handleAxisPointerEnter(event: PointerEvent) {
@@ -651,6 +775,7 @@ export class ChartController {
 
 		event.preventDefault();
 		this.#renderAllLayers();
+		this.#notifyViewChange();
 	}
 
 	#handleAxisPointerUp(event: PointerEvent) {
@@ -697,15 +822,17 @@ export class ChartController {
 			this.#tradeLayerEvents?.handlePointerEvent(event);
 		}
 
-		this.#updateCrosshairAndAxisLabels(event);
+		let cursor = this.#updateCrosshairAndAxisLabels(event);
 
 		if (shapeEventHandled) {
 			this.#renderAllLayers();
-			this.#updateCrosshairAndAxisLabels(event);
+			cursor = this.#updateCrosshairAndAxisLabels(event);
+			this.#notifyCursorMove(cursor);
 			return;
 		}
 
 		if (!this.#isPanning || !this.#candleLayer || this.#isShapeToolActive()) {
+			this.#notifyCursorMove(cursor);
 			return;
 		}
 
@@ -719,7 +846,9 @@ export class ChartController {
 		this.#candleLayer.panVertically(deltaY);
 
 		this.#renderAllLayers();
-		this.#updateCrosshairAndAxisLabels(event);
+		cursor = this.#updateCrosshairAndAxisLabels(event);
+		this.#notifyCursorMove(cursor);
+		this.#notifyViewChange();
 	}
 
 	#handlePointerUp(event: PointerEvent) {
@@ -729,12 +858,15 @@ export class ChartController {
 
 		if (shapeEventHandled) {
 			this.#renderAllLayers();
+			this.#notifyViewChange();
 			return;
 		}
 
 		if (!this.#isShapeToolActive()) {
 			this.#tradeLayerEvents?.handlePointerEvent(event);
 		}
+
+		this.#notifyViewChange();
 	}
 
 	#handlePointerEnter(event: PointerEvent) {
@@ -752,6 +884,7 @@ export class ChartController {
 		document.body.style.cursor = "";
 
 		this.#hideCrosshairAndAxisLabels();
+		this.#notifyCursorMove(null);
 	}
 
 	#handleContextMenu(event: MouseEvent) {

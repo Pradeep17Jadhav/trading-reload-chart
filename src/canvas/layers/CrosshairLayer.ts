@@ -37,6 +37,12 @@ export class CrosshairLayer {
 		this.visible = true;
 	}
 
+	setPosition(x: number, y: number) {
+		this.mouseX = this.clampX(x);
+		this.mouseY = this.clampY(y);
+		this.visible = true;
+	}
+
 	hide() {
 		this.visible = false;
 	}

@@ -1,5 +1,6 @@
 import type { CSSProperties } from "react";
 import type { ChartControllerProps } from "../chart/ChartController.types";
+import type { ChartCursorState, ChartViewState } from "../models/ChartSync.types";
 
 /**
  * Imperative methods exposed through the `ref` passed to {@link TradingReload}.
@@ -25,6 +26,49 @@ export type TradingReloadHandle = {
 	 * ```
 	 */
 	resetChartView: () => void;
+
+	/**
+	 * Returns the current timestamp-based view state, or `null` when the chart
+	 * has no candles to describe.
+	 *
+	 * @example
+	 * ```tsx
+	 * const view = chartRef.current?.getView();
+	 * ```
+	 */
+	getView: () => ChartViewState | null;
+
+	/**
+	 * Applies a timestamp-based view state so charts with different candle
+	 * timeframes stay aligned. Does not emit `onViewChange`.
+	 *
+	 * @example
+	 * ```tsx
+	 * chartRef.current?.setView(sourceView);
+	 * ```
+	 */
+	setView: (view: ChartViewState) => void;
+
+	/**
+	 * Draws a synced crosshair at the given time and price, snapped to the
+	 * nearest candle. Does not emit `onCursorMove`.
+	 *
+	 * @example
+	 * ```tsx
+	 * chartRef.current?.setCursor({ time, price });
+	 * ```
+	 */
+	setCursor: (cursor: ChartCursorState | null) => void;
+
+	/**
+	 * Hides the crosshair and axis labels.
+	 *
+	 * @example
+	 * ```tsx
+	 * chartRef.current?.hideCursor();
+	 * ```
+	 */
+	hideCursor: () => void;
 };
 
 /**

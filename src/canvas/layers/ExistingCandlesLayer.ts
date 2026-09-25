@@ -1,6 +1,7 @@
 import { CHART_CONFIG } from "../../config/chartConfig";
 import { normalizePrice } from "../../helpers/math";
 import type { Candle } from "../../models/Candle.types";
+import type { ChartCursorState, ChartViewState } from "../../models/ChartSync.types";
 import type { ChartViewport } from "../../models/ChartViewport.types";
 import type { VisibleRange } from "../../models/VisibleRange.types";
 import type {
@@ -184,6 +185,83 @@ export class ExistingCandlesLayer {
 		return {
 			startIndex,
 			endIndex,
+		};
+	}
+
+	getViewState(): ChartViewState | null {
+		if (this.candles.length === 0 || this.candleSpacing <= 0 || this.#canvas.width <= 0) {
+			return null;
+		}
+
+		return {
+			rightmostVisibleTime: this.getRightmostVisibleTime(),
+			rightmostVisibleX: this.getRightmostVisibleX(),
+			rightEdgeTime: this.getRightEdgeTime(),
+			visibleDurationMs: this.getVisibleDurationMs(),
+		};
+	}
+
+	setViewState(view: ChartViewState) {
+		if (this.candles.length === 0 || this.#canvas.width <= 0 || !this.hasUsableTimeframe()) {
+			return;
+		}
+
+		const anchorTime = Number.isFinite(view.rightmostVisibleTime) ? view.rightmostVisibleTime : view.rightEdgeTime;
+		const visibleDurationMs = Number.isFinite(view.visibleDurationMs) ? view.visibleDurationMs : 0;
+		const anchorXRatio = Number.isFinite(view.rightmostVisibleX) ? view.rightmostVisibleX : 1;
+
+		if (!Number.isFinite(anchorTime) || visibleDurationMs <= 0) {
+			return;
+		}
+
+		/**
+		 * Invert `getVisibleDurationMs`, which is `width * timeFrameMs / spacing`:
+		 * a target window of `visibleDurationMs` therefore needs
+		 * `spacing = width * timeFrameMs / visibleDurationMs`. This is computed
+		 * from the *base* spacing so the result never depends on the current zoom.
+		 */
+		const timeFrameMs = this.detectCandleTimeframeMs();
+		const baseSpacing = this.baseCandleWidth + this.baseCandleGap;
+		const targetSpacing = (this.#canvas.width * timeFrameMs) / visibleDurationMs;
+		const targetZoom = baseSpacing > 0 ? targetSpacing / baseSpacing : this.zoomX;
+
+		this.zoomX = Math.max(CHART_CONFIG.zoom.x.min, Math.min(targetZoom, CHART_CONFIG.zoom.x.max));
+
+		/**
+		 * `rightmostVisibleX` is reported as a candle *center* by
+		 * `getRightmostVisibleX`, while the slot is measured from a candle's left
+		 * edge, so the half-candle correction has to be undone here. Without it
+		 * every apply/report round-trip shifts the plot by `candleWidth / 2`.
+		 *
+		 * The slot itself is fractional whenever the anchor time falls between
+		 * two candles of this timeframe, which is the normal case for
+		 * cross-timeframe sync; the plot is placed at that exact position so the
+		 * requested time window is preserved.
+		 */
+		this.offsetX =
+			this.#canvas.width * anchorXRatio -
+			this.getTimeDeltaInCandleSlots(anchorTime) * this.candleSpacing -
+			this.candleWidth / 2;
+		this.isFollowingLatest = this.isWithinAutoFollowThreshold();
+	}
+
+	setCursorState(cursor: ChartCursorState) {
+		if (this.candles.length === 0 || !Number.isFinite(cursor.time) || !Number.isFinite(cursor.price)) {
+			return null;
+		}
+
+		const candleIndex = this.getCandleIndexByTime(cursor.time);
+		const candle = this.candles[candleIndex];
+
+		if (!candle) {
+			return null;
+		}
+
+		return {
+			candle,
+			candleIndex,
+			x: this.getCandleCenterX(candleIndex),
+			y: this.getPriceY(cursor.price, this.#canvas.height),
 		};
 	}
 
@@ -497,6 +575,10 @@ export class ExistingCandlesLayer {
 		return diffs[Math.floor(diffs.length / 2)];
 	}
 
+	private hasUsableTimeframe() {
+		return this.detectCandleTimeframeMs() > 0;
+	}
+
 	private applyManualViewportOverrides(options: ExistingCandlesLayerOptions) {
 		/**
 		 * Manual overrides
@@ -552,6 +634,158 @@ export class ExistingCandlesLayer {
 		 * at viewport right edge
 		 */
 		return (this.#canvas.width - this.offsetX) / this.candleSpacing;
+	}
+
+	private getRightmostVisibleTime() {
+		const lastVisibleIndex = this.getRightmostVisibleIndex();
+		return this.candles[lastVisibleIndex]?.time ?? 0;
+	}
+
+	private getRightmostVisibleX() {
+		const lastVisibleIndex = this.getRightmostVisibleIndex();
+		if (this.#canvas.width <= 0) {
+			return 1;
+		}
+
+		/**
+		 * Panning can push the anchor candle outside the plot, but the contract
+		 * for `rightmostVisibleX` is a normalized 0..1 screen position, so the
+		 * reported value is clamped to the visible range.
+		 */
+		const normalizedX = this.getCandleCenterX(lastVisibleIndex) / this.#canvas.width;
+
+		return Math.max(0, Math.min(normalizedX, 1));
+	}
+
+	private getRightmostVisibleIndex() {
+		if (this.candles.length === 0) {
+			return 0;
+		}
+
+		/**
+		 * The rightmost visible candle is the last one whose right edge still
+		 * falls inside the plot, which puts its index at
+		 * `(width - offsetX - candleWidth) / spacing`.
+		 */
+		return this.clampCandleIndex(
+			Math.round((this.#canvas.width - this.offsetX - this.candleWidth) / this.candleSpacing),
+		);
+	}
+
+	private getRightEdgeTime() {
+		const lastCandle = this.candles.at(-1);
+		const timeFrameMs = this.detectCandleTimeframeMs();
+
+		if (!lastCandle || timeFrameMs <= 0) {
+			return 0;
+		}
+
+		const slotsFromLastCandle = this.getRightEdgeCandleIndex() - (this.candles.length - 1);
+
+		return lastCandle.time + slotsFromLastCandle * timeFrameMs;
+	}
+
+	private getVisibleDurationMs() {
+		const timeFrameMs = this.detectCandleTimeframeMs();
+
+		if (timeFrameMs <= 0 || this.candleSpacing <= 0) {
+			return 0;
+		}
+
+		/**
+		 * `candleSpacing` is measured in pixels, so the plot width converts to
+		 * time through the candle timeframe rather than directly. Using the pixel
+		 * span as milliseconds would report a 15m chart as a sub-second window
+		 * and break cross-timeframe syncing.
+		 */
+		return (this.#canvas.width * timeFrameMs) / this.candleSpacing;
+	}
+
+	private getTimeDeltaInCandleSlots(targetTime: number) {
+		const firstCandle = this.candles[0];
+		if (!firstCandle || this.detectCandleTimeframeMs() <= 0) {
+			return 0;
+		}
+
+		return (targetTime - firstCandle.time) / this.detectCandleTimeframeMs();
+	}
+
+	/**
+	 * Resolves a timestamp to the candle whose span contains it.
+	 *
+	 * Synced cursors arrive from charts of a different timeframe, so the
+	 * incoming timestamp is not a multiple of this chart's timeframe away from
+	 * the first candle. Dividing by this chart's timeframe to derive an index
+	 * therefore drifts by the timeframe ratio, and clamping that drift pinned
+	 * the crosshair to the last candle. Binary searching the real candle times
+	 * is correct for any incoming timestamp and any target timeframe.
+	 *
+	 * Containment is measured against the candle's open time, so a finer
+	 * timeframe hovering partway through a coarse candle snaps to the coarse
+	 * candle that is actually covering that moment, rather than to whichever
+	 * neighbour happens to start closest to the timestamp.
+	 */
+	private getCandleIndexByTime(targetTime: number) {
+		if (this.candles.length === 0 || !Number.isFinite(targetTime)) {
+			return 0;
+		}
+
+		const lastIndex = this.candles.length - 1;
+		const firstTime = this.candles[0]?.time ?? 0;
+		const lastTime = this.candles[lastIndex]?.time ?? 0;
+		const timeFrameMs = this.detectCandleTimeframeMs();
+
+		if (targetTime <= firstTime) {
+			return 0;
+		}
+
+		if (targetTime >= lastTime + Math.max(timeFrameMs, 0)) {
+			return lastIndex;
+		}
+
+		const insertionIndex = this.findCandleIndexAtOrAfter(targetTime);
+
+		/** Exact open-time match, which is the common same-timeframe case. */
+		if (this.candles[insertionIndex]?.time === targetTime) {
+			return insertionIndex;
+		}
+
+		const previousIndex = Math.max(0, insertionIndex - 1);
+		const previousTime = this.candles[previousIndex]?.time ?? 0;
+		const nextTime = this.candles[insertionIndex]?.time ?? 0;
+
+		/** The timestamp sits between two opens, so prefer the candle covering it. */
+		if (targetTime < previousTime + timeFrameMs) {
+			return previousIndex;
+		}
+
+		/**
+		 * Series with gaps have no candle covering the timestamp, so fall back
+		 * to whichever neighbour is closest in time.
+		 */
+		return targetTime - previousTime <= nextTime - targetTime ? previousIndex : insertionIndex;
+	}
+
+	/**
+	 * Binary search for the first candle whose time is greater than or equal to
+	 * `targetTime`, falling back to the last index when every candle is earlier.
+	 */
+	private findCandleIndexAtOrAfter(targetTime: number) {
+		let low = 0;
+		let high = this.candles.length - 1;
+
+		while (low < high) {
+			const middle = Math.floor((low + high) / 2);
+			const middleTime = this.candles[middle]?.time ?? 0;
+
+			if (middleTime < targetTime) {
+				low = middle + 1;
+			} else {
+				high = middle;
+			}
+		}
+
+		return low;
 	}
 
 	private getNextHorizontalZoom(delta: number) {

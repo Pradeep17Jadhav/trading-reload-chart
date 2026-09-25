@@ -7,6 +7,7 @@ import type {
 } from "../canvas/layers/ShapesLayer/ShapesLayer.types";
 import type { ChartConfig } from "../config/chartConfig.types";
 import type { Candle } from "../models/Candle.types";
+import type { ChartCursorState, ChartViewState } from "../models/ChartSync.types";
 import type { ClosedTrade, OpenTrade } from "../models/Trade.types";
 import type { DeepPartial } from "./utils/deepPartial.types";
 
@@ -277,4 +278,15 @@ export type ChartControllerProps = {
 	 * ```
 	 */
 	onTradeClose?: (payload: { ticket: number }) => void;
+
+	/**
+	 * Called after a local pan, zoom, reset, or resize changes the chart view.
+	 * The timestamp-based payload can be applied to charts with different candle timeframes.
+	 */
+	onViewChange?: (view: ChartViewState) => void;
+
+	/**
+	 * Called when the local crosshair moves, and with `null` when it leaves the chart.
+	 */
+	onCursorMove?: (cursor: ChartCursorState | null) => void;
 };

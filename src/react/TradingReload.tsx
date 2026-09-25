@@ -40,6 +40,18 @@ export const TradingReload = forwardRef<TradingReloadHandle, TradingReloadProps>
 			resetChartView() {
 				controllerRef.current?.resetChartView();
 			},
+			getView() {
+				return controllerRef.current?.getView() ?? null;
+			},
+			setView(view) {
+				controllerRef.current?.setView(view);
+			},
+			setCursor(cursor) {
+				controllerRef.current?.setCursor(cursor);
+			},
+			hideCursor() {
+				controllerRef.current?.hideCursor();
+			},
 		}));
 
 		useEffect(() => {

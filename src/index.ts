@@ -23,6 +23,7 @@ export type { CanvasPoint } from "./chart/utils/getCanvasPoint.types";
 export { CHART_CONFIG } from "./config/chartConfig";
 export type { ChartConfig, PreviousDayHighLowConfig } from "./config/chartConfig.types";
 export type { Candle } from "./models/Candle.types";
+export type { ChartCursorState, ChartViewState } from "./models/ChartSync.types";
 export type { ChartViewport } from "./models/ChartViewport.types";
 export type { Point2D } from "./models/Point.types";
 export type { BaseTrade, ClosedTrade, OpenTrade, TradeDirection } from "./models/Trade.types";

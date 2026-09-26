@@ -1,6 +1,6 @@
 import type {
+	ClosedTradeIndicatorArrowConfig,
 	MissingTradeProtectionHandleRectConfig,
-	ClosedTradeIndicatorArrowConfig as ClosedTradeIndicatorArrowConfig,
 	TemporaryTradeProtectionHandleRectConfig,
 	TradeHandleLineConfig,
 	TradeHandleRectConfig,

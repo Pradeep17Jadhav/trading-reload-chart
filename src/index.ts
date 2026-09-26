@@ -21,7 +21,12 @@ export type {
 export type { DeepPartial } from "./chart/utils/deepPartial.types";
 export type { CanvasPoint } from "./chart/utils/getCanvasPoint.types";
 export { CHART_CONFIG } from "./config/chartConfig";
-export type { ChartConfig, PreviousDayHighLowConfig } from "./config/chartConfig.types";
+export type {
+	ChartConfig,
+	PreviousDayHighLowConfig,
+	WatermarkConfig,
+	WatermarkPosition,
+} from "./config/chartConfig.types";
 export type { Candle } from "./models/Candle.types";
 export type { ChartCursorState, ChartViewState } from "./models/ChartSync.types";
 export type { ChartViewport } from "./models/ChartViewport.types";

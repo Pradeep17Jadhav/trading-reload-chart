@@ -196,7 +196,8 @@ export class ShapesLayer {
 		}
 
 		if (this.selectedShapeId && !this.draft && !this.activeTool) {
-			const isArrowKey = event.key === "ArrowLeft" || event.key === "ArrowRight" || event.key === "ArrowUp" || event.key === "ArrowDown";
+			const isArrowKey =
+				event.key === "ArrowLeft" || event.key === "ArrowRight" || event.key === "ArrowUp" || event.key === "ArrowDown";
 
 			if (isArrowKey) {
 				const shape = this.shapes.find((s) => s.id === this.selectedShapeId);

@@ -1,3 +1,4 @@
+import { SHAPE_HANDLE_CONFIG } from "./ShapesLayer.constants";
 import {
 	applyStrokeStyle,
 	createHandleHitbox,
@@ -6,10 +7,9 @@ import {
 	resetCanvasLineDash,
 	vertexToPoint,
 } from "./ShapesLayer.helpers";
-import { SHAPE_HANDLE_CONFIG } from "./ShapesLayer.constants";
 import type {
-	ShapeCoordinateConverter,
 	CommonShapeConfig,
+	ShapeCoordinateConverter,
 	ShapeHandleHitbox,
 	ShapePoint,
 	ShapeVertex,

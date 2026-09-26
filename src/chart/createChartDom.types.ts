@@ -3,6 +3,7 @@ export type ChartDomElements = {
 	layout: HTMLDivElement;
 	stack: HTMLDivElement;
 	volumeCanvas: HTMLCanvasElement;
+	watermarkCanvas: HTMLCanvasElement;
 	candleCanvas: HTMLCanvasElement;
 	shapesCanvas: HTMLCanvasElement;
 	tradesCanvas: HTMLCanvasElement;

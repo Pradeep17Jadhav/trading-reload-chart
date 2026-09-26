@@ -253,6 +253,46 @@ export function ChartPanel() {
 - `TradingReload` fills **100%** of that container.
 - Do **not** import chart CSS manually; styles ship with the component (`src/styles/chart.css`).
 
+### Watermark
+
+Add a text watermark (symbol / timeframe label, chart id, etc.) through `config.watermark`.
+It renders on its own canvas **beneath** candles, shapes, trades, and the crosshair, so it
+never intercepts pointer events.
+
+```tsx
+import {
+  TradingReload,
+  type ChartConfig,
+  type DeepPartial,
+} from "@pradeepjadhav/trading-reload-chart";
+
+const config = {
+  watermark: {
+    text: `${symbol}, ${timeframe}`,
+    position: "top-center",
+    fontSize: 24,
+    fontWeight: 700,
+    color: "#FFFFFF",
+    opacity: 0.35,
+  },
+} satisfies DeepPartial<ChartConfig>;
+
+<TradingReload config={config} /* … */ />;
+```
+
+| Option        | Type                                                                                     | Default                                     | Description                              |
+| ------------- | ---------------------------------------------------------------------------------------- | ------------------------------------------- | ---------------------------------------- |
+| `text`        | `string`                                                                                 | `""`                                        | Empty text hides the watermark            |
+| `position`    | `"center" \| "top-center" \| "bottom-center" \| "left-center" \| "right-center"`         | `"center"`                                  | Anchor inside the plot area               |
+| `fontSize`    | `number`                                                                                 | `48`                                        | Font size in CSS pixels                  |
+| `fontWeight`  | `number`                                                                                 | `700`                                       | Numeric font weight                       |
+| `fontFamily`  | `string`                                                                                 | `"Inter, system-ui, -apple-system, sans-serif"` | CSS font stack                         |
+| `color`       | `string`                                                                                 | `COLORS.white`                              | Text color                                |
+| `opacity`     | `number`                                                                                 | `0.25`                                      | Clamped to `0` - `1`                      |
+| `padding`     | `number`                                                                                 | `16`                                        | Inset from the plot edge                  |
+
+> Because `config` is deep-merged, you can pass only the keys you want to change.
+
 ### 3. Vite / Create React App
 
 ```tsx
@@ -286,6 +326,7 @@ Import from the package root:
 | `Candle`, `OpenTrade`, `ClosedTrade`, …      | Domain types         |
 | `Shape`, `ShapeToolType`, shape payloads     | Drawing types        |
 | `ChartConfig`, `CHART_CONFIG`, `DeepPartial` | Configuration        |
+| `WatermarkConfig`, `WatermarkPosition`       | Watermark types      |
 | `ClosedTradeIndicator`, trade handle types   | Trade overlay types  |
 
 Controlled props (parent owns state):
@@ -319,7 +360,7 @@ trading-reload-chart/
 │   ├── index.ts          # Public exports
 │   ├── react/            # TradingReload component
 │   ├── chart/            # ChartController, DOM, utils
-│   ├── canvas/layers/    # Canvas layers (candles, shapes, trades, …)
+│   ├── canvas/layers/    # Canvas layers (candles, volume, watermark, shapes, trades, …)
 │   ├── config/           # CHART_CONFIG and types
 │   ├── models/           # Candle, Trade, ChartViewport, … (*.types.ts)
 │   ├── helpers/          # Shared pure utilities
@@ -336,11 +377,12 @@ Type declarations live in `*.types.ts` files next to implementation code (see AG
 
 ## Features
 
-- Layered canvas rendering (volume, candles, shapes, trades, axes, crosshair)
+- Layered canvas rendering (volume, watermark, candles, shapes, trades, axes, crosshair)
 - Pan, horizontal wheel zoom, Ctrl+wheel vertical zoom
 - Drawing tools (trendline, rectangle, path, fib, long/short position)
 - Open trade SL/TP drag with `onTradeModify` on release
 - Closed trade markers
+- Configurable text watermark layer
 - Deep-merge chart `config` over defaults
 
 ---

@@ -1,3 +1,4 @@
+import { SHAPE_HANDLE_CONFIG } from "./ShapesLayer.constants";
 import {
 	applyStrokeStyle,
 	createHandleHitbox,
@@ -7,11 +8,10 @@ import {
 	vertexToPoint,
 	withOpacity,
 } from "./ShapesLayer.helpers";
-import { SHAPE_HANDLE_CONFIG } from "./ShapesLayer.constants";
 import type {
+	CommonShapeConfig,
 	PathShapeData,
 	ShapeCoordinateConverter,
-	CommonShapeConfig,
 	ShapeHandleHitbox,
 	ShapePoint,
 	ShapeVertex,

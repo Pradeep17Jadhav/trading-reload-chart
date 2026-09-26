@@ -19,13 +19,14 @@ export const createChartDom = (container: HTMLElement, backgroundColor: string):
 	stack.className = "trading-reload-chart__stack";
 
 	const volumeCanvas = createCanvas("trading-reload-chart__volume");
+	const watermarkCanvas = createCanvas("trading-reload-chart__watermark");
 	const candleCanvas = createCanvas("trading-reload-chart__plot");
 	const shapesCanvas = createCanvas("trading-reload-chart__shapes");
 	const tradesCanvas = createCanvas("trading-reload-chart__trades");
 	const overlayCanvas = createCanvas("trading-reload-chart__overlay");
 	const axisXCanvas = createCanvas("trading-reload-chart__axis-x");
 
-	stack.append(volumeCanvas, candleCanvas, shapesCanvas, tradesCanvas, overlayCanvas, axisXCanvas);
+	stack.append(volumeCanvas, watermarkCanvas, candleCanvas, shapesCanvas, tradesCanvas, overlayCanvas, axisXCanvas);
 
 	const axisYCanvas = createCanvas("trading-reload-chart__axis-y");
 
@@ -38,6 +39,7 @@ export const createChartDom = (container: HTMLElement, backgroundColor: string):
 		layout,
 		stack,
 		volumeCanvas,
+		watermarkCanvas,
 		candleCanvas,
 		shapesCanvas,
 		tradesCanvas,

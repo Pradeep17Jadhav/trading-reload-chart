@@ -1,3 +1,4 @@
+import { SHAPE_HANDLE_CONFIG } from "./ShapesLayer.constants";
 import {
 	applyFillStyle,
 	applyStrokeStyle,
@@ -8,14 +9,13 @@ import {
 	resetCanvasLineDash,
 	vertexToPoint,
 } from "./ShapesLayer.helpers";
-import { SHAPE_HANDLE_CONFIG } from "./ShapesLayer.constants";
 import type {
+	RectangleShapeConfig,
 	RectangleShapeData,
 	ShapeCoordinateConverter,
 	ShapeHandleHitbox,
 	ShapePoint,
 	ShapeVertex,
-	RectangleShapeConfig,
 } from "./ShapesLayer.types";
 
 export class RectangleShape {

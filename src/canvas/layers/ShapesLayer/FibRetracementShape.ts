@@ -1,3 +1,4 @@
+import { SHAPE_HANDLE_CONFIG } from "./ShapesLayer.constants";
 import {
 	applyFillStyle,
 	createHandleHitbox,
@@ -9,7 +10,6 @@ import {
 	vertexToPoint,
 	withOpacity,
 } from "./ShapesLayer.helpers";
-import { SHAPE_HANDLE_CONFIG } from "./ShapesLayer.constants";
 import type {
 	FibRetracementConfig,
 	FibRetracementShapeData,

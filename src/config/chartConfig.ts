@@ -157,6 +157,17 @@ export const CHART_CONFIG: ChartConfig = {
 		style: "dashed",
 	},
 
+	watermark: {
+		text: "",
+		position: "center",
+		fontSize: 48,
+		fontWeight: 700,
+		fontFamily: "Inter, system-ui, -apple-system, sans-serif",
+		color: COLORS.white,
+		opacity: 0.25,
+		padding: 16,
+	},
+
 	axis: {
 		axisX: {
 			height: 30,

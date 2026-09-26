@@ -125,6 +125,55 @@ export type VolumeConfig = {
 };
 
 /**
+ * Placement of the watermark inside the plot area.
+ *
+ * @example `"top-center"`
+ */
+export type WatermarkPosition = "center" | "top-center" | "bottom-center" | "left-center" | "right-center";
+
+/**
+ * Text watermark rendered on a dedicated canvas beneath the candlestick and
+ * interaction layers.
+ *
+ * @example
+ * ```ts
+ * const watermark: WatermarkConfig = {
+ * 	text: "USDJPY, 15m",
+ * 	position: "top-center",
+ * 	fontSize: 24,
+ * 	fontWeight: 700,
+ * 	color: "#ffffff",
+ * 	opacity: 0.35,
+ * };
+ * ```
+ */
+export type WatermarkConfig = {
+	/** Watermark text. An empty string hides the watermark. */
+	text: string;
+
+	/** Watermark placement inside the plot area. */
+	position: WatermarkPosition;
+
+	/** Font size in CSS pixels, before device pixel ratio scaling. */
+	fontSize: number;
+
+	/** Numeric CSS font weight. */
+	fontWeight: number;
+
+	/** CSS font family used to measure and paint the watermark. */
+	fontFamily: string;
+
+	/** Watermark color, any CSS color value. */
+	color: string;
+
+	/** Watermark opacity between `0` and `1`. */
+	opacity: number;
+
+	/** Padding in CSS pixels between the watermark and the plot edge. */
+	padding: number;
+};
+
+/**
  * Crosshair line style.
  *
  * @example
@@ -662,6 +711,7 @@ export type ChartConfig = {
 	zoom: ZoomConfig;
 	candles: CandlesConfig;
 	volume: VolumeConfig;
+	watermark: WatermarkConfig;
 	crosshair: CrosshairConfig;
 	tradeHandles: TradeHandlesConfig;
 	closedTradeIndicators: ClosedTradeIndicatorsConfig;

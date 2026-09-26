@@ -9,6 +9,7 @@ import { TradeLayer } from "../canvas/layers/TradeLayer/TradeLayer";
 import type { TradeHandleType, TradeProtectionHandleType } from "../canvas/layers/TradeLayer/TradeLayer.types";
 import { TradeLayerEvents } from "../canvas/layers/TradeLayer/TradeLayerEvents";
 import { VolumeLayer } from "../canvas/layers/VolumeLayer/VolumeLayer";
+import { WatermarkLayer } from "../canvas/layers/WatermarkLayer/WatermarkLayer";
 import type { ChartConfig } from "../config/chartConfig.types";
 import type { Candle } from "../models/Candle.types";
 import type { ChartCursorState, ChartViewState } from "../models/ChartSync.types";
@@ -38,6 +39,8 @@ export class ChartController {
 	#dom: ChartDomElements | null = null;
 
 	#volumeLayer: VolumeLayer | null = null;
+
+	#watermarkLayer: WatermarkLayer | null = null;
 
 	#candleLayer: ExistingCandlesLayer | null = null;
 
@@ -92,6 +95,10 @@ export class ChartController {
 			crosshairThickness: this.#config.crosshair.thickness,
 			crosshairStyle: this.#config.crosshair.style,
 		});
+		this.#watermarkLayer = new WatermarkLayer({
+			canvas: this.#dom.watermarkCanvas,
+			config: this.#config.watermark,
+		});
 		this.#bindInteractionListeners();
 		this.#observeResize();
 		this.#resizeCanvases();
@@ -123,6 +130,8 @@ export class ChartController {
 		this.#shapesLayer?.setConfig(this.#config.shapes);
 		this.#shapesLayer?.setShapes(props.shapes);
 		this.#shapesLayer?.setActiveTool(props.activeShapeTool);
+
+		this.#watermarkLayer?.setConfig(this.#config.watermark);
 
 		this.#pdhPdlLayer?.setConfig(this.#config.shapes.previousDayHighLow ?? null);
 		this.#pdhPdlLayer?.setPreviousDay(props.previousDay);
@@ -205,6 +214,7 @@ export class ChartController {
 		this.#dom?.root.remove();
 		this.#dom = null;
 		this.#volumeLayer = null;
+		this.#watermarkLayer = null;
 		this.#candleLayer = null;
 		this.#shapesLayer = null;
 		this.#pdhPdlLayer = null;
@@ -415,12 +425,15 @@ export class ChartController {
 		this.#lastPlotWidth = plotWidth;
 
 		this.#setCanvasSize(this.#dom.volumeCanvas, plotWidth, plotHeight);
+		this.#setCanvasSize(this.#dom.watermarkCanvas, plotWidth, plotHeight);
 		this.#setCanvasSize(this.#dom.candleCanvas, plotWidth, plotHeight);
 		this.#setCanvasSize(this.#dom.shapesCanvas, plotWidth, plotHeight);
 		this.#setCanvasSize(this.#dom.overlayCanvas, plotWidth, plotHeight);
 		this.#setCanvasSize(this.#dom.tradesCanvas, plotWidth, plotHeight);
 		this.#setCanvasSize(this.#dom.axisXCanvas, plotWidth, axisXHeight);
 		this.#setCanvasSize(this.#dom.axisYCanvas, axisYWidth, plotHeight);
+
+		this.#watermarkLayer?.resize(plotWidth, plotHeight);
 	}
 
 	#renderAxisLayers() {
@@ -445,6 +458,8 @@ export class ChartController {
 		this.#volumeLayer?.setLiveCandle(this.#candleLayer.liveCandle);
 		this.#volumeLayer?.setViewport(this.#candleLayer.viewport);
 		this.#volumeLayer?.render();
+
+		this.#watermarkLayer?.render();
 
 		this.#candleLayer.render();
 

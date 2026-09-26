@@ -1,4 +1,5 @@
 import { getPipSize } from "../TradeLayer/TradeLayer.helpers";
+import { SHAPE_HANDLE_CONFIG } from "./ShapesLayer.constants";
 import {
 	createHandleHitbox,
 	drawHandles,
@@ -9,7 +10,6 @@ import {
 	vertexToPoint,
 	withOpacity,
 } from "./ShapesLayer.helpers";
-import { SHAPE_HANDLE_CONFIG } from "./ShapesLayer.constants";
 import type {
 	PositionShapeConfig,
 	PositionShapeData,

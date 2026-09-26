@@ -33,6 +33,7 @@
 }
 
 .trading-reload-chart__volume,
+.trading-reload-chart__watermark,
 .trading-reload-chart__plot,
 .trading-reload-chart__shapes,
 .trading-reload-chart__trades,
@@ -49,20 +50,25 @@
 	pointer-events: none;
 }
 
-.trading-reload-chart__plot {
+.trading-reload-chart__watermark {
 	z-index: 1;
+	pointer-events: none;
 }
 
-.trading-reload-chart__shapes {
+.trading-reload-chart__plot {
 	z-index: 2;
 }
 
-.trading-reload-chart__trades {
+.trading-reload-chart__shapes {
 	z-index: 3;
 }
 
-.trading-reload-chart__overlay {
+.trading-reload-chart__trades {
 	z-index: 4;
+}
+
+.trading-reload-chart__overlay {
+	z-index: 5;
 }
 
 .trading-reload-chart__axis-x {
@@ -71,7 +77,7 @@
 	bottom: 0;
 	width: 100%;
 	height: var(--axis-x-height);
-	z-index: 5;
+	z-index: 6;
 }
 
 .trading-reload-chart__axis-y {

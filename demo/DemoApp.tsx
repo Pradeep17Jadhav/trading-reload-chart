@@ -6,8 +6,8 @@ import type { ClosedTrade, OpenTrade } from "../src/models/Trade.types";
 import { TradingReload } from "../src/react/TradingReload";
 import { createDemoShapes } from "./createDemoShapes";
 import {
-	fetchHistoricalCandles,
 	fetchClosedTrades,
+	fetchHistoricalCandles,
 	getModifiedTradeFromResponse,
 	modifyTrade,
 	subscribeLiveCandles,

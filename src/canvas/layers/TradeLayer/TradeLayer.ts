@@ -13,20 +13,20 @@ import type { ClosedTrade, OpenTrade } from "../../../models/Trade.types";
 import { priceToY } from "../helpers/LayerHelpers";
 import { calculatePotentialPnlUsd } from "./TradeLayer.helpers";
 import type {
+	ClosedTradeIndicatorRenderState,
 	CreateHitBoxOptions,
 	CreateMissingProtectionHitBoxOptions,
+	DrawClosedTradeArrowOptions,
 	DrawConnectorLineOptions,
 	DrawHandleLineOptions,
 	DrawHandleRectOptions,
 	DrawHandleSectionsOptions,
 	DrawMissingProtectionHandleRectOptions,
-	DrawClosedTradeArrowOptions,
 	DrawTemporaryProtectionHandleRectOptions,
 	DrawTradeHandleOptions,
 	HandleSection,
 	LineBlockedRange,
 	MissingProtectionHandleRenderState,
-	ClosedTradeIndicatorRenderState,
 	TemporaryProtectionRenderState,
 	TemporaryTradeProtectionDrag,
 	TradeHandleHitbox,

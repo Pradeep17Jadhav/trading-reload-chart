@@ -1,11 +1,11 @@
 import { getCanvasPoint as getChartCanvasPoint } from "../../../chart/utils/getCanvasPoint";
 import type { Candle } from "../../../models/Candle.types";
 import type {
+	CommonShapeConfig,
 	FibLevelValue,
 	Shape,
 	ShapeBoundingBox,
 	ShapeCoordinateConverter,
-	CommonShapeConfig,
 	ShapeHandleHitbox,
 	ShapeLineStyle,
 	ShapePoint,

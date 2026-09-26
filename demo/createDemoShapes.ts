@@ -43,7 +43,7 @@ export const createDemoShapes = (candles: Candle[]): Shape[] => {
 			text: "15M GR",
 			config: {
 				fillColor: "#ff0000",
-			}
+			},
 		},
 		{
 			id: "demo-path-1",
